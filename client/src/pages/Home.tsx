@@ -1,8 +1,13 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Zap, Shield, Cpu, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Home() {
+  // The userAuth hooks provides authentication state
+  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
+  let { user, loading, error, isAuthenticated, logout } = useAuth();
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
