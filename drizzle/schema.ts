@@ -366,3 +366,95 @@ export const banners = mysqlTable("banners", {
 
 export type Banner = typeof banners.$inferSelect;
 export type InsertBanner = typeof banners.$inferInsert;
+
+
+// ============================================
+// ADMIN ACTIVITY LOG (Audit Trail)
+// ============================================
+export const activityLogs = mysqlTable("activity_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  action: mysqlEnum("action", ["create", "update", "delete", "view", "export", "import", "login", "logout"]).notNull(),
+  entityType: varchar("entityType", { length: 100 }).notNull(), // "product", "news", "user", "settings", etc.
+  entityId: int("entityId"),
+  entityName: varchar("entityName", { length: 255 }), // Name of the entity (e.g., product name)
+  oldValues: text("oldValues"), // JSON object with previous values
+  newValues: text("newValues"), // JSON object with new values
+  changes: text("changes"), // JSON array of what changed
+  ipAddress: varchar("ipAddress", { length: 45 }), // IPv4 or IPv6
+  userAgent: text("userAgent"),
+  status: mysqlEnum("status", ["success", "failed"]).default("success").notNull(),
+  errorMessage: text("errorMessage"), // If status is failed
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ActivityLog = typeof activityLogs.$inferSelect;
+export type InsertActivityLog = typeof activityLogs.$inferInsert;
+
+// ============================================
+// ADMIN ROLES & PERMISSIONS
+// ============================================
+export const adminRoles = mysqlTable("admin_roles", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull().unique(), // "super_admin", "editor", "viewer"
+  description: text("description"),
+  permissions: text("permissions"), // JSON array of permission strings
+  isSystem: mysqlEnum("isSystem", ["true", "false"]).default("false").notNull(), // System roles cannot be deleted
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AdminRole = typeof adminRoles.$inferSelect;
+export type InsertAdminRole = typeof adminRoles.$inferInsert;
+
+// Update users table to support admin roles
+export const userAdminRoles = mysqlTable("user_admin_roles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  roleId: int("roleId").notNull(),
+  assignedAt: timestamp("assignedAt").defaultNow().notNull(),
+  assignedBy: int("assignedBy"), // User ID who assigned this role
+});
+
+export type UserAdminRole = typeof userAdminRoles.$inferSelect;
+export type InsertUserAdminRole = typeof userAdminRoles.$inferInsert;
+
+// ============================================
+// NOTIFICATION CENTER
+// ============================================
+export const notificationCenter = mysqlTable("notification_center", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId"), // null = system notification for all admins
+  type: mysqlEnum("type", ["contact", "quote", "application", "newsletter", "system", "product", "news"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message"),
+  icon: varchar("icon", { length: 100 }), // Icon name from lucide-react
+  link: varchar("link", { length: 500 }), // Link to related resource
+  relatedEntityType: varchar("relatedEntityType", { length: 100 }), // "contact", "job_application", "newsletter_subscriber"
+  relatedEntityId: int("relatedEntityId"), // ID of the related entity
+  isRead: mysqlEnum("isRead", ["true", "false"]).default("false").notNull(),
+  readAt: timestamp("readAt"),
+  priority: mysqlEnum("priority", ["low", "normal", "high", "urgent"]).default("normal").notNull(),
+  category: varchar("category", { length: 100 }), // "new_contact", "new_application", "new_subscriber", "system_alert"
+  metadata: text("metadata"), // JSON object with additional data
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  expiresAt: timestamp("expiresAt"), // Auto-delete old notifications
+});
+
+export type NotificationCenterItem = typeof notificationCenter.$inferSelect;
+export type InsertNotificationCenterItem = typeof notificationCenter.$inferInsert;
+
+// Notification preferences per user
+export const notificationPreferences = mysqlTable("notification_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  type: varchar("type", { length: 100 }).notNull(), // "contact", "application", "newsletter", "system"
+  emailNotification: mysqlEnum("emailNotification", ["true", "false"]).default("true").notNull(),
+  inAppNotification: mysqlEnum("inAppNotification", ["true", "false"]).default("true").notNull(),
+  pushNotification: mysqlEnum("pushNotification", ["true", "false"]).default("false").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NotificationPreference = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;

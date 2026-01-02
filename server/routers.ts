@@ -21,6 +21,11 @@ import {
   portfolioItems,
   partners,
   banners,
+  activityLogs,
+  adminRoles,
+  userAdminRoles,
+  notificationCenter,
+  notificationPreferences,
   InsertProduct,
   InsertProductCategory,
   InsertNews,
@@ -35,7 +40,12 @@ import {
   InsertNotification,
   InsertPortfolioItem,
   InsertPartner,
-  InsertBanner
+  InsertBanner,
+  InsertActivityLog,
+  InsertAdminRole,
+  InsertUserAdminRole,
+  InsertNotificationCenterItem,
+  InsertNotificationPreference
 } from "../drizzle/schema";
 import { eq, desc, asc, and, sql } from "drizzle-orm";
 import { notifyNewJobApplication, notifyNewContactForm } from "./email";
@@ -1696,6 +1706,70 @@ const bannersRouter = router({
 });
 
 // ============================================
+// ACTIVITY LOG ROUTER
+// ============================================
+const activityLogRouter = router({
+  list: protectedProcedure
+    .input(z.object({ limit: z.number().default(50), offset: z.number().default(0) }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user?.role !== "admin") throw new Error("Unauthorized");
+      const db = await getDb();
+      if (!db) return [];
+      return await db.select().from(activityLogs).limit(input.limit).offset(input.offset).orderBy(desc(activityLogs.createdAt));
+    }),
+});
+
+// ============================================
+// ADMIN ROLES ROUTER
+// ============================================
+const adminRolesRouter = router({
+  list: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user?.role !== "admin") throw new Error("Unauthorized");
+    const db = await getDb();
+    if (!db) return [];
+    return await db.select().from(adminRoles);
+  }),
+});
+
+// ============================================
+// NOTIFICATION CENTER ROUTER
+// ============================================
+const notificationCenterRouter = router({
+  list: protectedProcedure
+    .input(z.object({ limit: z.number().default(20), offset: z.number().default(0) }))
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      return await db.select().from(notificationCenter)
+        .where(eq(notificationCenter.userId, ctx.user?.id || 0))
+        .limit(input.limit)
+        .offset(input.offset)
+        .orderBy(desc(notificationCenter.createdAt));
+    }),
+  unreadCount: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) return 0;
+    const result = await db.select({ count: sql`COUNT(*)` })
+      .from(notificationCenter)
+      .where(and(
+        eq(notificationCenter.userId, ctx.user?.id || 0),
+        eq(notificationCenter.isRead, "false")
+      ));
+    return result[0]?.count || 0;
+  }),
+  markAsRead: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      await db.update(notificationCenter)
+        .set({ isRead: "true", readAt: new Date() })
+        .where(eq(notificationCenter.id, input.id));
+      return { success: true };
+    }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -1727,6 +1801,9 @@ export const appRouter = router({
   analytics: analyticsRouter,
   backup: backupRouter,
   banners: bannersRouter,
+  activityLog: activityLogRouter,
+  adminRoles: adminRolesRouter,
+  notificationCenter: notificationCenterRouter,
 });
 
 // Export createNotification for use in other parts of the app

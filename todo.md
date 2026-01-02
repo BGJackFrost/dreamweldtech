@@ -222,3 +222,9 @@
 - [x] Tạo Admin Quick Actions Bar (3 buttons: Create Product, View Reports, Send Newsletter)
 - [x] Thêm Breadcrumb Navigation ở header admin (Admin > Category > Item)
 - [x] Tất cả 239 unit tests passed
+
+## Tính năng mới (Phase 30)
+- [x] Thêm Admin Activity Log & Audit Trail (5 tables: activity_logs, admin_roles, user_admin_roles, notification_center, notification_preferences)
+- [x] Tạo Admin User Roles & Permissions (Super Admin, Editor, Viewer)
+- [x] Thêm Notification Center (list, unreadCount, markAsRead APIs)
+- [x] Tất cả 239 unit tests passed

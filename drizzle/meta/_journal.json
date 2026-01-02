@@ -78,6 +78,13 @@
       "when": 1767342451953,
       "tag": "0010_slimy_mad_thinker",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1767344953726,
+      "tag": "0011_warm_mesmero",
+      "breakpoints": true
     }
   ]
 }
