@@ -32,6 +32,7 @@ import AdminApplications from "./pages/admin/Applications";
 import AdminPortfolio from "./pages/admin/Portfolio";
 import AdminPartners from "./pages/admin/Partners";
 import AdminBackup from "./pages/admin/Backup";
+import AdminSiteSettings from "./pages/admin/SiteSettings";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -110,6 +111,7 @@ function AdminRouter() {
         <Route path="/admin/portfolio" component={AdminPortfolio} />
         <Route path="/admin/partners" component={AdminPartners} />
         <Route path="/admin/backup" component={AdminBackup} />
+        <Route path="/admin/site-settings" component={AdminSiteSettings} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>

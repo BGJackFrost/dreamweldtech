@@ -12,7 +12,38 @@ import {
   Wrench
 } from "lucide-react";
 import { Link } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { trpc } from "@/lib/trpc";
+
+interface AboutPageConfig {
+  heroTitle: string;
+  heroSubtitle: string;
+  companyName: string;
+  foundedYear: string;
+  mission: string;
+  vision: string;
+  coreValues: string;
+  teamDescription: string;
+  historyDescription: string;
+  contactEmail: string;
+  contactPhone: string;
+  contactAddress: string;
+}
+
+const defaultAboutConfig: AboutPageConfig = {
+  heroTitle: "Về Chúng Tôi",
+  heroSubtitle: "Đơn vị tiên phong trong lĩnh vực công nghệ laser công nghiệp tại Việt Nam",
+  companyName: "Dreamweldtech",
+  foundedYear: "2015",
+  mission: "Mang đến cho doanh nghiệp Việt Nam những giải pháp công nghệ laser tiên tiến nhất, giúp nâng cao năng suất, chất lượng sản phẩm và khả năng cạnh tranh trên thị trường quốc tế. Chúng tôi cam kết đồng hành cùng khách hàng trong hành trình chuyển đổi số và hiện đại hóa sản xuất.",
+  vision: "Trở thành đơn vị dẫn đầu Đông Nam Á trong lĩnh vực cung cấp giải pháp công nghệ laser cho ngành công nghiệp. Xây dựng hệ sinh thái toàn diện từ tư vấn, cung cấp thiết bị, đào tạo đến hỗ trợ kỹ thuật, đáp ứng mọi nhu cầu của khách hàng.",
+  coreValues: "Chất lượng - Đổi mới - Khách hàng - Uy tín",
+  teamDescription: "Đội ngũ kỹ sư và chuyên gia giàu kinh nghiệm, được đào tạo bài bản từ các đối tác quốc tế.",
+  historyDescription: "Hơn 8 năm kinh nghiệm trong lĩnh vực công nghệ laser, phục vụ hàng trăm doanh nghiệp trên khắp Việt Nam.",
+  contactEmail: "contact@dreamweldtech.com",
+  contactPhone: "+84 123 456 789",
+  contactAddress: "123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh",
+};
 
 const milestones = [
   { year: "2015", title: "Thành Lập", description: "Dreamweldtech được thành lập với sứ mệnh mang công nghệ laser tiên tiến đến Việt Nam." },
@@ -53,9 +84,26 @@ const stats = [
 ];
 
 export default function About() {
+  // Fetch about page config from database
+  const { data: aboutConfigStr } = trpc.settings.get.useQuery({ key: "about_page_config" });
+  
+  const config = useMemo(() => {
+    if (aboutConfigStr) {
+      try {
+        return { ...defaultAboutConfig, ...JSON.parse(aboutConfigStr) };
+      } catch (e) {
+        return defaultAboutConfig;
+      }
+    }
+    return defaultAboutConfig;
+  }, [aboutConfigStr]);
+
   useEffect(() => {
-    document.title = "Giới Thiệu - Dreamweldtech | Công Ty Công Nghệ Laser";
-  }, []);
+    document.title = `${config.heroTitle} - ${config.companyName} | Công Ty Công Nghệ Laser`;
+  }, [config]);
+
+  // Calculate years of experience from founded year
+  const yearsExperience = new Date().getFullYear() - parseInt(config.foundedYear);
 
   return (
     <>
@@ -65,14 +113,13 @@ export default function About() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <span className="inline-block px-4 py-1 bg-chart-1/20 text-chart-1 text-sm font-bold uppercase tracking-wider rounded mb-4">
-                Về Chúng Tôi
+                {config.heroTitle}
               </span>
               <h1 className="text-4xl md:text-5xl font-heading font-bold uppercase mb-6">
-                Dreamweldtech - <span className="text-chart-1">Đối Tác</span> Công Nghệ Laser Của Bạn
+                {config.companyName} - <span className="text-chart-1">Đối Tác</span> Công Nghệ Laser Của Bạn
               </h1>
               <p className="text-lg text-white/80 mb-8">
-                Với hơn 8 năm kinh nghiệm trong ngành công nghệ laser, Dreamweldtech tự hào là đơn vị tiên phong 
-                cung cấp các giải pháp máy hàn, cắt và làm sạch laser chất lượng cao tại Việt Nam.
+                {config.heroSubtitle}
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link href="/products">
@@ -91,11 +138,11 @@ export default function About() {
             <div className="relative">
               <img
                 src="/images/about-factory.jpg"
-                alt="Dreamweldtech Factory"
+                alt={`${config.companyName} Factory`}
                 className="rounded-lg shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 bg-chart-1 text-white p-6 rounded-lg">
-                <p className="text-4xl font-heading font-bold">8+</p>
+                <p className="text-4xl font-heading font-bold">{yearsExperience}+</p>
                 <p className="text-sm uppercase">Năm Kinh Nghiệm</p>
               </div>
             </div>
@@ -130,9 +177,7 @@ export default function About() {
                   <h2 className="text-2xl font-heading font-bold uppercase">Sứ Mệnh</h2>
                 </div>
                 <p className="text-muted-foreground leading-relaxed">
-                  Mang đến cho doanh nghiệp Việt Nam những giải pháp công nghệ laser tiên tiến nhất, 
-                  giúp nâng cao năng suất, chất lượng sản phẩm và khả năng cạnh tranh trên thị trường quốc tế. 
-                  Chúng tôi cam kết đồng hành cùng khách hàng trong hành trình chuyển đổi số và hiện đại hóa sản xuất.
+                  {config.mission}
                 </p>
               </CardContent>
             </Card>
@@ -146,9 +191,7 @@ export default function About() {
                   <h2 className="text-2xl font-heading font-bold uppercase">Tầm Nhìn</h2>
                 </div>
                 <p className="text-muted-foreground leading-relaxed">
-                  Trở thành đơn vị dẫn đầu Đông Nam Á trong lĩnh vực cung cấp giải pháp công nghệ laser 
-                  cho ngành công nghiệp. Xây dựng hệ sinh thái toàn diện từ tư vấn, cung cấp thiết bị, 
-                  đào tạo đến hỗ trợ kỹ thuật, đáp ứng mọi nhu cầu của khách hàng.
+                  {config.vision}
                 </p>
               </CardContent>
             </Card>
@@ -166,6 +209,7 @@ export default function About() {
             <h2 className="text-3xl md:text-4xl font-heading font-bold uppercase">
               Những Giá Trị <span className="text-chart-1">Định Hướng</span> Chúng Tôi
             </h2>
+            <p className="text-white/70 mt-4 text-lg">{config.coreValues}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -178,6 +222,50 @@ export default function About() {
                 <p className="text-white/70">{value.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Team Description */}
+      <section className="py-20 bg-secondary/30">
+        <div className="container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <span className="inline-block px-4 py-1 bg-primary/10 text-primary text-sm font-bold uppercase tracking-wider rounded mb-4">
+                Đội Ngũ
+              </span>
+              <h2 className="text-3xl md:text-4xl font-heading font-bold uppercase mb-6">
+                Đội Ngũ <span className="text-chart-1">Chuyên Gia</span>
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                {config.teamDescription}
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                {config.historyDescription}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-primary text-white p-6 rounded-lg text-center">
+                <Factory className="h-12 w-12 mx-auto mb-4" />
+                <p className="font-heading font-bold text-xl">Nhà Máy</p>
+                <p className="text-white/70 text-sm">Sản xuất hiện đại</p>
+              </div>
+              <div className="bg-chart-1 text-white p-6 rounded-lg text-center">
+                <Globe className="h-12 w-12 mx-auto mb-4" />
+                <p className="font-heading font-bold text-xl">Đối Tác</p>
+                <p className="text-white/70 text-sm">Quốc tế uy tín</p>
+              </div>
+              <div className="bg-chart-1 text-white p-6 rounded-lg text-center">
+                <Users className="h-12 w-12 mx-auto mb-4" />
+                <p className="font-heading font-bold text-xl">50+</p>
+                <p className="text-white/70 text-sm">Kỹ sư chuyên môn</p>
+              </div>
+              <div className="bg-primary text-white p-6 rounded-lg text-center">
+                <Wrench className="h-12 w-12 mx-auto mb-4" />
+                <p className="font-heading font-bold text-xl">24/7</p>
+                <p className="text-white/70 text-sm">Hỗ trợ kỹ thuật</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -200,20 +288,19 @@ export default function About() {
             
             <div className="space-y-12">
               {milestones.map((milestone, index) => (
-                <div key={index} className={`flex items-center gap-8 ${index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"}`}>
-                  <div className={`flex-1 ${index % 2 === 0 ? "md:text-right" : "md:text-left"}`}>
-                    <Card className="inline-block">
+                <div key={index} className={`flex flex-col md:flex-row items-center gap-8 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
+                  <div className={`flex-1 ${index % 2 === 0 ? 'md:text-right' : 'md:text-left'}`}>
+                    <Card>
                       <CardContent className="p-6">
-                        <span className="text-chart-1 font-heading font-bold text-2xl">{milestone.year}</span>
-                        <h3 className="font-heading font-bold text-lg mt-2">{milestone.title}</h3>
-                        <p className="text-muted-foreground mt-2">{milestone.description}</p>
+                        <h3 className="text-xl font-heading font-bold mb-2">{milestone.title}</h3>
+                        <p className="text-muted-foreground">{milestone.description}</p>
                       </CardContent>
                     </Card>
                   </div>
-                  <div className="hidden md:flex w-12 h-12 bg-primary rounded-full items-center justify-center z-10">
-                    <CheckCircle className="h-6 w-6 text-white" />
+                  <div className="relative z-10 w-16 h-16 bg-chart-1 rounded-full flex items-center justify-center text-white font-heading font-bold">
+                    {milestone.year}
                   </div>
-                  <div className="flex-1"></div>
+                  <div className="flex-1 hidden md:block"></div>
                 </div>
               ))}
             </div>
@@ -221,67 +308,50 @@ export default function About() {
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-20 bg-secondary/30">
+      {/* Contact Info */}
+      <section className="py-20 bg-primary text-white">
         <div className="container">
           <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1 bg-primary/10 text-primary text-sm font-bold uppercase tracking-wider rounded mb-4">
-              Tại Sao Chọn Chúng Tôi
+            <span className="inline-block px-4 py-1 bg-chart-1/20 text-chart-1 text-sm font-bold uppercase tracking-wider rounded mb-4">
+              Liên Hệ
             </span>
             <h2 className="text-3xl md:text-4xl font-heading font-bold uppercase">
-              Lý Do <span className="text-chart-1">Hợp Tác</span> Với Dreamweldtech
+              Kết Nối Với <span className="text-chart-1">Chúng Tôi</span>
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center">
-              <CardContent className="p-8">
-                <Factory className="h-12 w-12 text-chart-1 mx-auto mb-4" />
-                <h3 className="font-heading font-bold text-xl mb-3 uppercase">Sản Phẩm Chính Hãng</h3>
-                <p className="text-muted-foreground">
-                  100% sản phẩm chính hãng từ các thương hiệu uy tín như IPG, Raytools, với đầy đủ chứng nhận và bảo hành.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardContent className="p-8">
-                <Wrench className="h-12 w-12 text-chart-1 mx-auto mb-4" />
-                <h3 className="font-heading font-bold text-xl mb-3 uppercase">Hỗ Trợ Kỹ Thuật 24/7</h3>
-                <p className="text-muted-foreground">
-                  Đội ngũ kỹ sư giàu kinh nghiệm sẵn sàng hỗ trợ từ xa và tại chỗ, đảm bảo máy móc hoạt động ổn định.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardContent className="p-8">
-                <Globe className="h-12 w-12 text-chart-1 mx-auto mb-4" />
-                <h3 className="font-heading font-bold text-xl mb-3 uppercase">Mạng Lưới Rộng Khắp</h3>
-                <p className="text-muted-foreground">
-                  Hệ thống đại lý và trung tâm bảo hành trải dài từ Bắc vào Nam, phục vụ khách hàng nhanh chóng.
-                </p>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-chart-1 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Globe className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="font-heading font-bold mb-2">Email</h3>
+              <p className="text-white/70">{config.contactEmail}</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-chart-1 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="font-heading font-bold mb-2">Điện Thoại</h3>
+              <p className="text-white/70">{config.contactPhone}</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-chart-1 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Factory className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="font-heading font-bold mb-2">Địa Chỉ</h3>
+              <p className="text-white/70">{config.contactAddress}</p>
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-primary">
-        <div className="container text-center">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-white uppercase mb-6">
-            Sẵn Sàng <span className="text-chart-1">Hợp Tác</span>?
-          </h2>
-          <p className="text-white/80 mb-8 max-w-2xl mx-auto">
-            Liên hệ với chúng tôi ngay hôm nay để được tư vấn giải pháp công nghệ laser phù hợp nhất cho doanh nghiệp của bạn.
-          </p>
-          <Link href="/contact">
-            <Button size="lg" className="bg-chart-1 hover:bg-chart-1/90">
-              Liên Hệ Ngay
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
-          </Link>
+          <div className="text-center mt-12">
+            <Link href="/contact">
+              <Button size="lg" className="bg-chart-1 hover:bg-chart-1/90">
+                Liên Hệ Ngay
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
     </>

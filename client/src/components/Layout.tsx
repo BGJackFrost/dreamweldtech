@@ -2,30 +2,75 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Phone, Mail, MapPin, Facebook, Linkedin, Youtube, Search } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { SearchDialog } from "./SearchDialog";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LiveChat } from "./LiveChat";
 import { Chatbot } from "./Chatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
 import NewsletterForm from "./NewsletterForm";
+import { trpc } from "@/lib/trpc";
+
+interface MenuConfig {
+  home: boolean;
+  about: boolean;
+  products: boolean;
+  solutions: boolean;
+  portfolio: boolean;
+  partners: boolean;
+  news: boolean;
+  careers: boolean;
+  contact: boolean;
+  faq: boolean;
+}
+
+const defaultMenuConfig: MenuConfig = {
+  home: true,
+  about: true,
+  products: true,
+  solutions: true,
+  portfolio: true,
+  partners: true,
+  news: true,
+  careers: true,
+  contact: true,
+  faq: true,
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
 
-  const navItems = [
-    { label: t.nav.home, href: "/" },
-    { label: t.nav.about, href: "/about" },
-    { label: t.nav.products, href: "/products" },
-    { label: t.nav.solutions, href: "/solutions" },
-    { label: t.nav.portfolio, href: "/portfolio" },
-    { label: t.nav.partners, href: "/partners" },
-    { label: t.nav.news, href: "/news" },
-    { label: t.nav.careers, href: "/careers" },
-    { label: t.nav.contact, href: "/contact" },
+  // Fetch menu config from database
+  const { data: menuConfigStr } = trpc.settings.get.useQuery({ key: "menu_config" });
+  
+  const menuConfig = useMemo(() => {
+    if (menuConfigStr) {
+      try {
+        return { ...defaultMenuConfig, ...JSON.parse(menuConfigStr) };
+      } catch (e) {
+        return defaultMenuConfig;
+      }
+    }
+    return defaultMenuConfig;
+  }, [menuConfigStr]);
+
+  // All possible nav items
+  const allNavItems = [
+    { key: "home", label: t.nav.home, href: "/" },
+    { key: "about", label: t.nav.about, href: "/about" },
+    { key: "products", label: t.nav.products, href: "/products" },
+    { key: "solutions", label: t.nav.solutions, href: "/solutions" },
+    { key: "portfolio", label: t.nav.portfolio, href: "/portfolio" },
+    { key: "partners", label: t.nav.partners, href: "/partners" },
+    { key: "news", label: t.nav.news, href: "/news" },
+    { key: "careers", label: t.nav.careers, href: "/careers" },
+    { key: "contact", label: t.nav.contact, href: "/contact" },
   ];
+
+  // Filter nav items based on menu config
+  const navItems = allNavItems.filter(item => menuConfig[item.key as keyof MenuConfig]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans">
@@ -91,54 +136,50 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {/* Language Switcher */}
             <LanguageSwitcher />
             
-            <Link href="/contact">
-              <Button className="bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider rounded-none skew-x-[-10deg]">
-                <span className="skew-x-[10deg]">{t.nav.getQuote}</span>
-              </Button>
-            </Link>
+            {menuConfig.contact && (
+              <Link href="/contact">
+                <Button className="bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider rounded-none skew-x-[-10deg]">
+                  <span className="skew-x-[10deg]">{t.nav.getQuote}</span>
+                </Button>
+              </Link>
+            )}
           </nav>
 
-          {/* Mobile Menu Toggle */}
-          <div className="md:hidden flex items-center gap-2">
-            <SearchDialog 
-              trigger={
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Search className="h-4 w-4" />
-                </Button>
-              }
-            />
-            <LanguageSwitcher />
-            <button
-              className="p-2"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X /> : <Menu />}
-            </button>
-          </div>
+          {/* Mobile Menu Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="md:hidden"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
         </div>
 
-        {/* Mobile Nav */}
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t bg-background p-4 absolute w-full shadow-lg">
-            <nav className="flex flex-col gap-4">
+          <div className="md:hidden border-t bg-background">
+            <nav className="container py-4 flex flex-col gap-2">
               {navItems.map((item) => (
-                <Link 
-                  key={item.href} 
+                <Link
+                  key={item.href}
                   href={item.href}
                   className={cn(
-                    "text-base font-medium transition-colors hover:text-primary block py-2 border-b border-border/50",
-                    location === item.href ? "text-primary" : "text-muted-foreground"
+                    "py-2 px-4 text-sm font-medium transition-colors hover:bg-accent rounded-md uppercase tracking-wide",
+                    location === item.href ? "text-primary bg-accent" : "text-muted-foreground"
                   )}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
-              <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button className="w-full bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider rounded-none mt-4">
-                  {t.nav.getQuote}
-                </Button>
-              </Link>
+              {menuConfig.contact && (
+                <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button className="w-full mt-2 bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider">
+                    {t.nav.getQuote}
+                  </Button>
+                </Link>
+              )}
             </nav>
           </div>
         )}
@@ -149,86 +190,110 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Live Chat */}
-      <LiveChat />
-      
-      {/* AI Chatbot */}
-      <Chatbot />
-
       {/* Footer */}
-      <footer className="bg-primary text-primary-foreground pt-16 pb-8">
-        <div className="container grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-          <div className="space-y-4">
-            <h3 className="text-2xl font-heading font-bold uppercase tracking-wider text-chart-1">Dreamweldtech</h3>
-            <p className="text-primary-foreground/80 text-sm leading-relaxed">
-              {t.footer.description}
-            </p>
-            <div className="flex gap-4 pt-2">
-              <a href="#" className="bg-white/10 p-2 hover:bg-chart-1 hover:text-primary transition-all"><Facebook className="h-5 w-5" /></a>
-              <a href="#" className="bg-white/10 p-2 hover:bg-chart-1 hover:text-primary transition-all"><Linkedin className="h-5 w-5" /></a>
-              <a href="#" className="bg-white/10 p-2 hover:bg-chart-1 hover:text-primary transition-all"><Youtube className="h-5 w-5" /></a>
+      <footer className="bg-primary text-primary-foreground py-16">
+        <div className="container">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            {/* Company Info */}
+            <div className="space-y-4">
+              <Link href="/" className="flex items-center gap-2 font-heading font-bold text-2xl uppercase tracking-wider">
+                <div className="h-10 w-10 bg-chart-1 text-primary flex items-center justify-center rounded-sm">
+                  D
+                </div>
+                Dreamweldtech
+              </Link>
+              <p className="text-primary-foreground/80 text-sm leading-relaxed">
+                {t.footer.description}
+              </p>
+              <div className="flex gap-4 pt-2">
+                <a href="#" className="h-10 w-10 bg-primary-foreground/10 hover:bg-chart-1 flex items-center justify-center rounded-sm transition-colors">
+                  <Facebook className="h-5 w-5" />
+                </a>
+                <a href="#" className="h-10 w-10 bg-primary-foreground/10 hover:bg-chart-1 flex items-center justify-center rounded-sm transition-colors">
+                  <Linkedin className="h-5 w-5" />
+                </a>
+                <a href="#" className="h-10 w-10 bg-primary-foreground/10 hover:bg-chart-1 flex items-center justify-center rounded-sm transition-colors">
+                  <Youtube className="h-5 w-5" />
+                </a>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <h4 className="text-lg font-heading font-bold uppercase mb-6 border-l-4 border-chart-1 pl-3">{t.footer.products}</h4>
-            <ul className="space-y-3 text-sm text-primary-foreground/80">
-              <li><Link href="/products" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.footer.laserWelder}</Link></li>
-              <li><Link href="/products" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.footer.laserCutter}</Link></li>
-              <li><Link href="/products" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.footer.laserCleaner}</Link></li>
-              <li><Link href="/products" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.footer.automation}</Link></li>
-            </ul>
-          </div>
+            {/* Quick Links */}
+            <div>
+              <h3 className="font-heading font-bold text-lg mb-6 uppercase tracking-wider">{t.footer.quickLinks}</h3>
+              <ul className="space-y-3">
+                {menuConfig.about && (
+                  <li><Link href="/about" className="text-primary-foreground/80 hover:text-chart-1 transition-colors text-sm">{t.nav.about}</Link></li>
+                )}
+                {menuConfig.products && (
+                  <li><Link href="/products" className="text-primary-foreground/80 hover:text-chart-1 transition-colors text-sm">{t.nav.products}</Link></li>
+                )}
+                {menuConfig.solutions && (
+                  <li><Link href="/solutions" className="text-primary-foreground/80 hover:text-chart-1 transition-colors text-sm">{t.nav.solutions}</Link></li>
+                )}
+                {menuConfig.news && (
+                  <li><Link href="/news" className="text-primary-foreground/80 hover:text-chart-1 transition-colors text-sm">{t.nav.news}</Link></li>
+                )}
+                {menuConfig.careers && (
+                  <li><Link href="/careers" className="text-primary-foreground/80 hover:text-chart-1 transition-colors text-sm">{t.nav.careers}</Link></li>
+                )}
+              </ul>
+            </div>
 
-          <div>
-            <h4 className="text-lg font-heading font-bold uppercase mb-6 border-l-4 border-chart-1 pl-3">{t.footer.quickLinks}</h4>
-            <ul className="space-y-3 text-sm text-primary-foreground/80">
-              <li><Link href="/about" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.footer.aboutUs}</Link></li>
-              <li><Link href="/solutions" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.footer.industrySolutions}</Link></li>
-              <li><Link href="/news" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.footer.newsEvents}</Link></li>
-              <li><Link href="/contact" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.nav.contact}</Link></li>
-              <li><Link href="/faq" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>FAQ</Link></li>
-            </ul>
-          </div>
+            {/* Contact Info */}
+            <div>
+              <h3 className="font-heading font-bold text-lg mb-6 uppercase tracking-wider">{t.footer.contactInfo}</h3>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-chart-1 flex-shrink-0 mt-0.5" />
+                  <span className="text-primary-foreground/80 text-sm">123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Phone className="h-5 w-5 text-chart-1 flex-shrink-0" />
+                  <span className="text-primary-foreground/80 text-sm">+84 123 456 789</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Mail className="h-5 w-5 text-chart-1 flex-shrink-0" />
+                  <span className="text-primary-foreground/80 text-sm">contact@dreamweldtech.com</span>
+                </li>
+              </ul>
+            </div>
 
-          <div>
-            <h4 className="text-lg font-heading font-bold uppercase mb-6 border-l-4 border-chart-1 pl-3">{t.footer.contactInfo}</h4>
-            <ul className="space-y-4 text-sm text-primary-foreground/80">
-              <li className="flex gap-3 items-start">
-                <MapPin className="h-5 w-5 text-chart-1 shrink-0" />
-                <span>Khu Công Nghệ Cao, Quận 9, TP. Hồ Chí Minh, Việt Nam</span>
-              </li>
-              <li className="flex gap-3 items-center">
-                <Phone className="h-5 w-5 text-chart-1 shrink-0" />
-                <span>+84 123 456 789</span>
-              </li>
-              <li className="flex gap-3 items-center">
-                <Mail className="h-5 w-5 text-chart-1 shrink-0" />
-                <span>contact@dreamweldtech.com</span>
-              </li>
-            </ul>
             {/* Newsletter */}
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <h5 className="text-sm font-semibold mb-3">{t.newsletter.title}</h5>
-              <NewsletterForm variant="footer" source="footer" />
+            <div>
+              <h3 className="font-heading font-bold text-lg mb-6 uppercase tracking-wider">Newsletter</h3>
+              <p className="text-primary-foreground/80 text-sm mb-4">Đăng ký nhận tin tức và khuyến mãi mới nhất</p>
+              <NewsletterForm />
             </div>
           </div>
-        </div>
 
-        <div className="border-t border-white/10 pt-8 text-sm text-primary-foreground/60">
-          <div className="container flex flex-col md:flex-row justify-between items-center gap-4">
-            <p>&copy; {new Date().getFullYear()} Dreamweldtech. {t.footer.allRights}</p>
+          {/* Bottom Bar */}
+          <div className="mt-12 pt-8 border-t border-primary-foreground/20 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-primary-foreground/60 text-sm">
+              © 2024 Dreamweldtech. {t.footer.allRights}
+            </p>
             <div className="flex gap-6">
-              <Link href="/privacy-policy" className="hover:text-chart-1 transition-colors">
-                {t.footer.privacyPolicy || "Chính sách bảo mật"}
+              <Link href="/privacy-policy" className="text-primary-foreground/60 hover:text-chart-1 transition-colors text-sm">
+                {t.footer.privacyPolicy}
               </Link>
-              <Link href="/terms-of-service" className="hover:text-chart-1 transition-colors">
-                {t.footer.termsOfService || "Điều khoản dịch vụ"}
+              <Link href="/terms-of-service" className="text-primary-foreground/60 hover:text-chart-1 transition-colors text-sm">
+                {t.footer.termsOfService}
               </Link>
+              {menuConfig.faq && (
+                <Link href="/faq" className="text-primary-foreground/60 hover:text-chart-1 transition-colors text-sm">
+                  FAQ
+                </Link>
+              )}
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Live Chat Widget */}
+      <LiveChat />
+      
+      {/* AI Chatbot */}
+      <Chatbot />
     </div>
   );
 }

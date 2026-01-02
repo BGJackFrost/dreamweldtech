@@ -153,3 +153,11 @@
 ## Bug Fixes (Phase 19)
 - [x] Sửa lỗi SQL query DATE_FORMAT trong analyticsRouter
 - [x] Sửa lỗi SQL query DATE trong analyticsRouter
+
+## Tính năng mới (Phase 20)
+- [x] Tạo bảng site_settings trong database (đã có sẵn)
+- [x] Tạo API CRUD cho site settings (đã có sẵn)
+- [x] Thêm cấu hình hiển thị/ẩn menu trên trang chủ
+- [x] Thêm cấu hình nội dung trang Giới Thiệu
+- [x] Tạo trang Admin Settings để quản lý cấu hình
+- [x] Viết unit tests cho các tính năng mới (197 tests passed)
