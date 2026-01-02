@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ChevronLeft, ChevronRight, Play, X, ZoomIn, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -88,6 +89,9 @@ export function ProductGallery({ items, mainImage, productName }: ProductGallery
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl p-0">
+                  <VisuallyHidden>
+                    <DialogTitle>Video Player</DialogTitle>
+                  </VisuallyHidden>
                   <div className="aspect-video">
                     <iframe
                       src={currentItem.url}

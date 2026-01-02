@@ -66,3 +66,6 @@
 - [x] Upload CV cho form ứng tuyển (PDF/Word)
 - [x] Thông báo real-time cho admin (yêu cầu báo giá, đơn ứng tuyển, liên hệ)
 - [x] Trang Portfolio/Gallery (hình ảnh và video dự án)
+
+## Bug Fixes (Phase 7)
+- [x] Sửa lỗi DialogContent thiếu DialogTitle (accessibility)
