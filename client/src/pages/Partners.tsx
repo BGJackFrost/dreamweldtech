@@ -85,7 +85,67 @@ export default function Partners() {
 
   useEffect(() => {
     document.title = `${content.title} | Dreamweldtech`;
-  }, [content.title]);
+    
+    // SEO Meta tags
+    const metaDescription = document.querySelector('meta[name="description"]');
+    const description = language === "vi" 
+      ? "Dreamweldtech tự hào hợp tác với các doanh nghiệp hàng đầu như Toyota, Samsung, Vinfast, Honda. Xem nhận xét từ khách hàng và danh sách đối tác của chúng tôi."
+      : "Dreamweldtech proudly partners with leading enterprises like Toyota, Samsung, Vinfast, Honda. See testimonials and our partner list.";
+    if (metaDescription) {
+      metaDescription.setAttribute('content', description);
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = description;
+      document.head.appendChild(meta);
+    }
+    
+    // Open Graph tags
+    const setOGTag = (property: string, content: string) => {
+      let tag = document.querySelector(`meta[property="${property}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', property);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+    
+    setOGTag('og:title', `${content.title} | Dreamweldtech`);
+    setOGTag('og:description', description);
+    setOGTag('og:type', 'website');
+    setOGTag('og:url', window.location.href);
+    
+    // Schema.org structured data for Organization partners
+    const existingSchema = document.querySelector('script[type="application/ld+json"][data-page="partners"]');
+    if (existingSchema) existingSchema.remove();
+    
+    const schemaData = {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Dreamweldtech",
+      "url": window.location.origin,
+      "description": description,
+      "knowsAbout": ["Laser Welding", "Laser Cutting", "Laser Cleaning", "Industrial Automation"],
+      "areaServed": "Vietnam",
+      "hasCredential": partners?.filter(p => p.isFeatured === "true").map(p => ({
+        "@type": "EducationalOccupationalCredential",
+        "credentialCategory": "Partner",
+        "name": p.name
+      })) || []
+    };
+    
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-page', 'partners');
+    script.textContent = JSON.stringify(schemaData);
+    document.head.appendChild(script);
+    
+    return () => {
+      const schema = document.querySelector('script[type="application/ld+json"][data-page="partners"]');
+      if (schema) schema.remove();
+    };
+  }, [content.title, language, partners]);
 
   const filteredPartners = partners?.filter(
     (p) => selectedCategory === "all" || p.category === selectedCategory

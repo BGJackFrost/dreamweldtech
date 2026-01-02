@@ -25,10 +25,95 @@ export default function Careers() {
   const { data: jobs, isLoading } = trpc.jobs.listActive.useQuery();
 
   useEffect(() => {
-    document.title = language === "vi" 
+    const pageTitle = language === "vi" 
       ? "Tuyển Dụng | Dreamweldtech" 
       : "Careers | Dreamweldtech";
-  }, [language]);
+    document.title = pageTitle;
+    
+    // SEO Meta tags
+    const metaDescription = document.querySelector('meta[name="description"]');
+    const description = language === "vi" 
+      ? "Gia nhập Dreamweldtech - Công ty công nghệ laser hàng đầu Việt Nam. Xem các vị trí tuyển dụng: Kỹ sư cơ khí, Tự động hóa, Kinh doanh B2B và nhiều vị trí khác."
+      : "Join Dreamweldtech - Vietnam's leading laser technology company. View open positions: Mechanical Engineer, Automation, B2B Sales and more.";
+    if (metaDescription) {
+      metaDescription.setAttribute('content', description);
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = description;
+      document.head.appendChild(meta);
+    }
+    
+    // Open Graph tags
+    const setOGTag = (property: string, content: string) => {
+      let tag = document.querySelector(`meta[property="${property}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', property);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+    
+    setOGTag('og:title', pageTitle);
+    setOGTag('og:description', description);
+    setOGTag('og:type', 'website');
+    setOGTag('og:url', window.location.href);
+    
+    // Schema.org structured data for JobPosting
+    const existingSchema = document.querySelector('script[type="application/ld+json"][data-page="careers"]');
+    if (existingSchema) existingSchema.remove();
+    
+    if (jobs && jobs.length > 0) {
+      const schemaData = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": jobs.map((job, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "JobPosting",
+            "title": job.title,
+            "description": job.description?.substring(0, 200) || "",
+            "datePosted": job.createdAt,
+            "employmentType": job.type?.toUpperCase().replace("-", "_") || "FULL_TIME",
+            "hiringOrganization": {
+              "@type": "Organization",
+              "name": "Dreamweldtech",
+              "sameAs": window.location.origin
+            },
+            "jobLocation": {
+              "@type": "Place",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": job.location || "TP. Hồ Chí Minh",
+                "addressCountry": "VN"
+              }
+            },
+            "baseSalary": job.salary ? {
+              "@type": "MonetaryAmount",
+              "currency": "VND",
+              "value": {
+                "@type": "QuantitativeValue",
+                "value": job.salary
+              }
+            } : undefined
+          }
+        }))
+      };
+      
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute('data-page', 'careers');
+      script.textContent = JSON.stringify(schemaData);
+      document.head.appendChild(script);
+    }
+    
+    return () => {
+      const schema = document.querySelector('script[type="application/ld+json"][data-page="careers"]');
+      if (schema) schema.remove();
+    };
+  }, [language, jobs]);
 
   const benefits = [
     {

@@ -908,6 +908,38 @@ const usersRouter = router({
     }
     return { success: true, count: input.userIds.length };
   }),
+
+  // Create new user (admin only)
+  create: protectedProcedure.input(z.object({
+    name: z.string().min(1, "Tên không được để trống"),
+    email: z.string().email("Email không hợp lệ"),
+    role: z.enum(["user", "editor", "admin"]).default("user"),
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    
+    // Check if email already exists
+    const existingUser = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
+    if (existingUser[0]) {
+      throw new Error("Email đã tồn tại trong hệ thống");
+    }
+    
+    // Generate a unique openId for manually created users
+    const openId = `manual_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    
+    const result = await db.insert(users).values({
+      openId,
+      name: input.name,
+      email: input.email,
+      role: input.role,
+      loginMethod: "manual",
+    });
+    
+    return { success: true, id: result[0].insertId };
+  }),
 });
 
 // ============================================

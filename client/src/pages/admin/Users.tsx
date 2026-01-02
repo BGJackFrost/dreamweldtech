@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -27,6 +28,16 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   Users, 
   Shield, 
@@ -36,7 +47,10 @@ import {
   UserCog,
   Mail,
   Calendar,
-  Clock
+  Clock,
+  Plus,
+  Trash2,
+  Edit
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -51,6 +65,8 @@ export default function AdminUsers() {
   const { user: currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  
+  // Role change dialog
   const [selectedUser, setSelectedUser] = useState<{
     id: number;
     name: string | null;
@@ -58,13 +74,47 @@ export default function AdminUsers() {
     role: string;
   } | null>(null);
   const [newRole, setNewRole] = useState<string>("");
+  
+  // Create user dialog
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserRole, setNewUserRole] = useState<string>("user");
+  
+  // Delete confirmation
+  const [userToDelete, setUserToDelete] = useState<{
+    id: number;
+    name: string | null;
+  } | null>(null);
 
   const { data: users, refetch } = trpc.users.list.useQuery();
+  
   const updateRoleMutation = trpc.users.updateRole.useMutation({
     onSuccess: () => {
       toast.success("Đã cập nhật quyền người dùng");
       refetch();
       setSelectedUser(null);
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  
+  const createUserMutation = trpc.users.create.useMutation({
+    onSuccess: () => {
+      toast.success("Đã tạo người dùng mới");
+      refetch();
+      setIsCreateDialogOpen(false);
+      setNewUserName("");
+      setNewUserEmail("");
+      setNewUserRole("user");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  
+  const deleteUserMutation = trpc.users.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Đã xóa người dùng");
+      refetch();
+      setUserToDelete(null);
     },
     onError: (error) => toast.error(error.message),
   });
@@ -81,7 +131,6 @@ export default function AdminUsers() {
   const handleRoleChange = () => {
     if (!selectedUser || !newRole) return;
     
-    // Prevent changing own role
     if (selectedUser.id === currentUser?.id) {
       toast.error("Bạn không thể thay đổi quyền của chính mình");
       return;
@@ -91,6 +140,24 @@ export default function AdminUsers() {
       userId: selectedUser.id,
       role: newRole as "user" | "editor" | "admin",
     });
+  };
+  
+  const handleCreateUser = () => {
+    if (!newUserName.trim() || !newUserEmail.trim()) {
+      toast.error("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+    
+    createUserMutation.mutate({
+      name: newUserName.trim(),
+      email: newUserEmail.trim(),
+      role: newUserRole as "user" | "editor" | "admin",
+    });
+  };
+  
+  const handleDeleteUser = () => {
+    if (!userToDelete) return;
+    deleteUserMutation.mutate({ id: userToDelete.id });
   };
 
   const getRoleBadge = (role: string) => {
@@ -114,7 +181,6 @@ export default function AdminUsers() {
     });
   };
 
-  // Count users by role
   type UserType = NonNullable<typeof users>[0];
   const userCounts = {
     total: users?.length || 0,
@@ -125,11 +191,17 @@ export default function AdminUsers() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Quản Lý Người Dùng</h1>
-        <p className="text-muted-foreground">
-          Quản lý tài khoản và phân quyền cho người dùng hệ thống
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">Quản Lý Người Dùng</h1>
+          <p className="text-muted-foreground">
+            Quản lý tài khoản và phân quyền cho người dùng hệ thống
+          </p>
+        </div>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Thêm người dùng
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -326,18 +398,29 @@ export default function AdminUsers() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setNewRole(user.role);
-                      }}
-                      disabled={user.id === currentUser?.id}
-                    >
-                      <UserCog className="h-4 w-4 mr-2" />
-                      Phân quyền
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setNewRole(user.role);
+                        }}
+                        disabled={user.id === currentUser?.id}
+                      >
+                        <UserCog className="h-4 w-4 mr-1" />
+                        Phân quyền
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => setUserToDelete({ id: user.id, name: user.name })}
+                        disabled={user.id === currentUser?.id || user.role === "admin"}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -355,6 +438,73 @@ export default function AdminUsers() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Create User Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Thêm Người Dùng Mới</DialogTitle>
+            <DialogDescription>
+              Tạo tài khoản mới cho người dùng trong hệ thống
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Họ và tên</Label>
+              <Input
+                id="name"
+                placeholder="Nhập họ và tên"
+                value={newUserName}
+                onChange={(e) => setNewUserName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Nhập địa chỉ email"
+                value={newUserEmail}
+                onChange={(e) => setNewUserEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Quyền hạn</Label>
+              <Select value={newUserRole} onValueChange={setNewUserRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn quyền hạn" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLES.map((role) => (
+                    <SelectItem key={role.value} value={role.value}>
+                      <div className="flex items-center gap-2">
+                        <role.icon className="h-4 w-4" />
+                        {role.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {newUserRole && (
+                <p className="text-xs text-muted-foreground">
+                  {ROLES.find((r) => r.value === newUserRole)?.description}
+                </p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              Hủy
+            </Button>
+            <Button 
+              onClick={handleCreateUser}
+              disabled={createUserMutation.isPending}
+            >
+              {createUserMutation.isPending ? "Đang tạo..." : "Tạo người dùng"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Role Change Dialog */}
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
@@ -404,13 +554,35 @@ export default function AdminUsers() {
             </Button>
             <Button
               onClick={handleRoleChange}
-              disabled={!newRole || newRole === selectedUser?.role}
+              disabled={!newRole || newRole === selectedUser?.role || updateRoleMutation.isPending}
             >
-              Xác nhận
+              {updateRoleMutation.isPending ? "Đang cập nhật..." : "Xác nhận"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa người dùng</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa người dùng "{userToDelete?.name || "Chưa đặt tên"}"? 
+              Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUserMutation.isPending ? "Đang xóa..." : "Xóa"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

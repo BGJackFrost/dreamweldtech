@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import Layout from "@/components/Layout";
+// Layout is already provided by PublicRouter in App.tsx
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Accordion,
@@ -52,7 +52,7 @@ export default function FAQPage() {
   };
 
   return (
-    <Layout>
+    <>
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-to-br from-primary/10 via-background to-background overflow-hidden">
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
@@ -192,6 +192,6 @@ export default function FAQPage() {
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }

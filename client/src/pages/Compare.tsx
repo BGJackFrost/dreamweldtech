@@ -1,6 +1,6 @@
 import { useCompare } from "@/contexts/CompareContext";
 import { trpc } from "@/lib/trpc";
-import Layout from "@/components/Layout";
+// Layout is already provided by PublicRouter in App.tsx
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,7 +76,7 @@ export default function ComparePage() {
 
   if (compareList.length === 0) {
     return (
-      <Layout>
+      <>
         <div className="container py-20">
           <div className="max-w-md mx-auto text-center">
             <GitCompare className="h-16 w-16 mx-auto text-muted-foreground/30 mb-6" />
@@ -98,14 +98,14 @@ export default function ComparePage() {
             </Link>
           </div>
         </div>
-      </Layout>
+      </>
     );
   }
 
   const specKeys = getAllSpecKeys();
 
   return (
-    <Layout>
+    <>
       {/* Hero Section */}
       <section className="relative py-12 bg-gradient-to-br from-primary/10 via-background to-background">
         <div className="container">
@@ -373,6 +373,6 @@ export default function ComparePage() {
           </Card>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }

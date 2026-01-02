@@ -86,3 +86,10 @@
 ## Bug Fixes (Phase 10)
 - [x] Sửa lỗi chồng menu trên trang Đối tác
 - [x] Sửa lỗi chồng menu trên trang Tuyển dụng
+
+## Tính năng mới (Phase 11)
+- [x] Kiểm tra CRUD và phân quyền người dùng
+- [x] Rà soát và sửa Layout wrapper thừa trên các trang (FAQ, Compare)
+- [x] Thêm dữ liệu mẫu cho trang Careers (5 vị trí tuyển dụng)
+- [x] Tối ưu SEO cho trang Partners (meta tags, schema markup)
+- [x] Tối ưu SEO cho trang Careers (meta tags, schema markup)
