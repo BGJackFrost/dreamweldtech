@@ -161,3 +161,12 @@
 - [x] Thêm cấu hình nội dung trang Giới Thiệu
 - [x] Tạo trang Admin Settings để quản lý cấu hình
 - [x] Viết unit tests cho các tính năng mới (197 tests passed)
+
+## Tính năng mới (Phase 21)
+- [x] Thêm cấu hình trang chủ (hero section, slogan)
+- [x] Thêm cấu hình các section khác trên trang chủ (stats, CTA)
+- [x] Tạo bảng banners trong database
+- [x] Tạo trang Admin quản lý banner/slider
+- [x] Thêm cấu hình footer (thông tin liên hệ, địa chỉ)
+- [x] Thêm cấu hình link mạng xã hội trong footer
+- [x] Viết unit tests cho các tính năng mới (213 tests passed)

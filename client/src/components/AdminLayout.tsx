@@ -24,7 +24,8 @@ import {
   Image as ImageIcon,
   Handshake,
   Database,
-  Sliders
+  Sliders,
+  Images
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -53,6 +54,7 @@ const menuItems = [
   { href: "/admin/reports", icon: FileBarChart, label: "Báo Cáo" },
   { href: "/admin/backup", icon: Database, label: "Sao Lưu" },
   { href: "/admin/site-settings", icon: Sliders, label: "Cấu Hình Website" },
+  { href: "/admin/banners", icon: Images, label: "Banner/Slider" },
   { href: "/admin/settings", icon: Settings, label: "Cài Đặt" },
 ];
 

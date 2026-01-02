@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Phone, Mail, MapPin, Facebook, Linkedin, Youtube, Search } from "lucide-react";
+import { Menu, X, Phone, Mail, MapPin, Facebook, Linkedin, Youtube, Search, Twitter, Instagram } from "lucide-react";
 import { useState, useMemo } from "react";
 import { SearchDialog } from "./SearchDialog";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -24,6 +24,21 @@ interface MenuConfig {
   faq: boolean;
 }
 
+interface FooterConfig {
+  companyName: string;
+  description: string;
+  address: string;
+  phone: string;
+  email: string;
+  facebookUrl: string;
+  linkedinUrl: string;
+  youtubeUrl: string;
+  twitterUrl: string;
+  instagramUrl: string;
+  showNewsletter: boolean;
+  copyrightText: string;
+}
+
 const defaultMenuConfig: MenuConfig = {
   home: true,
   about: true,
@@ -37,6 +52,21 @@ const defaultMenuConfig: MenuConfig = {
   faq: true,
 };
 
+const defaultFooterConfig: FooterConfig = {
+  companyName: "Dreamweldtech",
+  description: "",
+  address: "123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh",
+  phone: "+84 123 456 789",
+  email: "contact@dreamweldtech.com",
+  facebookUrl: "",
+  linkedinUrl: "",
+  youtubeUrl: "",
+  twitterUrl: "",
+  instagramUrl: "",
+  showNewsletter: true,
+  copyrightText: "",
+};
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -44,6 +74,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   // Fetch menu config from database
   const { data: menuConfigStr } = trpc.settings.get.useQuery({ key: "menu_config" });
+  const { data: footerConfigStr } = trpc.settings.get.useQuery({ key: "footer_config" });
   
   const menuConfig = useMemo(() => {
     if (menuConfigStr) {
@@ -55,6 +86,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
     return defaultMenuConfig;
   }, [menuConfigStr]);
+
+  const footerConfig = useMemo(() => {
+    if (footerConfigStr) {
+      try {
+        return { ...defaultFooterConfig, ...JSON.parse(footerConfigStr) };
+      } catch (e) {
+        return defaultFooterConfig;
+      }
+    }
+    return defaultFooterConfig;
+  }, [footerConfigStr]);
 
   // All possible nav items
   const allNavItems = [
@@ -72,88 +114,85 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   // Filter nav items based on menu config
   const navItems = allNavItems.filter(item => menuConfig[item.key as keyof MenuConfig]);
 
+  // Social links
+  const socialLinks = [
+    { url: footerConfig.facebookUrl, icon: Facebook, label: "Facebook" },
+    { url: footerConfig.linkedinUrl, icon: Linkedin, label: "LinkedIn" },
+    { url: footerConfig.youtubeUrl, icon: Youtube, label: "YouTube" },
+    { url: footerConfig.twitterUrl, icon: Twitter, label: "Twitter" },
+    { url: footerConfig.instagramUrl, icon: Instagram, label: "Instagram" },
+  ].filter(link => link.url);
+
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans">
       {/* Top Bar */}
       <div className="bg-primary text-primary-foreground py-2 text-sm hidden md:block">
         <div className="container flex justify-between items-center">
           <div className="flex gap-6">
-            <div className="flex items-center gap-2">
+            <a href={`tel:${footerConfig.phone}`} className="flex items-center gap-2 hover:text-chart-1 transition-colors">
               <Phone className="h-4 w-4" />
-              <span>+84 123 456 789</span>
-            </div>
-            <div className="flex items-center gap-2">
+              {footerConfig.phone}
+            </a>
+            <a href={`mailto:${footerConfig.email}`} className="flex items-center gap-2 hover:text-chart-1 transition-colors">
               <Mail className="h-4 w-4" />
-              <span>contact@dreamweldtech.com</span>
-            </div>
+              {footerConfig.email}
+            </a>
           </div>
-          <div className="flex gap-4">
-            <a href="#" className="hover:text-chart-1 transition-colors"><Facebook className="h-4 w-4" /></a>
-            <a href="#" className="hover:text-chart-1 transition-colors"><Linkedin className="h-4 w-4" /></a>
-            <a href="#" className="hover:text-chart-1 transition-colors"><Youtube className="h-4 w-4" /></a>
+          <div className="flex items-center gap-4">
+            <LanguageSwitcher />
+            {socialLinks.slice(0, 3).map((link) => (
+              <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" className="hover:text-chart-1 transition-colors">
+                <link.icon className="h-4 w-4" />
+              </a>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-20 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-heading font-bold text-2xl text-primary uppercase tracking-wider">
-            <div className="h-10 w-10 bg-primary text-primary-foreground flex items-center justify-center rounded-sm">
+      {/* Main Header */}
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container flex items-center justify-between h-20">
+          <Link href="/" className="flex items-center gap-3 font-heading font-bold text-2xl uppercase tracking-wider">
+            <div className="h-12 w-12 bg-chart-1 text-primary flex items-center justify-center rounded-sm text-xl">
               D
             </div>
-            Dreamweldtech
+            <span className="hidden sm:inline">{footerConfig.companyName}</span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-6">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
-              <Link 
-                key={item.href} 
+              <Link
+                key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary uppercase tracking-wide relative group",
+                  "px-4 py-2 text-sm font-medium transition-colors hover:text-primary uppercase tracking-wide",
                   location === item.href ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 {item.label}
-                <span className={cn(
-                  "absolute -bottom-1 left-0 w-0 h-0.5 bg-chart-1 transition-all duration-300 group-hover:w-full",
-                  location === item.href ? "w-full" : ""
-                )} />
               </Link>
             ))}
-            
-            {/* Search Button */}
-            <SearchDialog 
-              trigger={
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Search className="h-4 w-4" />
-                </Button>
-              }
-            />
-            
-            {/* Language Switcher */}
-            <LanguageSwitcher />
-            
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <SearchDialog />
             {menuConfig.contact && (
-              <Link href="/contact">
-                <Button className="bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider rounded-none skew-x-[-10deg]">
-                  <span className="skew-x-[10deg]">{t.nav.getQuote}</span>
+              <Link href="/contact" className="hidden md:block">
+                <Button className="bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider">
+                  {t.nav.getQuote}
                 </Button>
               </Link>
             )}
-          </nav>
-
-          {/* Mobile Menu Button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -200,22 +239,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <div className="h-10 w-10 bg-chart-1 text-primary flex items-center justify-center rounded-sm">
                   D
                 </div>
-                Dreamweldtech
+                {footerConfig.companyName}
               </Link>
               <p className="text-primary-foreground/80 text-sm leading-relaxed">
-                {t.footer.description}
+                {footerConfig.description || t.footer.description}
               </p>
-              <div className="flex gap-4 pt-2">
-                <a href="#" className="h-10 w-10 bg-primary-foreground/10 hover:bg-chart-1 flex items-center justify-center rounded-sm transition-colors">
-                  <Facebook className="h-5 w-5" />
-                </a>
-                <a href="#" className="h-10 w-10 bg-primary-foreground/10 hover:bg-chart-1 flex items-center justify-center rounded-sm transition-colors">
-                  <Linkedin className="h-5 w-5" />
-                </a>
-                <a href="#" className="h-10 w-10 bg-primary-foreground/10 hover:bg-chart-1 flex items-center justify-center rounded-sm transition-colors">
-                  <Youtube className="h-5 w-5" />
-                </a>
-              </div>
+              {socialLinks.length > 0 && (
+                <div className="flex gap-4 pt-2">
+                  {socialLinks.map((link) => (
+                    <a 
+                      key={link.label}
+                      href={link.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="h-10 w-10 bg-primary-foreground/10 hover:bg-chart-1 flex items-center justify-center rounded-sm transition-colors"
+                      title={link.label}
+                    >
+                      <link.icon className="h-5 w-5" />
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Quick Links */}
@@ -246,31 +290,37 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-chart-1 flex-shrink-0 mt-0.5" />
-                  <span className="text-primary-foreground/80 text-sm">123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</span>
+                  <span className="text-primary-foreground/80 text-sm">{footerConfig.address}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-chart-1 flex-shrink-0" />
-                  <span className="text-primary-foreground/80 text-sm">+84 123 456 789</span>
+                  <a href={`tel:${footerConfig.phone}`} className="text-primary-foreground/80 hover:text-chart-1 transition-colors text-sm">
+                    {footerConfig.phone}
+                  </a>
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-chart-1 flex-shrink-0" />
-                  <span className="text-primary-foreground/80 text-sm">contact@dreamweldtech.com</span>
+                  <a href={`mailto:${footerConfig.email}`} className="text-primary-foreground/80 hover:text-chart-1 transition-colors text-sm">
+                    {footerConfig.email}
+                  </a>
                 </li>
               </ul>
             </div>
 
             {/* Newsletter */}
-            <div>
-              <h3 className="font-heading font-bold text-lg mb-6 uppercase tracking-wider">Newsletter</h3>
-              <p className="text-primary-foreground/80 text-sm mb-4">Đăng ký nhận tin tức và khuyến mãi mới nhất</p>
-              <NewsletterForm />
-            </div>
+            {footerConfig.showNewsletter && (
+              <div>
+                <h3 className="font-heading font-bold text-lg mb-6 uppercase tracking-wider">Newsletter</h3>
+                <p className="text-primary-foreground/80 text-sm mb-4">Đăng ký nhận tin tức và khuyến mãi mới nhất</p>
+                <NewsletterForm />
+              </div>
+            )}
           </div>
 
           {/* Bottom Bar */}
           <div className="mt-12 pt-8 border-t border-primary-foreground/20 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-primary-foreground/60 text-sm">
-              © 2024 Dreamweldtech. {t.footer.allRights}
+              {footerConfig.copyrightText || `© ${new Date().getFullYear()} ${footerConfig.companyName}. ${t.footer.allRights}`}
             </p>
             <div className="flex gap-6">
               <Link href="/privacy-policy" className="text-primary-foreground/60 hover:text-chart-1 transition-colors text-sm">

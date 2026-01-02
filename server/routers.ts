@@ -20,6 +20,7 @@ import {
   notifications,
   portfolioItems,
   partners,
+  banners,
   InsertProduct,
   InsertProductCategory,
   InsertNews,
@@ -33,7 +34,8 @@ import {
   InsertJobApplication,
   InsertNotification,
   InsertPortfolioItem,
-  InsertPartner
+  InsertPartner,
+  InsertBanner
 } from "../drizzle/schema";
 import { eq, desc, asc, and, sql } from "drizzle-orm";
 import { notifyNewJobApplication, notifyNewContactForm } from "./email";
@@ -1587,6 +1589,111 @@ const backupRouter = router({
 });
 
 // ============================================
+// BANNERS ROUTER
+// ============================================
+const bannersRouter = router({
+  list: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const now = new Date();
+    return db.select().from(banners)
+      .where(eq(banners.isActive, "true"))
+      .orderBy(asc(banners.sortOrder));
+  }),
+
+  getByPosition: publicProcedure.input(z.object({ position: z.enum(["hero", "promo", "sidebar", "footer"]) })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(banners)
+      .where(and(
+        eq(banners.isActive, "true"),
+        eq(banners.position, input.position)
+      ))
+      .orderBy(asc(banners.sortOrder));
+  }),
+
+  // Admin operations
+  listAll: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user?.role !== "admin" && ctx.user?.role !== "editor") {
+      throw new Error("Unauthorized");
+    }
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(banners).orderBy(desc(banners.createdAt));
+  }),
+
+  create: protectedProcedure.input(z.object({
+    title: z.string().min(1),
+    subtitle: z.string().optional(),
+    description: z.string().optional(),
+    image: z.string().min(1),
+    mobileImage: z.string().optional(),
+    link: z.string().optional(),
+    buttonText: z.string().optional(),
+    buttonLink: z.string().optional(),
+    position: z.enum(["hero", "promo", "sidebar", "footer"]).default("hero"),
+    sortOrder: z.number().optional().default(0),
+    isActive: z.enum(["true", "false"]).optional().default("true"),
+    startDate: z.date().optional(),
+    endDate: z.date().optional(),
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user?.role !== "admin" && ctx.user?.role !== "editor") {
+      throw new Error("Unauthorized");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const result = await db.insert(banners).values(input as InsertBanner);
+    return { id: Number(result[0].insertId) };
+  }),
+
+  update: protectedProcedure.input(z.object({
+    id: z.number(),
+    title: z.string().optional(),
+    subtitle: z.string().optional(),
+    description: z.string().optional(),
+    image: z.string().optional(),
+    mobileImage: z.string().optional(),
+    link: z.string().optional(),
+    buttonText: z.string().optional(),
+    buttonLink: z.string().optional(),
+    position: z.enum(["hero", "promo", "sidebar", "footer"]).optional(),
+    sortOrder: z.number().optional(),
+    isActive: z.enum(["true", "false"]).optional(),
+    startDate: z.date().optional().nullable(),
+    endDate: z.date().optional().nullable(),
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user?.role !== "admin" && ctx.user?.role !== "editor") {
+      throw new Error("Unauthorized");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const { id, ...data } = input;
+    await db.update(banners).set(data).where(eq(banners.id, id));
+    return { success: true };
+  }),
+
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(banners).where(eq(banners.id, input.id));
+    return { success: true };
+  }),
+
+  toggleActive: protectedProcedure.input(z.object({ id: z.number(), isActive: z.enum(["true", "false"]) })).mutation(async ({ ctx, input }) => {
+    if (ctx.user?.role !== "admin" && ctx.user?.role !== "editor") {
+      throw new Error("Unauthorized");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.update(banners).set({ isActive: input.isActive }).where(eq(banners.id, input.id));
+    return { success: true };
+  }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -1617,6 +1724,7 @@ export const appRouter = router({
   partners: partnersRouter,
   analytics: analyticsRouter,
   backup: backupRouter,
+  banners: bannersRouter,
 });
 
 // Export createNotification for use in other parts of the app

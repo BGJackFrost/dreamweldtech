@@ -340,3 +340,28 @@ export const partners = mysqlTable("partners", {
 
 export type Partner = typeof partners.$inferSelect;
 export type InsertPartner = typeof partners.$inferInsert;
+
+// ============================================
+// BANNERS / SLIDERS
+// ============================================
+export const banners = mysqlTable("banners", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  subtitle: text("subtitle"),
+  description: text("description"),
+  image: varchar("image", { length: 500 }).notNull(),
+  mobileImage: varchar("mobileImage", { length: 500 }),
+  link: varchar("link", { length: 500 }),
+  buttonText: varchar("buttonText", { length: 100 }),
+  buttonLink: varchar("buttonLink", { length: 500 }),
+  position: mysqlEnum("position", ["hero", "promo", "sidebar", "footer"]).default("hero").notNull(),
+  sortOrder: int("sortOrder").default(0),
+  isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
+  startDate: timestamp("startDate"),
+  endDate: timestamp("endDate"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Banner = typeof banners.$inferSelect;
+export type InsertBanner = typeof banners.$inferInsert;
