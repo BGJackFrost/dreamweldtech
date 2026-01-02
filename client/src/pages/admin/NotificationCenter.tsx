@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell, Trash2, CheckCircle, AlertCircle, Info, MessageSquare } from "lucide-react";
+import { Bell, Trash2, CheckCircle, AlertCircle, Info, MessageSquare, Loader2 } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 interface Notification {
   id: number;
@@ -27,49 +28,21 @@ export default function NotificationCenter() {
   });
 
   const [selectedNotifications, setSelectedNotifications] = useState<number[]>([]);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20 });
 
-  // Mock data - Replace with API call
-  const notifications: Notification[] = [
-    {
-      id: 1,
-      type: "contact",
-      title: "Liên hệ mới từ Công ty ABC",
-      message: "Có yêu cầu liên hệ mới từ contact@abc.com",
-      priority: "high",
-      isRead: false,
-      createdAt: new Date("2026-01-02T08:30:00"),
-      link: "/admin/contacts/123",
-    },
-    {
-      id: 2,
-      type: "application",
-      title: "Đơn ứng tuyển mới",
-      message: "Nguyễn Văn A đã ứng tuyển vị trí Engineer",
-      priority: "normal",
-      isRead: false,
-      createdAt: new Date("2026-01-02T07:45:00"),
-      link: "/admin/jobs/applications/456",
-    },
-    {
-      id: 3,
-      type: "newsletter",
-      title: "Người đăng ký mới",
-      message: "Có 5 người đăng ký newsletter mới",
-      priority: "low",
-      isRead: true,
-      createdAt: new Date("2026-01-02T06:20:00"),
-    },
-    {
-      id: 4,
-      type: "quote",
-      title: "Yêu cầu báo giá mới",
-      message: "Yêu cầu báo giá cho Máy Cắt Laser CNC",
-      priority: "urgent",
-      isRead: false,
-      createdAt: new Date("2026-01-02T05:10:00"),
-      link: "/admin/contacts/789",
-    },
-  ];
+  // Fetch notifications from API
+  const { data: notifications, isLoading, error, refetch } = trpc.notificationCenter.list.useQuery({
+    limit: pagination.limit,
+    offset: (pagination.page - 1) * pagination.limit,
+  });
+
+  // Fetch unread count
+  const { data: unreadCount } = trpc.notificationCenter.unreadCount.useQuery();
+
+  // Mark as read mutation
+  const markAsReadMutation = trpc.notificationCenter.markAsRead.useMutation({
+    onSuccess: () => refetch(),
+  });
 
   const getTypeIcon = (type: string) => {
     const icons: Record<string, React.ReactNode> = {
@@ -114,7 +87,7 @@ export default function NotificationCenter() {
   };
 
   const handleMarkAsRead = (id: number) => {
-    console.log("Mark as read:", id);
+    markAsReadMutation.mutate({ id });
   };
 
   const handleDelete = (id: number) => {
@@ -126,14 +99,22 @@ export default function NotificationCenter() {
   };
 
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedNotifications(notifications.map((n) => n.id));
+    if (checked && notifications) {
+      setSelectedNotifications(notifications.map((n: any) => n.id));
     } else {
       setSelectedNotifications([]);
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  // Filter notifications based on filters (client-side)
+  const filteredNotifications = (notifications || []).filter((n: any) => {
+    if (filters.type !== "all" && n.type !== filters.type) return false;
+    if (filters.priority !== "all" && n.priority !== filters.priority) return false;
+    if (filters.readStatus === "unread" && n.isRead) return false;
+    if (filters.readStatus === "read" && !n.isRead) return false;
+    if (filters.searchQuery && !n.title?.toLowerCase().includes(filters.searchQuery.toLowerCase())) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -145,9 +126,9 @@ export default function NotificationCenter() {
           </h1>
           <p className="text-gray-600 mt-2">Quản lý tất cả thông báo từ hệ thống</p>
         </div>
-        {unreadCount > 0 && (
+        {unreadCount && (unreadCount as number) > 0 && (
           <div className="text-right">
-            <div className="text-4xl font-bold text-cyan-500">{unreadCount}</div>
+            <div className="text-4xl font-bold text-cyan-500">{unreadCount as number}</div>
             <p className="text-gray-600">Thông báo chưa đọc</p>
           </div>
         )}
@@ -230,76 +211,127 @@ export default function NotificationCenter() {
       <Card>
         <CardHeader>
           <CardTitle>Danh sách thông báo</CardTitle>
-          <CardDescription>Tổng cộng {notifications.length} thông báo</CardDescription>
+          <CardDescription>Tổng cộng {filteredNotifications.length} thông báo</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {/* Select All */}
-            <div className="flex items-center gap-2 pb-4 border-b">
-              <Checkbox
-                checked={selectedNotifications.length === notifications.length}
-                onCheckedChange={handleSelectAll}
-              />
-              <span className="text-sm text-gray-600">Chọn tất cả</span>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-muted-foreground">Đang tải...</span>
             </div>
-
-            {/* Notification Items */}
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
-                  notification.isRead ? "bg-gray-50" : "bg-cyan-50 border-cyan-200"
-                }`}
-              >
+          ) : error ? (
+            <div className="text-center py-8 text-red-600">
+              <p>Lỗi khi tải dữ liệu: {error.message}</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Select All */}
+              <div className="flex items-center gap-2 pb-4 border-b">
                 <Checkbox
-                  checked={selectedNotifications.includes(notification.id)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setSelectedNotifications([...selectedNotifications, notification.id]);
-                    } else {
-                      setSelectedNotifications(selectedNotifications.filter((id) => id !== notification.id));
-                    }
-                  }}
+                  checked={selectedNotifications.length === filteredNotifications.length && filteredNotifications.length > 0}
+                  onCheckedChange={handleSelectAll}
                 />
+                <span className="text-sm text-gray-600">Chọn tất cả</span>
+              </div>
 
-                <div className="flex-1">
-                  <div className="flex items-start justify-between gap-4">
+              {/* Notification Items */}
+              {filteredNotifications.length > 0 ? (
+                filteredNotifications.map((notification: any) => (
+                  <div
+                    key={notification.id}
+                    className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
+                      notification.isRead ? "bg-gray-50" : "bg-cyan-50 border-cyan-200"
+                    }`}
+                  >
+                    <Checkbox
+                      checked={selectedNotifications.includes(notification.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedNotifications([...selectedNotifications, notification.id]);
+                        } else {
+                          setSelectedNotifications(selectedNotifications.filter((id) => id !== notification.id));
+                        }
+                      }}
+                    />
+
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        {getTypeIcon(notification.type)}
-                        <h3 className={`font-semibold ${notification.isRead ? "text-gray-600" : "text-gray-900"}`}>
-                          {notification.title}
-                        </h3>
-                        <Badge variant={getTypeBadge(notification.type)}>{notification.type}</Badge>
-                        <Badge variant={getPriorityBadge(notification.priority)}>
-                          {getPriorityLabel(notification.priority)}
-                        </Badge>
-                        {!notification.isRead && <Badge className="bg-cyan-500">Mới</Badge>}
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            {getTypeIcon(notification.type)}
+                            <h3 className={`font-semibold ${notification.isRead ? "text-gray-600" : "text-gray-900"}`}>
+                              {notification.title}
+                            </h3>
+                            <Badge variant={getTypeBadge(notification.type)}>{notification.type}</Badge>
+                            <Badge variant={getPriorityBadge(notification.priority)}>
+                              {getPriorityLabel(notification.priority)}
+                            </Badge>
+                            {!notification.isRead && <Badge className="bg-cyan-500">Mới</Badge>}
+                          </div>
+                          <p className="text-sm text-gray-600">{notification.message}</p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(notification.createdAt).toLocaleString("vi-VN")}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-600">{notification.message}</p>
-                      <p className="text-xs text-gray-500 mt-2">{notification.createdAt.toLocaleString("vi-VN")}</p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {notification.link && (
+                        <Button size="sm" variant="outline">
+                          Xem chi tiết
+                        </Button>
+                      )}
+                      {!notification.isRead && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleMarkAsRead(notification.id)}
+                          disabled={markAsReadMutation.isPending}
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Button size="sm" variant="ghost" onClick={() => handleDelete(notification.id)}>
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  Không có thông báo
                 </div>
+              )}
+            </div>
+          )}
 
-                <div className="flex gap-2">
-                  {notification.link && (
-                    <Button size="sm" variant="outline">
-                      Xem chi tiết
-                    </Button>
-                  )}
-                  {!notification.isRead && (
-                    <Button size="sm" variant="ghost" onClick={() => handleMarkAsRead(notification.id)}>
-                      <CheckCircle className="w-4 h-4" />
-                    </Button>
-                  )}
-                  <Button size="sm" variant="ghost" onClick={() => handleDelete(notification.id)}>
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
-                </div>
+          {/* Pagination */}
+          {filteredNotifications.length > 0 && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Trang {pagination.page} • {filteredNotifications.length} kết quả
               </div>
-            ))}
-          </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPagination({ ...pagination, page: Math.max(1, pagination.page - 1) })}
+                  disabled={pagination.page === 1}
+                >
+                  Trước
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+                  disabled={filteredNotifications.length < pagination.limit}
+                >
+                  Tiếp
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

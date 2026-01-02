@@ -6,16 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Shield } from "lucide-react";
-
-interface Role {
-  id: number;
-  name: string;
-  description: string;
-  permissions: string[];
-  isSystem: boolean;
-  userCount: number;
-}
+import { Plus, Edit, Trash2, Shield, Loader2 } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 interface Permission {
   id: string;
@@ -25,46 +17,11 @@ interface Permission {
 }
 
 export default function PermissionMatrix() {
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [selectedRole, setSelectedRole] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Mock data - Replace with API call
-  const roles: Role[] = [
-    {
-      id: 1,
-      name: "Super Admin",
-      description: "Quyền truy cập toàn bộ hệ thống",
-      permissions: ["all"],
-      isSystem: true,
-      userCount: 1,
-    },
-    {
-      id: 2,
-      name: "Editor",
-      description: "Có thể tạo, chỉnh sửa nội dung",
-      permissions: [
-        "products.view",
-        "products.create",
-        "products.edit",
-        "news.view",
-        "news.create",
-        "news.edit",
-        "banners.view",
-        "banners.create",
-        "banners.edit",
-      ],
-      isSystem: false,
-      userCount: 3,
-    },
-    {
-      id: 3,
-      name: "Viewer",
-      description: "Chỉ có thể xem nội dung",
-      permissions: ["products.view", "news.view", "banners.view", "analytics.view"],
-      isSystem: false,
-      userCount: 2,
-    },
-  ];
+  // Fetch roles from API
+  const { data: roles, isLoading, error } = trpc.adminRoles.list.useQuery();
 
   const permissions: Permission[] = [
     // Products
@@ -102,9 +59,10 @@ export default function PermissionMatrix() {
 
   const handlePermissionToggle = (permissionId: string) => {
     if (selectedRole) {
-      const newPermissions = selectedRole.permissions.includes(permissionId)
-        ? selectedRole.permissions.filter((p) => p !== permissionId)
-        : [...selectedRole.permissions, permissionId];
+      const permissions = selectedRole.permissions || [];
+      const newPermissions = permissions.includes(permissionId)
+        ? permissions.filter((p: string) => p !== permissionId)
+        : [...permissions, permissionId];
       setSelectedRole({ ...selectedRole, permissions: newPermissions });
     }
   };
@@ -113,6 +71,23 @@ export default function PermissionMatrix() {
     console.log("Saving role:", selectedRole);
     setIsDialogOpen(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Đang tải...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-600">
+        <p>Lỗi khi tải dữ liệu: {error.message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -163,56 +138,64 @@ export default function PermissionMatrix() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {roles.map((role) => (
-                  <TableRow key={role.id}>
-                    <TableCell className="font-semibold">{role.name}</TableCell>
-                    <TableCell className="text-sm text-gray-600">{role.description}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{role.userCount} người dùng</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1 flex-wrap">
-                        {role.permissions.length > 3 ? (
-                          <>
-                            {role.permissions.slice(0, 3).map((p) => (
+                {roles && roles.length > 0 ? (
+                  roles.map((role: any) => (
+                    <TableRow key={role.id}>
+                      <TableCell className="font-semibold">{role.name}</TableCell>
+                      <TableCell className="text-sm text-gray-600">{role.description}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{role.userCount || 0} người dùng</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 flex-wrap">
+                          {role.permissions && role.permissions.length > 3 ? (
+                            <>
+                              {role.permissions.slice(0, 3).map((p: string) => (
+                                <Badge key={p} variant="secondary" className="text-xs">
+                                  {p}
+                                </Badge>
+                              ))}
+                              <Badge variant="outline" className="text-xs">
+                                +{role.permissions.length - 3}
+                              </Badge>
+                            </>
+                          ) : (
+                            role.permissions?.map((p: string) => (
                               <Badge key={p} variant="secondary" className="text-xs">
                                 {p}
                               </Badge>
-                            ))}
-                            <Badge variant="outline" className="text-xs">
-                              +{role.permissions.length - 3}
-                            </Badge>
-                          </>
-                        ) : (
-                          role.permissions.map((p) => (
-                            <Badge key={p} variant="secondary" className="text-xs">
-                              {p}
-                            </Badge>
-                          ))
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedRole(role);
-                            setIsDialogOpen(true);
-                          }}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        {!role.isSystem && (
-                          <Button size="sm" variant="outline">
-                            <Trash2 className="w-4 h-4 text-red-500" />
+                            ))
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedRole(role);
+                              setIsDialogOpen(true);
+                            }}
+                          >
+                            <Edit className="w-4 h-4" />
                           </Button>
-                        )}
-                      </div>
+                          {role.name !== "Super Admin" && (
+                            <Button size="sm" variant="outline">
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      Không có role nào
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
@@ -237,7 +220,7 @@ export default function PermissionMatrix() {
                       <div key={permission.id} className="flex items-start gap-3 p-3 rounded-lg border hover:bg-gray-50">
                         <Checkbox
                           id={permission.id}
-                          checked={selectedRole.permissions.includes(permission.id)}
+                          checked={(selectedRole.permissions || []).includes(permission.id)}
                           onCheckedChange={() => handlePermissionToggle(permission.id)}
                         />
                         <div className="flex-1">

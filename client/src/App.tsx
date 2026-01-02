@@ -61,6 +61,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import { GoogleAnalyticsProvider } from "./components/GoogleAnalytics";
 import { AdminThemeProvider } from "./components/AdminThemeProvider";
+import { NotificationProvider } from "./components/NotificationProvider";
 
 function PublicRouter() {
   return (
@@ -153,11 +154,13 @@ function App() {
         <LanguageProvider>
           <CompareProvider>
             <GoogleAnalyticsProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Router />
-                <CompareBar />
-              </TooltipProvider>
+              <NotificationProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Router />
+                  <CompareBar />
+                </TooltipProvider>
+              </NotificationProvider>
             </GoogleAnalyticsProvider>
           </CompareProvider>
         </LanguageProvider>

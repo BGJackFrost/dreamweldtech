@@ -235,3 +235,14 @@
 - [x] Tạo Permission Matrix UI (manage roles, assign permissions) - PermissionMatrix.tsx
 - [x] Thêm 3 routes và menu items vào AdminLayout
 - [x] Tất cả 239 unit tests passed
+
+## Tính năng mới (Phase 32)
+- [x] Integrate Real API Endpoints cho 3 pages (activityLog.list, notificationCenter.list, adminRoles.list)
+- [x] Thêm pagination support cho API calls
+- [x] Thêm error handling & loading states (Loader2, error messages)
+- [x] ActivityLog.tsx - filter, search, export CSV, pagination
+- [x] NotificationCenter.tsx - filter, search, mark as read, bulk delete
+- [x] PermissionMatrix.tsx - roles list, permission matrix
+- [x] Add WebSocket Real-time Notifications (useWebSocket hook, NotificationProvider)
+- [x] Implement Permission-based Route Guards (ProtectedRoute component)
+- [x] Tất cả 239 unit tests passed
