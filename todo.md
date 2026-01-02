@@ -102,3 +102,11 @@
 - [x] Tăng cường bảo mật: rate limiting, input sanitization (đã có sẵn)
 - [x] Tăng cường bảo mật: CSRF, XSS, honeypot, brute force, file validation
 - [x] Viết unit tests cho các tính năng mới (85 tests passed)
+
+## Tính năng mới (Phase 13)
+- [x] Thiết lập email notification cho đơn ứng tuyển mới
+- [x] Thiết lập email notification cho liên hệ từ khách hàng
+- [x] Tích hợp Google Analytics tracking (cần cấu hình VITE_GA_MEASUREMENT_ID)
+- [x] Tạo trang Privacy Policy
+- [x] Tạo trang Terms of Service
+- [x] Viết unit tests cho các tính năng mới (93 tests passed)

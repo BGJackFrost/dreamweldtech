@@ -36,6 +36,7 @@ import {
   InsertPartner
 } from "../drizzle/schema";
 import { eq, desc, asc, and, sql } from "drizzle-orm";
+import { notifyNewJobApplication, notifyNewContactForm } from "./email";
 
 // ============================================
 // PRODUCT CATEGORIES ROUTER
@@ -354,6 +355,16 @@ const contactsRouter = router({
       message: input.subject || input.message?.substring(0, 100),
       link: "/admin/contacts",
     } as InsertNotification);
+    
+    // Send email notification to admin
+    await notifyNewContactForm({
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      company: input.company,
+      subject: input.subject,
+      message: input.message || "",
+    });
     
     return { success: true, message: "Yêu cầu của bạn đã được gửi thành công!" };
   }),
@@ -1033,13 +1044,27 @@ const jobApplicationsRouter = router({
     if (!db) throw new Error("Database not available");
     await db.insert(jobApplications).values(input as InsertJobApplication);
     
-    // Create notification for admin
+    // Get job title for notification
+    const job = await db.select({ title: jobs.title }).from(jobs).where(eq(jobs.id, input.jobId)).limit(1);
+    const jobTitle = job[0]?.title || "Vị trí tuyển dụng";
+    
+    // Create notification and send email
     await db.insert(notifications).values({
       type: "application",
       title: `Đơn ứng tuyển mới từ ${input.name}`,
       message: `Email: ${input.email}`,
       link: "/admin/applications",
     } as InsertNotification);
+    
+    // Send email notification to admin
+    await notifyNewJobApplication({
+      applicantName: input.name,
+      applicantEmail: input.email,
+      applicantPhone: input.phone,
+      jobTitle: jobTitle,
+      coverLetter: input.coverLetter,
+      cvUrl: input.resumeUrl,
+    });
     
     return { success: true, message: "Đơn ứng tuyển đã được gửi thành công!" };
   }),

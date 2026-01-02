@@ -48,6 +48,9 @@ import Careers from "./pages/Careers";
 import JobDetail from "./pages/JobDetail";
 import Portfolio from "./pages/Portfolio";
 import Partners from "./pages/Partners";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import { GoogleAnalyticsProvider } from "./components/GoogleAnalytics";
 
 function PublicRouter() {
   return (
@@ -69,6 +72,8 @@ function PublicRouter() {
         <Route path="/careers/:slug" component={JobDetail} />
         <Route path="/portfolio" component={Portfolio} />
         <Route path="/partners" component={Partners} />
+        <Route path="/privacy-policy" component={PrivacyPolicy} />
+        <Route path="/terms-of-service" component={TermsOfService} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
@@ -126,11 +131,13 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <LanguageProvider>
           <CompareProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-              <CompareBar />
-            </TooltipProvider>
+            <GoogleAnalyticsProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Router />
+                <CompareBar />
+              </TooltipProvider>
+            </GoogleAnalyticsProvider>
           </CompareProvider>
         </LanguageProvider>
       </ThemeProvider>

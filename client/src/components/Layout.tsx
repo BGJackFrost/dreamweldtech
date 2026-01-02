@@ -215,9 +215,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-8 text-center text-sm text-primary-foreground/60">
-          <div className="container">
+        <div className="border-t border-white/10 pt-8 text-sm text-primary-foreground/60">
+          <div className="container flex flex-col md:flex-row justify-between items-center gap-4">
             <p>&copy; {new Date().getFullYear()} Dreamweldtech. {t.footer.allRights}</p>
+            <div className="flex gap-6">
+              <Link href="/privacy-policy" className="hover:text-chart-1 transition-colors">
+                {t.footer.privacyPolicy || "Chính sách bảo mật"}
+              </Link>
+              <Link href="/terms-of-service" className="hover:text-chart-1 transition-colors">
+                {t.footer.termsOfService || "Điều khoản dịch vụ"}
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
