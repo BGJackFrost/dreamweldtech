@@ -7,6 +7,18 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { storagePut } from "../storage";
+import multer from "multer";
+import type { Request, Response } from "express";
+
+interface MulterRequest extends Request {
+  file?: Express.Multer.File;
+}
+
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -35,6 +47,26 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+
+  // File upload endpoint
+  app.post("/api/upload", upload.single("file"), async (req: MulterRequest, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const file = req.file;
+      const timestamp = Date.now();
+      const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, "_");
+      const key = `uploads/cv/${timestamp}-${safeName}`;
+
+      const result = await storagePut(key, file.buffer, file.mimetype);
+      res.json({ url: result.url, key: result.key });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ error: "Upload failed" });
+    }
+  });
   // tRPC API
   app.use(
     "/api/trpc",

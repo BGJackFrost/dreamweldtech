@@ -17,6 +17,8 @@ import {
   users,
   jobs,
   jobApplications,
+  notifications,
+  portfolioItems,
   InsertProduct,
   InsertProductCategory,
   InsertNews,
@@ -27,7 +29,9 @@ import {
   InsertHomePageSection,
   InsertCaseStudy,
   InsertJob,
-  InsertJobApplication
+  InsertJobApplication,
+  InsertNotification,
+  InsertPortfolioItem
 } from "../drizzle/schema";
 import { eq, desc, asc, and, sql } from "drizzle-orm";
 
@@ -336,6 +340,19 @@ const contactsRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.insert(contactRequests).values(input as InsertContactRequest);
+    
+    // Create notification for admin
+    const notifType = input.requestType === "quote" ? "quote" : "contact";
+    const notifTitle = input.requestType === "quote" 
+      ? `Yêu cầu báo giá mới từ ${input.name}`
+      : `Liên hệ mới từ ${input.name}`;
+    await db.insert(notifications).values({
+      type: notifType,
+      title: notifTitle,
+      message: input.subject || input.message?.substring(0, 100),
+      link: "/admin/contacts",
+    } as InsertNotification);
+    
     return { success: true, message: "Yêu cầu của bạn đã được gửi thành công!" };
   }),
 
@@ -901,6 +918,15 @@ const jobApplicationsRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.insert(jobApplications).values(input as InsertJobApplication);
+    
+    // Create notification for admin
+    await db.insert(notifications).values({
+      type: "application",
+      title: `Đơn ứng tuyển mới từ ${input.name}`,
+      message: `Email: ${input.email}`,
+      link: "/admin/applications",
+    } as InsertNotification);
+    
     return { success: true, message: "Đơn ứng tuyển đã được gửi thành công!" };
   }),
 
@@ -959,6 +985,148 @@ const jobApplicationsRouter = router({
 });
 
 // ============================================
+// NOTIFICATIONS ROUTER
+// ============================================
+const notificationsRouter = router({
+  list: protectedProcedure.input(z.object({
+    unreadOnly: z.boolean().optional(),
+  }).optional()).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    
+    if (input?.unreadOnly) {
+      return db.select().from(notifications).where(eq(notifications.isRead, "false")).orderBy(desc(notifications.createdAt)).limit(50);
+    }
+    return db.select().from(notifications).orderBy(desc(notifications.createdAt)).limit(100);
+  }),
+
+  unreadCount: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return 0;
+    const result = await db.select().from(notifications).where(eq(notifications.isRead, "false"));
+    return result.length;
+  }),
+
+  markAsRead: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.update(notifications).set({ isRead: "true" }).where(eq(notifications.id, input.id));
+    return { success: true };
+  }),
+
+  markAllAsRead: protectedProcedure.mutation(async () => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.update(notifications).set({ isRead: "true" }).where(eq(notifications.isRead, "false"));
+    return { success: true };
+  }),
+
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(notifications).where(eq(notifications.id, input.id));
+    return { success: true };
+  }),
+});
+
+// Helper function to create notification
+async function createNotification(type: "contact" | "quote" | "application" | "newsletter" | "system", title: string, message?: string, link?: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(notifications).values({ type, title, message, link } as InsertNotification);
+}
+
+// ============================================
+// PORTFOLIO ROUTER
+// ============================================
+const portfolioRouter = router({
+  list: publicProcedure.input(z.object({
+    category: z.string().optional(),
+    featured: z.boolean().optional(),
+  }).optional()).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    
+    let results = await db.select().from(portfolioItems).where(eq(portfolioItems.isActive, "true")).orderBy(asc(portfolioItems.sortOrder));
+    
+    if (input?.category) {
+      results = results.filter(p => p.category === input.category);
+    }
+    if (input?.featured) {
+      results = results.filter(p => p.isFeatured === "true");
+    }
+    
+    return results;
+  }),
+
+  getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return null;
+    const result = await db.select().from(portfolioItems).where(eq(portfolioItems.id, input.id)).limit(1);
+    return result[0] || null;
+  }),
+
+  // Admin operations
+  listAll: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(portfolioItems).orderBy(asc(portfolioItems.sortOrder));
+  }),
+
+  create: protectedProcedure.input(z.object({
+    title: z.string(),
+    titleEn: z.string().optional(),
+    description: z.string().optional(),
+    descriptionEn: z.string().optional(),
+    category: z.string().optional(),
+    client: z.string().optional(),
+    location: z.string().optional(),
+    completedDate: z.string().optional(),
+    images: z.string().optional(),
+    videoUrl: z.string().optional(),
+    tags: z.string().optional(),
+    isFeatured: z.enum(["true", "false"]).optional(),
+    sortOrder: z.number().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.insert(portfolioItems).values(input as InsertPortfolioItem);
+    return { success: true };
+  }),
+
+  update: protectedProcedure.input(z.object({
+    id: z.number(),
+    title: z.string().optional(),
+    titleEn: z.string().optional(),
+    description: z.string().optional(),
+    descriptionEn: z.string().optional(),
+    category: z.string().optional(),
+    client: z.string().optional(),
+    location: z.string().optional(),
+    completedDate: z.string().optional(),
+    images: z.string().optional(),
+    videoUrl: z.string().optional(),
+    tags: z.string().optional(),
+    isFeatured: z.enum(["true", "false"]).optional(),
+    isActive: z.enum(["true", "false"]).optional(),
+    sortOrder: z.number().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const { id, ...data } = input;
+    await db.update(portfolioItems).set(data).where(eq(portfolioItems.id, id));
+    return { success: true };
+  }),
+
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(portfolioItems).where(eq(portfolioItems.id, input.id));
+    return { success: true };
+  }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -984,6 +1152,11 @@ export const appRouter = router({
   users: usersRouter,
   jobs: jobsRouter,
   jobApplications: jobApplicationsRouter,
+  notifications: notificationsRouter,
+  portfolio: portfolioRouter,
 });
+
+// Export createNotification for use in other parts of the app
+export { createNotification };
 
 export type AppRouter = typeof appRouter;

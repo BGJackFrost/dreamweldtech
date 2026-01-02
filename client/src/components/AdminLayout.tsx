@@ -20,10 +20,12 @@ import {
   Send,
   FileBarChart,
   Mail,
-  Briefcase
+  Briefcase,
+  Image as ImageIcon
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -37,6 +39,7 @@ const menuItems = [
   { href: "/admin/news", icon: Newspaper, label: "Tin Tức" },
   { href: "/admin/faq", icon: HelpCircle, label: "FAQ" },
   { href: "/admin/case-studies", icon: Award, label: "Case Studies" },
+  { href: "/admin/portfolio", icon: ImageIcon, label: "Portfolio" },
   { href: "/admin/newsletter", icon: Send, label: "Newsletter" },
   { href: "/admin/email-campaign", icon: Mail, label: "Email Marketing" },
   { href: "/admin/contacts", icon: MessageSquare, label: "Liên Hệ" },
@@ -187,6 +190,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main Content */}
       <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
+        {/* Desktop Header with Notifications */}
+        <div className="hidden lg:flex h-16 items-center justify-end px-8 border-b bg-background">
+          <NotificationBell />
+        </div>
         <div className="p-6 lg:p-8">
           {children}
         </div>

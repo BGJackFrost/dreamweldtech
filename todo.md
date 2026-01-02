@@ -61,3 +61,8 @@
 - [x] Thêm tính năng export báo cáo PDF/Excel
 - [x] Tích hợp email marketing cho newsletter
 - [x] Xây dựng trang Tuyển dụng (Careers) với form ứng tuyển
+
+## Tính năng mới (Phase 6)
+- [x] Upload CV cho form ứng tuyển (PDF/Word)
+- [x] Thông báo real-time cho admin (yêu cầu báo giá, đơn ứng tuyển, liên hệ)
+- [x] Trang Portfolio/Gallery (hình ảnh và video dự án)

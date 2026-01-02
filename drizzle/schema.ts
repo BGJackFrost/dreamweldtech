@@ -273,3 +273,45 @@ export const jobApplications = mysqlTable("job_applications", {
 
 export type JobApplication = typeof jobApplications.$inferSelect;
 export type InsertJobApplication = typeof jobApplications.$inferInsert;
+
+// ============================================
+// NOTIFICATIONS (Thông báo)
+// ============================================
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  type: mysqlEnum("type", ["contact", "quote", "application", "newsletter", "system"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message"),
+  link: varchar("link", { length: 500 }),
+  isRead: mysqlEnum("isRead", ["true", "false"]).default("false").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+
+// ============================================
+// PORTFOLIO/GALLERY (Dự án)
+// ============================================
+export const portfolioItems = mysqlTable("portfolio_items", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  titleEn: varchar("titleEn", { length: 255 }),
+  description: text("description"),
+  descriptionEn: text("descriptionEn"),
+  category: varchar("category", { length: 100 }),
+  client: varchar("client", { length: 255 }),
+  location: varchar("location", { length: 255 }),
+  completedDate: varchar("completedDate", { length: 50 }),
+  images: text("images"), // JSON array of image URLs
+  videoUrl: varchar("videoUrl", { length: 500 }),
+  tags: varchar("tags", { length: 500 }),
+  isFeatured: mysqlEnum("isFeatured", ["true", "false"]).default("false").notNull(),
+  isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
+  sortOrder: int("sortOrder").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PortfolioItem = typeof portfolioItems.$inferSelect;
+export type InsertPortfolioItem = typeof portfolioItems.$inferInsert;

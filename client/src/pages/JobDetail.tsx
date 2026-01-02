@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "wouter";
-import Layout from "@/components/Layout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { FileUpload } from "@/components/FileUpload";
 import { 
   Briefcase, 
   MapPin, 
@@ -23,7 +23,8 @@ import {
   User,
   Mail,
   Phone,
-  Loader2
+  Loader2,
+  Upload
 } from "lucide-react";
 
 export default function JobDetail() {
@@ -37,6 +38,7 @@ export default function JobDetail() {
     email: "",
     phone: "",
     coverLetter: "",
+    resumeUrl: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -78,35 +80,31 @@ export default function JobDetail() {
 
   if (isLoading) {
     return (
-      <Layout>
-        <div className="container py-20 text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">{language === "vi" ? "Đang tải..." : "Loading..."}</p>
-        </div>
-      </Layout>
+      <div className="container py-20 text-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+        <p className="text-muted-foreground">{language === "vi" ? "Đang tải..." : "Loading..."}</p>
+      </div>
     );
   }
 
   if (!job) {
     return (
-      <Layout>
-        <div className="container py-20 text-center">
-          <h1 className="text-2xl font-bold mb-4">
-            {language === "vi" ? "Không tìm thấy vị trí tuyển dụng" : "Job Not Found"}
-          </h1>
-          <Button asChild>
-            <Link href="/careers">
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              {language === "vi" ? "Quay lại" : "Go Back"}
-            </Link>
-          </Button>
-        </div>
-      </Layout>
+      <div className="container py-20 text-center">
+        <h1 className="text-2xl font-bold mb-4">
+          {language === "vi" ? "Không tìm thấy vị trí tuyển dụng" : "Job Not Found"}
+        </h1>
+        <Button asChild>
+          <Link href="/careers">
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            {language === "vi" ? "Quay lại" : "Go Back"}
+          </Link>
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Layout>
+    <>
       {/* Header */}
       <section className="bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground py-16">
         <div className="container">
@@ -261,6 +259,22 @@ export default function JobDetail() {
                         />
                       </div>
 
+                      {/* CV Upload */}
+                      <div>
+                        <Label className="flex items-center gap-2 mb-2">
+                          <Upload className="h-4 w-4" />
+                          {language === "vi" ? "CV/Hồ sơ" : "Resume/CV"}
+                        </Label>
+                        <FileUpload
+                          accept=".pdf,.doc,.docx"
+                          maxSize={5}
+                          onFileSelect={() => {}}
+                          onUploadComplete={(url) => setFormData({ ...formData, resumeUrl: url })}
+                          label={language === "vi" ? "Tải lên CV" : "Upload Resume"}
+                          hint={language === "vi" ? "PDF, DOC, DOCX (tối đa 5MB)" : "PDF, DOC, DOCX (max 5MB)"}
+                        />
+                      </div>
+
                       <div>
                         <Label htmlFor="coverLetter" className="flex items-center gap-2">
                           <FileText className="h-4 w-4" />
@@ -304,6 +318,6 @@ export default function JobDetail() {
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }
