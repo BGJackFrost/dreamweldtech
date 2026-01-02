@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useReCaptcha } from "@/components/ReCaptcha";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,7 @@ export default function JobDetail() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const { verify: verifyRecaptcha, isConfigured: recaptchaConfigured } = useReCaptcha("job_application");
 
   useEffect(() => {
     if (job) {
@@ -136,9 +138,21 @@ export default function JobDetail() {
 
     setIsSubmitting(true);
     try {
+      // Verify reCAPTCHA before submitting
+      let recaptchaToken = "";
+      if (recaptchaConfigured) {
+        recaptchaToken = await verifyRecaptcha();
+        if (!recaptchaToken) {
+          toast.error(language === "vi" ? "Xác minh reCAPTCHA thất bại. Vui lòng thử lại." : "reCAPTCHA verification failed. Please try again.");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       await submitApplication.mutateAsync({
         jobId: job.id,
         ...formData,
+        recaptchaToken,
       });
       setSubmitted(true);
       toast.success(language === "vi" ? "Đơn ứng tuyển đã được gửi thành công!" : "Application submitted successfully!");

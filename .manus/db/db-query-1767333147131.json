@@ -1,0 +1,9 @@
+{
+  "query": "INSERT IGNORE INTO faqs (question, questionEn, answer, answerEn, category, sortOrder, isActive) VALUES\n('Máy hàn laser có thể hàn những vật liệu nào?', 'What materials can laser welding machines weld?', 'Máy hàn laser của chúng tôi có thể hàn được nhiều loại vật liệu kim loại như thép carbon, thép không gỉ, nhôm, đồng, titan và các hợp kim khác. Độ dày vật liệu có thể từ 0.1mm đến 10mm tùy thuộc vào công suất máy.', 'Our laser welding machines can weld various metal materials including carbon steel, stainless steel, aluminum, copper, titanium and other alloys. Material thickness can range from 0.1mm to 10mm depending on machine power.', 'products', 1, 'true');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute INSERT IGNORE INTO faqs (question, questionEn, answer, answerEn, category, sortOrder, isActive) VALUES\n('Máy hàn laser có thể hàn những vật liệu nào?', 'What materials can laser welding machines weld?', 'Máy hàn laser của chúng tôi có thể hàn được nhiều loại vật liệu kim loại như thép carbon, thép không gỉ, nhôm, đồng, titan và các hợp kim khác. Độ dày vật liệu có thể từ 0.1mm đến 10mm tùy thuộc vào công suất máy.', 'Our laser welding machines can weld various metal materials including carbon steel, stainless steel, aluminum, copper, titanium and other alloys. Material thickness can range from 0.1mm to 10mm depending on machine power.', 'products', 1, 'true');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1661
+}

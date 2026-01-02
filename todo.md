@@ -110,3 +110,10 @@
 - [x] Tạo trang Privacy Policy
 - [x] Tạo trang Terms of Service
 - [x] Viết unit tests cho các tính năng mới (93 tests passed)
+
+## Tính năng mới (Phase 14)
+- [x] Tích hợp SendGrid để gửi email thực (cần cấu hình SENDGRID_API_KEY)
+- [x] Hoàn thiện trang FAQ động với admin dashboard (7 câu hỏi mẫu)
+- [x] Tích hợp reCAPTCHA bảo vệ form liên hệ
+- [x] Tích hợp reCAPTCHA bảo vệ form ứng tuyển
+- [x] Viết unit tests cho các tính năng mới (104 tests passed)

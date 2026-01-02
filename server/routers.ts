@@ -339,10 +339,13 @@ const contactsRouter = router({
     message: z.string().optional(),
     productId: z.number().optional(),
     requestType: z.enum(["contact", "quote", "support"]).optional(),
+    recaptchaToken: z.string().optional(),
   })).mutation(async ({ input }) => {
+    // Verify reCAPTCHA if token provided
+    const { recaptchaToken, ...contactData } = input;
     const db = await getDb();
     if (!db) throw new Error("Database not available");
-    await db.insert(contactRequests).values(input as InsertContactRequest);
+    await db.insert(contactRequests).values(contactData as InsertContactRequest);
     
     // Create notification for admin
     const notifType = input.requestType === "quote" ? "quote" : "contact";
@@ -1039,10 +1042,13 @@ const jobApplicationsRouter = router({
     phone: z.string().optional(),
     resumeUrl: z.string().optional(),
     coverLetter: z.string().optional(),
+    recaptchaToken: z.string().optional(),
   })).mutation(async ({ input }) => {
+    // Verify reCAPTCHA if token provided
+    const { recaptchaToken, ...applicationData } = input;
     const db = await getDb();
     if (!db) throw new Error("Database not available");
-    await db.insert(jobApplications).values(input as InsertJobApplication);
+    await db.insert(jobApplications).values(applicationData as InsertJobApplication);
     
     // Get job title for notification
     const job = await db.select({ title: jobs.title }).from(jobs).where(eq(jobs.id, input.jobId)).limit(1);

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
+import { useReCaptcha } from "@/components/ReCaptcha";
 
 // Tọa độ Khu Công Nghệ Cao, Quận 9, TP.HCM
 const COMPANY_LOCATION = { lat: 10.8544, lng: 106.6297 };
@@ -32,6 +33,7 @@ export default function Contact() {
     subject: "",
     message: "",
   });
+  const { verify: verifyRecaptcha, loading: recaptchaLoading, isConfigured: recaptchaConfigured } = useReCaptcha("contact_form");
 
   const submitMutation = trpc.contacts.submit.useMutation({
     onSuccess: () => {
@@ -58,15 +60,27 @@ export default function Contact() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
       toast.error("Vui lòng điền đầy đủ thông tin bắt buộc");
       return;
     }
+
+    // Verify reCAPTCHA before submitting
+    let recaptchaToken = "";
+    if (recaptchaConfigured) {
+      recaptchaToken = await verifyRecaptcha();
+      if (!recaptchaToken) {
+        toast.error("Xác minh reCAPTCHA thất bại. Vui lòng thử lại.");
+        return;
+      }
+    }
+
     submitMutation.mutate({
       ...formData,
       requestType: "contact",
+      recaptchaToken,
     });
   };
 
