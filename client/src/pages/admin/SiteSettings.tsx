@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Save, Menu, Info, Settings, Eye, EyeOff, Loader2, Home, LayoutGrid, Facebook, Twitter, Linkedin, Youtube, Instagram } from "lucide-react";
+import { ConfigPreview } from "@/components/ConfigPreview";
 
 interface MenuConfig {
   home: boolean;
@@ -381,6 +382,7 @@ export default function SiteSettings() {
                     )}
                     Lưu Cấu Hình Menu
                   </Button>
+                  <ConfigPreview type="menu" config={menuConfig as unknown as Record<string, unknown>} />
                 </div>
               </CardContent>
             </Card>
@@ -591,6 +593,7 @@ export default function SiteSettings() {
                     )}
                     Lưu Cấu Hình Trang Chủ
                   </Button>
+                  <ConfigPreview type="home" config={homeConfig as unknown as Record<string, unknown>} />
                 </div>
               </CardContent>
             </Card>
@@ -766,6 +769,7 @@ export default function SiteSettings() {
                     )}
                     Lưu Cấu Hình Trang Giới Thiệu
                   </Button>
+                  <ConfigPreview type="about" config={aboutConfig as unknown as Record<string, unknown>} />
                 </div>
               </CardContent>
             </Card>
@@ -943,6 +947,7 @@ export default function SiteSettings() {
                     )}
                     Lưu Cấu Hình Footer
                   </Button>
+                  <ConfigPreview type="footer" config={footerConfig as unknown as Record<string, unknown>} />
                 </div>
               </CardContent>
             </Card>

@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Zap, Shield, Cpu, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
+import { BannerSlider } from "@/components/BannerSlider";
 
 export default function Home() {
   // The userAuth hooks provides authentication state
@@ -10,46 +11,56 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center overflow-hidden bg-primary">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/images/hero-banner.jpg" 
-            alt="Industrial Laser Technology" 
-            className="w-full h-full object-cover opacity-40"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent"></div>
-          {/* Decorative Grid */}
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-chart-1 shadow-[0_0_20px_rgba(0,255,255,0.5)]"></div>
-        </div>
+      {/* Hero Section with Banner Slider */}
+      <BannerSlider
+        autoPlayInterval={6000}
+        showNavigation={true}
+        showDots={true}
+        fallbackContent={
+          <section className="relative h-[80vh] flex items-center overflow-hidden bg-primary">
+            <div className="absolute inset-0 z-0">
+              <img 
+                src="/images/hero-banner.jpg" 
+                alt="Industrial Laser Technology" 
+                className="w-full h-full object-cover opacity-40"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent"></div>
+              <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-chart-1 shadow-[0_0_20px_rgba(0,255,255,0.5)]"></div>
+            </div>
 
-        <div className="container relative z-10 text-white">
-          <div className="max-w-3xl space-y-6 animate-in fade-in slide-in-from-left-10 duration-1000">
-            <div className="inline-flex items-center gap-2 px-3 py-1 border border-chart-1/50 bg-chart-1/10 text-chart-1 text-sm font-bold uppercase tracking-widest mb-4">
-              <Zap className="h-4 w-4" />
-              <span>Công Nghệ Laser Tiên Tiến</span>
+            <div className="container relative z-10 text-white">
+              <div className="max-w-3xl space-y-6 animate-in fade-in slide-in-from-left-10 duration-1000">
+                <div className="inline-flex items-center gap-2 px-3 py-1 border border-chart-1/50 bg-chart-1/10 text-chart-1 text-sm font-bold uppercase tracking-widest mb-4">
+                  <Zap className="h-4 w-4" />
+                  <span>Công Nghệ Laser Tiên Tiến</span>
+                </div>
+                <h1 className="text-5xl md:text-7xl font-heading font-bold leading-tight uppercase tracking-wide">
+                  Đỉnh Cao <span className="text-transparent bg-clip-text bg-gradient-to-r from-chart-1 to-white">Công Nghệ</span><br />
+                  Gia Công Chính Xác
+                </h1>
+                <p className="text-xl text-gray-300 max-w-2xl font-light leading-relaxed border-l-4 border-chart-1 pl-6">
+                  Dreamweldtech cung cấp giải pháp toàn diện về máy hàn, cắt và làm sạch laser cho nền công nghiệp hiện đại. Hiệu suất vượt trội, độ bền tối đa.
+                </p>
+                <div className="flex flex-wrap gap-4 pt-8">
+                  <Link href="/products">
+                    <Button size="lg" className="bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider h-14 px-8 text-lg rounded-none skew-x-[-10deg] group">
+                      <span className="skew-x-[10deg] flex items-center gap-2">
+                        Khám Phá Sản Phẩm <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    </Button>
+                  </Link>
+                  <Link href="/contact">
+                    <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary font-bold uppercase tracking-wider h-14 px-8 text-lg rounded-none skew-x-[-10deg]">
+                      <span className="skew-x-[10deg]">Liên Hệ Tư Vấn</span>
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </div>
-            <h1 className="text-5xl md:text-7xl font-heading font-bold leading-tight uppercase tracking-wide">
-              Đỉnh Cao <span className="text-transparent bg-clip-text bg-gradient-to-r from-chart-1 to-white">Công Nghệ</span><br />
-              Gia Công Chính Xác
-            </h1>
-            <p className="text-xl text-gray-300 max-w-2xl font-light leading-relaxed border-l-4 border-chart-1 pl-6">
-              Dreamweldtech cung cấp giải pháp toàn diện về máy hàn, cắt và làm sạch laser cho nền công nghiệp hiện đại. Hiệu suất vượt trội, độ bền tối đa.
-            </p>
-            <div className="flex flex-wrap gap-4 pt-8">
-              <Button size="lg" className="bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider h-14 px-8 text-lg rounded-none skew-x-[-10deg] group">
-                <span className="skew-x-[10deg] flex items-center gap-2">
-                  Khám Phá Sản Phẩm <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary font-bold uppercase tracking-wider h-14 px-8 text-lg rounded-none skew-x-[-10deg]">
-                <span className="skew-x-[10deg]">Liên Hệ Tư Vấn</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        }
+      />
 
       {/* About Summary Section */}
       <section className="py-24 bg-background relative overflow-hidden">

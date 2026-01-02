@@ -170,3 +170,10 @@
 - [x] Thêm cấu hình footer (thông tin liên hệ, địa chỉ)
 - [x] Thêm cấu hình link mạng xã hội trong footer
 - [x] Viết unit tests cho các tính năng mới (213 tests passed)
+
+## Tính năng mới (Phase 22)
+- [x] Thêm banner slider vào hero section trang chủ
+- [x] Tạo component BannerSlider với auto-play và navigation
+- [x] Thêm preview trực tiếp cho cấu hình admin (Menu, Home, About, Footer)
+- [ ] Thêm đa ngôn ngữ cho cấu hình (Việt, Anh, Nhật, Trung) - để lại cho phase sau
+- [x] Viết unit tests cho các tính năng mới (224 tests passed)
