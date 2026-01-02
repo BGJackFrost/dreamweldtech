@@ -136,7 +136,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1" style={{ maxHeight: 'calc(100vh - 200px)' }}>
           {menuItems.map((item) => {
             const isActive = location === item.href || 
               (item.href !== "/admin" && location.startsWith(item.href));
@@ -201,7 +201,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content */}
       <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
         {/* Desktop Header with Notifications */}
-        <div className="hidden lg:flex h-16 items-center justify-end px-8 border-b bg-background">
+        <div className="hidden lg:flex h-16 items-center justify-between px-8 border-b bg-background flex-shrink-0">
+          <div className="flex-1" />
           <NotificationBell />
         </div>
         <div className="p-6 lg:p-8">

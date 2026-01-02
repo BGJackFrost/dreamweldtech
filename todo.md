@@ -192,3 +192,9 @@
 - [x] Thêm UI Admin để chọn hiệu ứng slide (Select dropdown)
 - [x] Cập nhật BannerSlider component để áp dụng hiệu ứng từ banner data
 - [x] Viết unit tests cho các tính năng mới (239 tests passed)
+
+## Bug Fixes (Phase 25)
+- [x] Thêm scrollbar cho sidebar admin (menu trái quá khổ)
+- [x] Tối ưu layout header admin (chữ menu top xuống dòng)
+- [x] Chuyển tất cả mock data vào database (seed data)
+- [x] Viết unit tests cho các thay đổi (239 tests passed)
