@@ -52,3 +52,12 @@
 - [x] Tích hợp Chatbot AI
 - [x] Trang Case Studies/Dự án tiêu biểu
 - [x] Quản lý User và phân quyền (admin/editor/viewer)
+
+## Bug Fixes (Phase 5)
+- [x] Sửa lỗi Dashboard không truy cập được
+- [x] Sửa menu trùng lặp giữa Tin tức và Newsletter
+
+## Tính năng mới (Phase 5)
+- [x] Thêm tính năng export báo cáo PDF/Excel
+- [x] Tích hợp email marketing cho newsletter
+- [x] Xây dựng trang Tuyển dụng (Careers) với form ứng tuyển

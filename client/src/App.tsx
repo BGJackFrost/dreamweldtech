@@ -25,6 +25,10 @@ import AdminNewsletter from "./pages/admin/Newsletter";
 import AdminFAQ from "./pages/admin/FAQ";
 import AdminCaseStudies from "./pages/admin/CaseStudies";
 import AdminUsers from "./pages/admin/Users";
+import AdminReports from "./pages/admin/Reports";
+import AdminEmailCampaign from "./pages/admin/EmailCampaign";
+import AdminJobs from "./pages/admin/Jobs";
+import AdminApplications from "./pages/admin/Applications";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -38,6 +42,8 @@ import FAQPage from "./pages/FAQ";
 import ComparePage from "./pages/Compare";
 import CaseStudies from "./pages/CaseStudies";
 import CaseStudyDetail from "./pages/CaseStudyDetail";
+import Careers from "./pages/Careers";
+import JobDetail from "./pages/JobDetail";
 
 function PublicRouter() {
   return (
@@ -55,6 +61,8 @@ function PublicRouter() {
         <Route path="/compare" component={ComparePage} />
         <Route path="/case-studies" component={CaseStudies} />
         <Route path="/case-studies/:slug" component={CaseStudyDetail} />
+        <Route path="/careers" component={Careers} />
+        <Route path="/careers/:slug" component={JobDetail} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
@@ -81,6 +89,10 @@ function AdminRouter() {
         <Route path="/admin/faq" component={AdminFAQ} />
         <Route path="/admin/case-studies" component={AdminCaseStudies} />
         <Route path="/admin/users" component={AdminUsers} />
+        <Route path="/admin/reports" component={AdminReports} />
+        <Route path="/admin/email-campaign" component={AdminEmailCampaign} />
+        <Route path="/admin/jobs" component={AdminJobs} />
+        <Route path="/admin/applications" component={AdminApplications} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>
@@ -90,7 +102,9 @@ function AdminRouter() {
 function Router() {
   return (
     <Switch>
-      {/* Admin routes */}
+      {/* Admin routes - exact match for /admin */}
+      <Route path="/admin" component={AdminRouter} />
+      {/* Admin routes - with sub-paths */}
       <Route path="/admin/:rest*" component={AdminRouter} />
       {/* Public routes */}
       <Route component={PublicRouter} />

@@ -15,6 +15,8 @@ import {
   homePageSections,
   caseStudies,
   users,
+  jobs,
+  jobApplications,
   InsertProduct,
   InsertProductCategory,
   InsertNews,
@@ -23,7 +25,9 @@ import {
   InsertNewsletterSubscriber,
   InsertFAQ,
   InsertHomePageSection,
-  InsertCaseStudy
+  InsertCaseStudy,
+  InsertJob,
+  InsertJobApplication
 } from "../drizzle/schema";
 import { eq, desc, asc, and, sql } from "drizzle-orm";
 
@@ -808,6 +812,153 @@ const usersRouter = router({
 });
 
 // ============================================
+// JOBS ROUTER (Tuyển dụng)
+// ============================================
+const jobsRouter = router({
+  // Public
+  listActive: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(jobs).where(eq(jobs.isActive, "true")).orderBy(desc(jobs.createdAt));
+  }),
+
+  getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return null;
+    const result = await db.select().from(jobs).where(eq(jobs.slug, input.slug)).limit(1);
+    return result[0] || null;
+  }),
+
+  // Admin
+  listAll: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(jobs).orderBy(desc(jobs.createdAt));
+  }),
+
+  create: protectedProcedure.input(z.object({
+    title: z.string(),
+    slug: z.string(),
+    department: z.string().optional(),
+    location: z.string().optional(),
+    type: z.enum(["full-time", "part-time", "contract", "internship"]).optional(),
+    experience: z.string().optional(),
+    salary: z.string().optional(),
+    description: z.string().optional(),
+    requirements: z.string().optional(),
+    benefits: z.string().optional(),
+    deadline: z.date().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.insert(jobs).values(input as InsertJob);
+    return { success: true };
+  }),
+
+  update: protectedProcedure.input(z.object({
+    id: z.number(),
+    title: z.string().optional(),
+    slug: z.string().optional(),
+    department: z.string().optional(),
+    location: z.string().optional(),
+    type: z.enum(["full-time", "part-time", "contract", "internship"]).optional(),
+    experience: z.string().optional(),
+    salary: z.string().optional(),
+    description: z.string().optional(),
+    requirements: z.string().optional(),
+    benefits: z.string().optional(),
+    deadline: z.date().optional(),
+    isActive: z.enum(["true", "false"]).optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const { id, ...data } = input;
+    await db.update(jobs).set(data).where(eq(jobs.id, id));
+    return { success: true };
+  }),
+
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(jobs).where(eq(jobs.id, input.id));
+    return { success: true };
+  }),
+});
+
+// ============================================
+// JOB APPLICATIONS ROUTER
+// ============================================
+const jobApplicationsRouter = router({
+  // Public - submit application
+  submit: publicProcedure.input(z.object({
+    jobId: z.number(),
+    name: z.string(),
+    email: z.string().email(),
+    phone: z.string().optional(),
+    resumeUrl: z.string().optional(),
+    coverLetter: z.string().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.insert(jobApplications).values(input as InsertJobApplication);
+    return { success: true, message: "Đơn ứng tuyển đã được gửi thành công!" };
+  }),
+
+  // Admin
+  list: protectedProcedure.input(z.object({
+    jobId: z.number().optional(),
+    status: z.enum(["pending", "reviewing", "interviewed", "accepted", "rejected"]).optional(),
+  }).optional()).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    
+    let query = db.select().from(jobApplications);
+    
+    if (input?.jobId) {
+      return db.select().from(jobApplications).where(eq(jobApplications.jobId, input.jobId)).orderBy(desc(jobApplications.createdAt));
+    }
+    if (input?.status) {
+      return db.select().from(jobApplications).where(eq(jobApplications.status, input.status)).orderBy(desc(jobApplications.createdAt));
+    }
+    
+    return db.select().from(jobApplications).orderBy(desc(jobApplications.createdAt));
+  }),
+
+  updateStatus: protectedProcedure.input(z.object({
+    id: z.number(),
+    status: z.enum(["pending", "reviewing", "interviewed", "accepted", "rejected"]),
+    notes: z.string().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const { id, ...data } = input;
+    await db.update(jobApplications).set(data).where(eq(jobApplications.id, id));
+    return { success: true };
+  }),
+
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(jobApplications).where(eq(jobApplications.id, input.id));
+    return { success: true };
+  }),
+
+  stats: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { total: 0, pending: 0, reviewing: 0, interviewed: 0, accepted: 0, rejected: 0 };
+    const all = await db.select().from(jobApplications);
+    return {
+      total: all.length,
+      pending: all.filter(a => a.status === "pending").length,
+      reviewing: all.filter(a => a.status === "reviewing").length,
+      interviewed: all.filter(a => a.status === "interviewed").length,
+      accepted: all.filter(a => a.status === "accepted").length,
+      rejected: all.filter(a => a.status === "rejected").length,
+    };
+  }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -831,6 +982,8 @@ export const appRouter = router({
   homePage: homePageRouter,
   caseStudies: caseStudiesRouter,
   users: usersRouter,
+  jobs: jobsRouter,
+  jobApplications: jobApplicationsRouter,
 });
 
 export type AppRouter = typeof appRouter;

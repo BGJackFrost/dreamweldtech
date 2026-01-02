@@ -13,10 +13,14 @@ import {
   Home,
   FolderTree,
   Layout,
-  Mail,
+  Newspaper,
   HelpCircle,
   Award,
-  Users
+  Users,
+  Send,
+  FileBarChart,
+  Mail,
+  Briefcase
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -30,12 +34,16 @@ const menuItems = [
   { href: "/admin/homepage", icon: Layout, label: "Trang Chủ" },
   { href: "/admin/products", icon: Package, label: "Sản Phẩm" },
   { href: "/admin/categories", icon: FolderTree, label: "Danh Mục" },
-  { href: "/admin/news", icon: FileText, label: "Tin Tức" },
+  { href: "/admin/news", icon: Newspaper, label: "Tin Tức" },
   { href: "/admin/faq", icon: HelpCircle, label: "FAQ" },
   { href: "/admin/case-studies", icon: Award, label: "Case Studies" },
-  { href: "/admin/newsletter", icon: Mail, label: "Newsletter" },
+  { href: "/admin/newsletter", icon: Send, label: "Newsletter" },
+  { href: "/admin/email-campaign", icon: Mail, label: "Email Marketing" },
   { href: "/admin/contacts", icon: MessageSquare, label: "Liên Hệ" },
   { href: "/admin/users", icon: Users, label: "Người Dùng" },
+  { href: "/admin/jobs", icon: Briefcase, label: "Tuyển Dụng" },
+  { href: "/admin/applications", icon: FileText, label: "Đơn Ứng Tuyển" },
+  { href: "/admin/reports", icon: FileBarChart, label: "Báo Cáo" },
   { href: "/admin/settings", icon: Settings, label: "Cài Đặt" },
 ];
 

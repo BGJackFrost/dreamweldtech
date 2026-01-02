@@ -229,3 +229,47 @@ export const caseStudies = mysqlTable("case_studies", {
 
 export type CaseStudy = typeof caseStudies.$inferSelect;
 export type InsertCaseStudy = typeof caseStudies.$inferInsert;
+
+// ============================================
+// JOBS (Tuyển dụng)
+// ============================================
+export const jobs = mysqlTable("jobs", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  department: varchar("department", { length: 100 }),
+  location: varchar("location", { length: 255 }),
+  type: mysqlEnum("type", ["full-time", "part-time", "contract", "internship"]).default("full-time"),
+  experience: varchar("experience", { length: 100 }),
+  salary: varchar("salary", { length: 100 }),
+  description: text("description"),
+  requirements: text("requirements"),
+  benefits: text("benefits"),
+  isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
+  deadline: timestamp("deadline"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Job = typeof jobs.$inferSelect;
+export type InsertJob = typeof jobs.$inferInsert;
+
+// ============================================
+// JOB APPLICATIONS (Đơn ứng tuyển)
+// ============================================
+export const jobApplications = mysqlTable("job_applications", {
+  id: int("id").autoincrement().primaryKey(),
+  jobId: int("jobId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 20 }),
+  resumeUrl: varchar("resumeUrl", { length: 500 }),
+  coverLetter: text("coverLetter"),
+  status: mysqlEnum("status", ["pending", "reviewing", "interviewed", "accepted", "rejected"]).default("pending").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type JobApplication = typeof jobApplications.$inferSelect;
+export type InsertJobApplication = typeof jobApplications.$inferInsert;
