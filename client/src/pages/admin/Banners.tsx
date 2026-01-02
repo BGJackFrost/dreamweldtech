@@ -27,6 +27,7 @@ interface BannerFormData {
   position: "hero" | "promo" | "sidebar" | "footer";
   sortOrder: number;
   isActive: "true" | "false";
+  slideEffect?: "fade" | "slide" | "zoom";
 }
 
 const defaultFormData: BannerFormData = {
@@ -41,6 +42,7 @@ const defaultFormData: BannerFormData = {
   position: "hero",
   sortOrder: 0,
   isActive: "true",
+  slideEffect: "fade",
 };
 
 const positionLabels: Record<string, string> = {
@@ -78,6 +80,7 @@ export default function AdminBanners() {
         position: banner.position as "hero" | "promo" | "sidebar" | "footer",
         sortOrder: banner.sortOrder || 0,
         isActive: banner.isActive as "true" | "false",
+        slideEffect: (banner.slideEffect || "fade") as "fade" | "slide" | "zoom",
       });
     } else {
       setEditingId(null);
@@ -413,6 +416,23 @@ export default function AdminBanners() {
                     placeholder="https://..."
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="slideEffect">Hiệu ứng chuyển slide</Label>
+                <Select
+                  value={formData.slideEffect || "fade"}
+                  onValueChange={(value) => setFormData({ ...formData, slideEffect: value as any })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fade">Mờ dần (Fade)</SelectItem>
+                    <SelectItem value="slide">Trượt (Slide)</SelectItem>
+                    <SelectItem value="zoom">Phóng to (Zoom)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center gap-2">

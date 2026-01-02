@@ -183,3 +183,12 @@
 - [x] Thêm đa ngôn ngữ cho cấu hình hero section (Trang Admin Đa Ngôn Ngữ)
 - [x] Thêm đa ngôn ngữ cho cấu hình footer (Trang Admin Đa Ngôn Ngữ)
 - [x] Viết unit tests cho các tính năng mới (239 tests passed)
+
+## Tính năng mới (Phase 24)
+- [x] Tối ưu hóa responsive cho banner trên mobile và desktop (mobile-first design)
+- [x] Thêm CTA buttons cho banner (buttonText, buttonLink fields)
+- [x] Thêm tùy chỉnh hiệu ứng slide banner (fade, slide, zoom)
+- [x] Cập nhật schema database với slideEffect field
+- [x] Thêm UI Admin để chọn hiệu ứng slide (Select dropdown)
+- [x] Cập nhật BannerSlider component để áp dụng hiệu ứng từ banner data
+- [x] Viết unit tests cho các tính năng mới (239 tests passed)

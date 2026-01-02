@@ -18,6 +18,7 @@ interface Banner {
   position: string;
   sortOrder: number | null;
   isActive: string;
+  slideEffect?: "fade" | "slide" | "zoom";
 }
 
 interface BannerSliderProps {
@@ -26,6 +27,7 @@ interface BannerSliderProps {
   showDots?: boolean;
   className?: string;
   fallbackContent?: React.ReactNode;
+  slideEffect?: "fade" | "slide" | "zoom";
 }
 
 export function BannerSlider({
@@ -34,10 +36,12 @@ export function BannerSlider({
   showDots = true,
   className,
   fallbackContent,
+  slideEffect = "fade",
 }: BannerSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [screenSize, setScreenSize] = useState<"mobile" | "tablet" | "desktop">("desktop");
 
   // Fetch active hero banners
   const { data: banners = [], isLoading } = trpc.banners.list.useQuery();
@@ -47,12 +51,18 @@ export function BannerSlider({
     .filter((b: Banner) => b.position === "hero" && b.isActive === "true")
     .sort((a: Banner, b: Banner) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-  // Check if mobile
+  // Check screen size
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      setIsMobile(width < 768);
+      if (width < 640) setScreenSize("mobile");
+      else if (width < 1024) setScreenSize("tablet");
+      else setScreenSize("desktop");
+    };
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   // Auto-play functionality
@@ -99,7 +109,7 @@ export function BannerSlider({
   // Show fallback content if no banners
   if (isLoading) {
     return (
-      <div className={cn("relative min-h-[600px] bg-primary animate-pulse", className)}>
+      <div className={cn("relative min-h-[300px] sm:min-h-[500px] md:min-h-[600px] lg:min-h-[700px] bg-primary animate-pulse", className)}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-8 h-8 border-4 border-chart-1 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -112,6 +122,32 @@ export function BannerSlider({
   }
 
   const currentBanner = heroBanners[currentIndex];
+  // Use banner's slideEffect if available, otherwise use prop or default
+  const effect = (currentBanner?.slideEffect || slideEffect || "fade") as "fade" | "slide" | "zoom";
+
+  // Get slide animation classes based on effect
+  const getSlideAnimation = (index: number) => {
+    const bannerEffect = (heroBanners[index]?.slideEffect || slideEffect || "fade") as "fade" | "slide" | "zoom";
+    if (index === currentIndex) {
+      switch (bannerEffect) {
+        case "slide":
+          return "translate-x-0 opacity-100";
+        case "zoom":
+          return "scale-100 opacity-100";
+        default: // fade
+          return "opacity-100";
+      }
+    } else {
+      switch (bannerEffect) {
+        case "slide":
+          return "translate-x-full opacity-0";
+        case "zoom":
+          return "scale-95 opacity-0";
+        default: // fade
+          return "opacity-0";
+      }
+    }
+  };
 
   return (
     <div 
@@ -119,14 +155,22 @@ export function BannerSlider({
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
-      {/* Slides */}
-      <div className="relative min-h-[600px] md:min-h-[700px]">
-        {heroBanners.map((banner: Banner, index: number) => (
+      {/* Slides Container */}
+      <div className={cn(
+        "relative min-h-[300px] sm:min-h-[500px] md:min-h-[600px] lg:min-h-[700px]",
+        (currentBanner?.slideEffect || slideEffect || "fade") === "slide" && "overflow-hidden"
+      )}>
+        {heroBanners.map((banner: Banner, index: number) => {
+          const bannerEffect = (banner.slideEffect || slideEffect || "fade") as "fade" | "slide" | "zoom";
+          return (
           <div
             key={banner.id}
             className={cn(
-              "absolute inset-0 transition-opacity duration-700 ease-in-out",
-              index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+              "absolute inset-0 transition-all duration-700 ease-in-out",
+              bannerEffect === "slide" && "transition-transform",
+              bannerEffect === "zoom" && "transition-transform",
+              getSlideAnimation(index),
+              index === currentIndex ? "z-10" : "z-0"
             )}
           >
             {/* Background Image */}
@@ -134,6 +178,7 @@ export function BannerSlider({
               className="absolute inset-0 bg-cover bg-center bg-no-repeat"
               style={{
                 backgroundImage: `url(${isMobile && banner.mobileImage ? banner.mobileImage : banner.image})`,
+                backgroundAttachment: screenSize === "desktop" ? "fixed" : "scroll",
               }}
             >
               {/* Overlay */}
@@ -142,51 +187,51 @@ export function BannerSlider({
 
             {/* Content */}
             <div className="relative z-10 h-full flex items-center">
-              <div className="container">
-                <div className="max-w-2xl space-y-6">
+              <div className="container px-4 sm:px-6 lg:px-8">
+                <div className="max-w-2xl space-y-4 sm:space-y-6">
                   {/* Subtitle/Tagline */}
                   {banner.subtitle && (
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-chart-1/20 border border-chart-1/30 rounded-sm">
-                      <span className="text-chart-1 font-medium tracking-wider text-sm uppercase">
+                    <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-chart-1/20 border border-chart-1/30 rounded-sm">
+                      <span className="text-chart-1 font-medium tracking-wider text-xs sm:text-sm uppercase">
                         {banner.subtitle}
                       </span>
                     </div>
                   )}
 
-                  {/* Title */}
-                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-black uppercase leading-none text-primary-foreground">
+                  {/* Title - Responsive sizing */}
+                  <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-heading font-black uppercase leading-tight sm:leading-none text-primary-foreground">
                     {banner.title}
                   </h1>
 
-                  {/* Description */}
+                  {/* Description - Hidden on very small screens */}
                   {banner.description && (
-                    <p className="text-lg md:text-xl text-primary-foreground/80 leading-relaxed border-l-4 border-chart-1 pl-4">
+                    <p className="hidden sm:block text-base sm:text-lg md:text-xl text-primary-foreground/80 leading-relaxed border-l-4 border-chart-1 pl-4">
                       {banner.description}
                     </p>
                   )}
 
-                  {/* Buttons */}
-                  <div className="flex flex-wrap gap-4 pt-4">
+                  {/* Buttons - Responsive layout */}
+                  <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 pt-2 sm:pt-4">
                     {banner.buttonLink && banner.buttonText && (
                       <Link href={banner.buttonLink}>
                         <Button 
-                          size="lg" 
-                          className="bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider group"
+                          size={isMobile ? "default" : "lg"}
+                          className="w-full sm:w-auto bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider group"
                         >
                           {banner.buttonText}
-                          <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                          <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5 group-hover:translate-x-1 transition-transform" />
                         </Button>
                       </Link>
                     )}
                     {banner.link && !banner.buttonLink && (
                       <Link href={banner.link}>
                         <Button 
-                          size="lg" 
+                          size={isMobile ? "default" : "lg"}
                           variant="outline"
-                          className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 font-bold uppercase tracking-wider"
+                          className="w-full sm:w-auto border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 font-bold uppercase tracking-wider"
                         >
                           Xem Chi Tiết
-                          <ArrowRight className="ml-2 h-5 w-5" />
+                          <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
                         </Button>
                       </Link>
                     )}
@@ -195,41 +240,42 @@ export function BannerSlider({
               </div>
             </div>
           </div>
-        ))}
+        );
+        })}
       </div>
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows - Hidden on mobile */}
       {showNavigation && heroBanners.length > 1 && (
         <>
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-primary-foreground/10 hover:bg-primary-foreground/20 backdrop-blur-sm rounded-full transition-all group"
+            className="hidden sm:flex absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 bg-primary-foreground/10 hover:bg-primary-foreground/20 backdrop-blur-sm rounded-full transition-all group"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="h-6 w-6 text-primary-foreground group-hover:scale-110 transition-transform" />
+            <ChevronLeft className="h-5 sm:h-6 w-5 sm:w-6 text-primary-foreground group-hover:scale-110 transition-transform" />
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-primary-foreground/10 hover:bg-primary-foreground/20 backdrop-blur-sm rounded-full transition-all group"
+            className="hidden sm:flex absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 bg-primary-foreground/10 hover:bg-primary-foreground/20 backdrop-blur-sm rounded-full transition-all group"
             aria-label="Next slide"
           >
-            <ChevronRight className="h-6 w-6 text-primary-foreground group-hover:scale-110 transition-transform" />
+            <ChevronRight className="h-5 sm:h-6 w-5 sm:w-6 text-primary-foreground group-hover:scale-110 transition-transform" />
           </button>
         </>
       )}
 
-      {/* Dots Navigation */}
+      {/* Navigation Dots */}
       {showDots && heroBanners.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-3">
-          {heroBanners.map((_: Banner, index: number) => (
+        <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+          {heroBanners.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
               className={cn(
-                "w-3 h-3 rounded-full transition-all",
+                "h-2 rounded-full transition-all duration-300",
                 index === currentIndex
-                  ? "bg-chart-1 w-8"
-                  : "bg-primary-foreground/40 hover:bg-primary-foreground/60"
+                  ? "w-8 bg-chart-1"
+                  : "w-2 bg-primary-foreground/40 hover:bg-primary-foreground/60"
               )}
               aria-label={`Go to slide ${index + 1}`}
             />
@@ -239,7 +285,7 @@ export function BannerSlider({
 
       {/* Progress Bar */}
       {heroBanners.length > 1 && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary-foreground/20 z-20">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary-foreground/10 z-20">
           <div
             className="h-full bg-chart-1 transition-all duration-300"
             style={{
@@ -251,5 +297,3 @@ export function BannerSlider({
     </div>
   );
 }
-
-export default BannerSlider;

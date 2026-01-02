@@ -1,0 +1,1 @@
+ALTER TABLE `banners` ADD `slideEffect` enum('fade','slide','zoom') DEFAULT 'fade' NOT NULL;

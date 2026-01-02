@@ -355,6 +355,7 @@ export const banners = mysqlTable("banners", {
   buttonText: varchar("buttonText", { length: 100 }),
   buttonLink: varchar("buttonLink", { length: 500 }),
   position: mysqlEnum("position", ["hero", "promo", "sidebar", "footer"]).default("hero").notNull(),
+  slideEffect: mysqlEnum("slideEffect", ["fade", "slide", "zoom"]).default("fade").notNull(),
   sortOrder: int("sortOrder").default(0),
   isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
   startDate: timestamp("startDate"),
