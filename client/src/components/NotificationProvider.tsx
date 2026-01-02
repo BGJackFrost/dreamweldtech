@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useCallback, useState, ReactNode } from "react";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
@@ -11,13 +12,58 @@ interface NotificationContextType {
   unreadCount: number;
   setUnreadCount: (count: number) => void;
   refreshUnreadCount: () => void;
+  // Notification settings
+  notificationsEnabled: boolean;
+  setNotificationsEnabled: (enabled: boolean) => void;
+  isDndActive: boolean;
+  soundEnabled: boolean;
+  setSoundEnabled: (enabled: boolean) => void;
+  setDndMode: (minutes: number) => void;
+  clearDndMode: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
+// Notification sound
+const playNotificationSound = () => {
+  try {
+    // Create a simple beep sound using Web Audio API
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = "sine";
+    gainNode.gain.value = 0.1;
+    
+    oscillator.start();
+    setTimeout(() => {
+      oscillator.stop();
+      audioContext.close();
+    }, 150);
+  } catch (e) {
+    console.log("Could not play notification sound:", e);
+  }
+};
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, isAuthenticated } = useAuth();
+  
+  // Notification settings
+  const {
+    isEnabled: notificationsEnabled,
+    setIsEnabled: setNotificationsEnabled,
+    isDndActive,
+    soundEnabled,
+    setSoundEnabled,
+    setDndMode,
+    clearDndMode,
+    shouldShowNotification,
+  } = useNotificationSettings();
   
   // Fetch initial unread count from API
   const { data: unreadData, refetch: refetchUnreadCount } = trpc.notificationCenter.unreadCount.useQuery(
@@ -44,56 +90,84 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const messageText = message.message || message.data?.message;
     const priority = message.priority || message.data?.priority || 'normal';
 
+    // Check if we should show this notification based on settings
+    const shouldShow = shouldShowNotification(notificationType);
+
+    // Always increment unread count regardless of settings
+    const incrementUnread = () => setUnreadCount((prev) => prev + 1);
+
+    // Play sound if enabled and notification should be shown
+    const maybePlaySound = () => {
+      if (shouldShow && soundEnabled) {
+        playNotificationSound();
+      }
+    };
+
     switch (notificationType) {
       case "contact":
       case "quote":
         // Contact/Quote notification
-        toast.info(title || "Liên hệ mới", {
-          description: messageText,
-          duration: 5000,
-        });
-        setUnreadCount((prev) => prev + 1);
+        if (shouldShow) {
+          toast.info(title || "Liên hệ mới", {
+            description: messageText,
+            duration: 5000,
+          });
+          maybePlaySound();
+        }
+        incrementUnread();
         break;
 
       case "application":
         // Job application notification
-        toast.success(title || "Đơn ứng tuyển mới", {
-          description: messageText,
-          duration: 5000,
-        });
-        setUnreadCount((prev) => prev + 1);
+        if (shouldShow) {
+          toast.success(title || "Đơn ứng tuyển mới", {
+            description: messageText,
+            duration: 5000,
+          });
+          maybePlaySound();
+        }
+        incrementUnread();
         break;
 
       case "newsletter":
         // Newsletter subscription notification
-        toast.info(title || "Đăng ký newsletter mới", {
-          description: messageText,
-          duration: 3000,
-        });
-        setUnreadCount((prev) => prev + 1);
+        if (shouldShow) {
+          toast.info(title || "Đăng ký newsletter mới", {
+            description: messageText,
+            duration: 3000,
+          });
+          maybePlaySound();
+        }
+        incrementUnread();
         break;
 
       case "system":
-        // System notification
-        if (priority === 'urgent' || priority === 'high') {
-          toast.error(title || "Thông báo hệ thống", {
-            description: messageText,
-            duration: 10000,
-          });
-        } else {
-          toast.info(title || "Thông báo hệ thống", {
-            description: messageText,
-          });
+        // System notification - always show urgent/high priority
+        if (shouldShow || priority === 'urgent' || priority === 'high') {
+          if (priority === 'urgent' || priority === 'high') {
+            toast.error(title || "Thông báo hệ thống", {
+              description: messageText,
+              duration: 10000,
+            });
+          } else {
+            toast.info(title || "Thông báo hệ thống", {
+              description: messageText,
+            });
+          }
+          maybePlaySound();
         }
-        setUnreadCount((prev) => prev + 1);
+        incrementUnread();
         break;
 
       case "notification":
         // Generic notification
-        toast.info(title, {
-          description: messageText,
-        });
-        setUnreadCount((prev) => prev + 1);
+        if (shouldShow) {
+          toast.info(title, {
+            description: messageText,
+          });
+          maybePlaySound();
+        }
+        incrementUnread();
         break;
 
       case "subscribed":
@@ -116,14 +190,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         break;
 
       case "error":
-        // Error notification
+        // Error notification - always show
         toast.error(messageText || "Đã xảy ra lỗi");
         break;
 
       default:
         console.log("Unknown message type:", notificationType);
     }
-  }, []);
+  }, [shouldShowNotification, soundEnabled]);
 
   const { isConnected, error, send } = useWebSocket("/api/ws/notifications", handleWebSocketMessage);
 
@@ -155,6 +229,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         unreadCount,
         setUnreadCount,
         refreshUnreadCount,
+        // Notification settings
+        notificationsEnabled,
+        setNotificationsEnabled,
+        isDndActive,
+        soundEnabled,
+        setSoundEnabled,
+        setDndMode,
+        clearDndMode,
       }}
     >
       {children}

@@ -39,6 +39,7 @@ import {
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useMemo } from "react";
 import { NotificationBell } from "@/components/NotificationBell";
+import { NotificationSettings } from "@/components/admin/NotificationSettings";
 import { useAdminTheme } from "@/components/AdminThemeProvider";
 
 interface AdminLayoutProps {
@@ -444,6 +445,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   <Sun className="h-5 w-5" />
                 )}
               </Button>
+              <NotificationSettings />
               <NotificationBell />
             </div>
           </div>

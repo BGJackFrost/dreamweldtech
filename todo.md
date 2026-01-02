@@ -319,3 +319,12 @@
 - [x] Tạo hướng dẫn deploy chi tiết (DEPLOYMENT_DREAMWELDTECH_VN.md)
 - [x] Viết unit tests cho integrations (262 tests passed)
 - [ ] Deploy to Custom Domain - Use Manus Publish button to deploy to dreamweldtech.vn
+
+
+## PHASE 34: Admin Notification Control
+- [x] Tạo NotificationSettings component với Toggle On/Off
+- [x] Thêm Do Not Disturb Mode (tạm dừng theo thời gian)
+- [x] Tích hợp vào Admin Dashboard header
+- [x] Cập nhật NotificationProvider để respect settings
+- [x] Lưu preferences vào localStorage
+- [x] Viết unit tests cho tính năng mới (262 tests passed)
