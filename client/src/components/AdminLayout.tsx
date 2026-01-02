@@ -29,10 +29,11 @@ import {
   Globe,
   Moon,
   Sun,
-  Upload
+  Upload,
+  ChevronDown
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useAdminTheme } from "@/components/AdminThemeProvider";
 
@@ -40,29 +41,63 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const menuItems = [
-  { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/admin/homepage", icon: Layout, label: "Trang Chủ" },
-  { href: "/admin/products", icon: Package, label: "Sản Phẩm" },
-  { href: "/admin/categories", icon: FolderTree, label: "Danh Mục" },
-  { href: "/admin/news", icon: Newspaper, label: "Tin Tức" },
-  { href: "/admin/faq", icon: HelpCircle, label: "FAQ" },
-  { href: "/admin/case-studies", icon: Award, label: "Case Studies" },
-  { href: "/admin/portfolio", icon: ImageIcon, label: "Portfolio" },
-  { href: "/admin/partners", icon: Handshake, label: "Đối Tác" },
-  { href: "/admin/newsletter", icon: Send, label: "Newsletter" },
-  { href: "/admin/email-campaign", icon: Mail, label: "Email Marketing" },
-  { href: "/admin/contacts", icon: MessageSquare, label: "Liên Hệ" },
-  { href: "/admin/users", icon: Users, label: "Người Dùng" },
-  { href: "/admin/jobs", icon: Briefcase, label: "Tuyển Dụng" },
-  { href: "/admin/applications", icon: FileText, label: "Đơn Ứng Tuyển" },
-  { href: "/admin/reports", icon: FileBarChart, label: "Báo Cáo" },
-  { href: "/admin/backup", icon: Database, label: "Sao Lưu" },
-  { href: "/admin/site-settings", icon: Sliders, label: "Cấu Hình Website" },
-  { href: "/admin/banners", icon: Images, label: "Banner/Slider" },
-  { href: "/admin/multi-language-settings", icon: Globe, label: "Đa Ngôn Ngữ" },
-  { href: "/admin/bulk-import-export", icon: Database, label: "Import/Export" },
-  { href: "/admin/settings", icon: Settings, label: "Cài Đặt" },
+interface MenuCategory {
+  label: string;
+  items: Array<{
+    href: string;
+    icon: any;
+    label: string;
+  }>;
+}
+
+const menuCategories: MenuCategory[] = [
+  {
+    label: "Tổng Quan",
+    items: [
+      { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+    ],
+  },
+  {
+    label: "Quản Lý Nội Dung",
+    items: [
+      { href: "/admin/homepage", icon: Layout, label: "Trang Chủ" },
+      { href: "/admin/products", icon: Package, label: "Sản Phẩm" },
+      { href: "/admin/categories", icon: FolderTree, label: "Danh Mục" },
+      { href: "/admin/news", icon: Newspaper, label: "Tin Tức" },
+      { href: "/admin/faq", icon: HelpCircle, label: "FAQ" },
+      { href: "/admin/case-studies", icon: Award, label: "Case Studies" },
+      { href: "/admin/portfolio", icon: ImageIcon, label: "Portfolio" },
+    ],
+  },
+  {
+    label: "Quan Hệ Khách Hàng",
+    items: [
+      { href: "/admin/partners", icon: Handshake, label: "Đối Tác" },
+      { href: "/admin/newsletter", icon: Send, label: "Newsletter" },
+      { href: "/admin/email-campaign", icon: Mail, label: "Email Marketing" },
+      { href: "/admin/contacts", icon: MessageSquare, label: "Liên Hệ" },
+    ],
+  },
+  {
+    label: "Nhân Sự",
+    items: [
+      { href: "/admin/jobs", icon: Briefcase, label: "Tuyển Dụng" },
+      { href: "/admin/applications", icon: FileText, label: "Đơn Ứng Tuyển" },
+      { href: "/admin/users", icon: Users, label: "Người Dùng" },
+    ],
+  },
+  {
+    label: "Báo Cáo & Cấu Hình",
+    items: [
+      { href: "/admin/reports", icon: FileBarChart, label: "Báo Cáo" },
+      { href: "/admin/backup", icon: Database, label: "Sao Lưu" },
+      { href: "/admin/site-settings", icon: Sliders, label: "Cấu Hình Website" },
+      { href: "/admin/banners", icon: Images, label: "Banner/Slider" },
+      { href: "/admin/multi-language-settings", icon: Globe, label: "Đa Ngôn Ngữ" },
+      { href: "/admin/bulk-import-export", icon: Database, label: "Import/Export" },
+      { href: "/admin/settings", icon: Settings, label: "Cài Đặt" },
+    ],
+  },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
@@ -70,6 +105,26 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { theme, toggleTheme } = useAdminTheme();
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+
+  // Initialize expanded categories based on current location
+  useEffect(() => {
+    const expanded: Record<string, boolean> = {};
+    menuCategories.forEach((category) => {
+      const isActive = category.items.some(
+        (item) => location === item.href || (item.href !== "/admin" && location.startsWith(item.href))
+      );
+      expanded[category.label] = isActive;
+    });
+    setExpandedCategories(expanded);
+  }, [location]);
+
+  const toggleCategory = (categoryLabel: string) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [categoryLabel]: !prev[categoryLabel],
+    }));
+  };
 
   if (loading) {
     return (
@@ -132,9 +187,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         lg:translate-x-0
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         ${theme === "dark" ? "bg-slate-900" : "bg-primary"}
+        flex flex-col
       `}>
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-white/10">
+        <div className="h-16 flex items-center px-6 border-b border-white/10 flex-shrink-0">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-chart-1 rounded flex items-center justify-center font-heading font-bold text-lg">
               D
@@ -147,44 +203,69 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-          {menuItems.map((item) => {
-            const isActive = location === item.href || 
-              (item.href !== "/admin" && location.startsWith(item.href));
+        <nav className="flex-1 overflow-y-auto p-4 space-y-2" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+          {menuCategories.map((category) => {
+            const isExpanded = expandedCategories[category.label] ?? false;
             return (
-              <Link key={item.href} href={item.href}>
-                <div
-                  className={`
-                    flex items-center gap-3 px-4 py-3 rounded transition-colors
-                    ${isActive 
-                      ? "bg-chart-1 text-white" 
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
-                    }
-                  `}
-                  onClick={() => setSidebarOpen(false)}
+              <div key={category.label}>
+                {/* Category Header */}
+                <button
+                  onClick={() => toggleCategory(category.label)}
+                  className="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm font-semibold uppercase tracking-wider"
                 >
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.label}</span>
-                </div>
-              </Link>
+                  <span>{category.label}</span>
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform duration-200 ${
+                      isExpanded ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Category Items */}
+                {isExpanded && (
+                  <div className="space-y-1 pl-2">
+                    {category.items.map((item) => {
+                      const isActive = location === item.href || 
+                        (item.href !== "/admin" && location.startsWith(item.href));
+                      return (
+                        <Link key={item.href} href={item.href}>
+                          <div
+                            className={`
+                              flex items-center gap-3 px-4 py-2 rounded transition-colors text-sm
+                              ${isActive 
+                                ? "bg-chart-1 text-white" 
+                                : "text-white/70 hover:bg-white/10 hover:text-white"
+                              }
+                            `}
+                            onClick={() => setSidebarOpen(false)}
+                          >
+                            <item.icon className="h-4 w-4 flex-shrink-0" />
+                            <span className="font-medium">{item.label}</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
 
         {/* User Info & Logout */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+        <div className="p-4 border-t border-white/10 flex-shrink-0">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
               {user.name?.charAt(0).toUpperCase() || "U"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{user.name || "Admin"}</p>
+              <p className="font-medium truncate text-sm">{user.name || "Admin"}</p>
               <p className="text-xs text-white/60 truncate">{user.email}</p>
             </div>
           </div>
           <div className="flex gap-2">
             <Link href="/" className="flex-1">
-              <Button variant="outline" size="sm" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10">
+              <Button variant="outline" size="sm" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 text-xs">
                 <Home className="h-4 w-4 mr-2" />
                 Trang chủ
               </Button>

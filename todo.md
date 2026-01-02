@@ -211,3 +211,7 @@
 
 ## Bug Fixes (Phase 27)
 - [x] Sửa lỗi "useAdminTheme must be used within AdminThemeProvider" (loại bỏ early return trong AdminThemeProvider)
+
+## Bug Fixes (Phase 28)
+- [x] Sửa lỗi lưu trạng thái khi click vào menu Newsletter và Tin tức
+- [x] Tối ưu menu trái trong trang quản trị theo category (5 categories với collapse/expand)
