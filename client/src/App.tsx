@@ -30,6 +30,7 @@ import AdminEmailCampaign from "./pages/admin/EmailCampaign";
 import AdminJobs from "./pages/admin/Jobs";
 import AdminApplications from "./pages/admin/Applications";
 import AdminPortfolio from "./pages/admin/Portfolio";
+import AdminPartners from "./pages/admin/Partners";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -46,6 +47,7 @@ import CaseStudyDetail from "./pages/CaseStudyDetail";
 import Careers from "./pages/Careers";
 import JobDetail from "./pages/JobDetail";
 import Portfolio from "./pages/Portfolio";
+import Partners from "./pages/Partners";
 
 function PublicRouter() {
   return (
@@ -66,6 +68,7 @@ function PublicRouter() {
         <Route path="/careers" component={Careers} />
         <Route path="/careers/:slug" component={JobDetail} />
         <Route path="/portfolio" component={Portfolio} />
+        <Route path="/partners" component={Partners} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
@@ -97,6 +100,7 @@ function AdminRouter() {
         <Route path="/admin/jobs" component={AdminJobs} />
         <Route path="/admin/applications" component={AdminApplications} />
         <Route path="/admin/portfolio" component={AdminPortfolio} />
+        <Route path="/admin/partners" component={AdminPartners} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>

@@ -315,3 +315,27 @@ export const portfolioItems = mysqlTable("portfolio_items", {
 
 export type PortfolioItem = typeof portfolioItems.$inferSelect;
 export type InsertPortfolioItem = typeof portfolioItems.$inferInsert;
+
+// ============================================
+// PARTNERS / CLIENTS
+// ============================================
+export const partners = mysqlTable("partners", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  logo: varchar("logo", { length: 500 }),
+  website: varchar("website", { length: 500 }),
+  description: text("description"),
+  testimonial: text("testimonial"),
+  testimonialAuthor: varchar("testimonialAuthor", { length: 255 }),
+  testimonialPosition: varchar("testimonialPosition", { length: 255 }),
+  category: mysqlEnum("category", ["manufacturer", "distributor", "enterprise", "government", "other"]).default("enterprise"),
+  isFeatured: mysqlEnum("isFeatured", ["true", "false"]).default("false"),
+  isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
+  sortOrder: int("sortOrder").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Partner = typeof partners.$inferSelect;
+export type InsertPartner = typeof partners.$inferInsert;

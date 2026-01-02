@@ -75,3 +75,10 @@
 - [x] Cập nhật toàn bộ nội dung website theo ngôn ngữ (không chỉ menu)
 - [x] Hoàn thiện CRUD User với phân quyền chi tiết
 - [x] Triển khai bảo mật: rate limiting, CSRF, input validation, XSS prevention
+
+## Tính năng mới (Phase 9)
+- [x] Thiết kế CSDL cho Partners (logo, tên, testimonial, website)
+- [x] Tạo API Backend cho Partners (CRUD)
+- [x] Xây dựng trang quản lý Partners trong Admin
+- [x] Xây dựng trang Partners frontend với logo carousel và testimonials
+- [x] Thêm link Partners vào menu navigation

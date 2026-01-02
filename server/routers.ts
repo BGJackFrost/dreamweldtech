@@ -19,6 +19,7 @@ import {
   jobApplications,
   notifications,
   portfolioItems,
+  partners,
   InsertProduct,
   InsertProductCategory,
   InsertNews,
@@ -31,7 +32,8 @@ import {
   InsertJob,
   InsertJobApplication,
   InsertNotification,
-  InsertPortfolioItem
+  InsertPortfolioItem,
+  InsertPartner
 } from "../drizzle/schema";
 import { eq, desc, asc, and, sql } from "drizzle-orm";
 
@@ -1207,6 +1209,91 @@ const portfolioRouter = router({
 });
 
 // ============================================
+// PARTNERS ROUTER
+// ============================================
+const partnersRouter = router({
+  getAll: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(partners).orderBy(asc(partners.sortOrder), desc(partners.createdAt));
+  }),
+
+  getActive: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(partners).where(eq(partners.isActive, "true")).orderBy(asc(partners.sortOrder));
+  }),
+
+  getFeatured: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(partners).where(and(eq(partners.isActive, "true"), eq(partners.isFeatured, "true"))).orderBy(asc(partners.sortOrder));
+  }),
+
+  getWithTestimonials: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(partners).where(and(eq(partners.isActive, "true"), sql`${partners.testimonial} IS NOT NULL AND ${partners.testimonial} != ''`)).orderBy(asc(partners.sortOrder));
+  }),
+
+  getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return null;
+    const result = await db.select().from(partners).where(eq(partners.id, input.id));
+    return result[0] || null;
+  }),
+
+  create: protectedProcedure.input(z.object({
+    name: z.string(),
+    slug: z.string(),
+    logo: z.string().optional(),
+    website: z.string().optional(),
+    description: z.string().optional(),
+    testimonial: z.string().optional(),
+    testimonialAuthor: z.string().optional(),
+    testimonialPosition: z.string().optional(),
+    category: z.enum(["manufacturer", "distributor", "enterprise", "government", "other"]).optional(),
+    isFeatured: z.enum(["true", "false"]).optional(),
+    isActive: z.enum(["true", "false"]).optional(),
+    sortOrder: z.number().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.insert(partners).values(input as InsertPartner);
+    return { success: true };
+  }),
+
+  update: protectedProcedure.input(z.object({
+    id: z.number(),
+    name: z.string().optional(),
+    slug: z.string().optional(),
+    logo: z.string().optional(),
+    website: z.string().optional(),
+    description: z.string().optional(),
+    testimonial: z.string().optional(),
+    testimonialAuthor: z.string().optional(),
+    testimonialPosition: z.string().optional(),
+    category: z.enum(["manufacturer", "distributor", "enterprise", "government", "other"]).optional(),
+    isFeatured: z.enum(["true", "false"]).optional(),
+    isActive: z.enum(["true", "false"]).optional(),
+    sortOrder: z.number().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const { id, ...data } = input;
+    await db.update(partners).set(data).where(eq(partners.id, id));
+    return { success: true };
+  }),
+
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(partners).where(eq(partners.id, input.id));
+    return { success: true };
+  }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -1234,6 +1321,7 @@ export const appRouter = router({
   jobApplications: jobApplicationsRouter,
   notifications: notificationsRouter,
   portfolio: portfolioRouter,
+  partners: partnersRouter,
 });
 
 // Export createNotification for use in other parts of the app

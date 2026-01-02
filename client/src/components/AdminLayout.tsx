@@ -21,7 +21,8 @@ import {
   FileBarChart,
   Mail,
   Briefcase,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Handshake
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -40,6 +41,7 @@ const menuItems = [
   { href: "/admin/faq", icon: HelpCircle, label: "FAQ" },
   { href: "/admin/case-studies", icon: Award, label: "Case Studies" },
   { href: "/admin/portfolio", icon: ImageIcon, label: "Portfolio" },
+  { href: "/admin/partners", icon: Handshake, label: "Đối Tác" },
   { href: "/admin/newsletter", icon: Send, label: "Newsletter" },
   { href: "/admin/email-campaign", icon: Mail, label: "Email Marketing" },
   { href: "/admin/contacts", icon: MessageSquare, label: "Liên Hệ" },
