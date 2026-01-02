@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { FileUpload } from "@/components/FileUpload";
+import ReactMarkdown from "react-markdown";
 import { 
   Briefcase, 
   MapPin, 
@@ -24,7 +25,8 @@ import {
   Mail,
   Phone,
   Loader2,
-  Upload
+  Upload,
+  Calendar
 } from "lucide-react";
 
 export default function JobDetail() {
@@ -46,6 +48,85 @@ export default function JobDetail() {
   useEffect(() => {
     if (job) {
       document.title = `${job.title} | ${language === "vi" ? "Tuyển Dụng" : "Careers"} | Dreamweldtech`;
+      
+      // SEO Meta tags
+      const metaDescription = document.querySelector('meta[name="description"]');
+      const description = language === "vi"
+        ? `Ứng tuyển vị trí ${job.title} tại Dreamweldtech. ${job.department ? `Phòng ban: ${job.department}.` : ""} ${job.location ? `Địa điểm: ${job.location}.` : ""} ${job.salary ? `Mức lương: ${job.salary}.` : ""}`
+        : `Apply for ${job.title} at Dreamweldtech. ${job.department ? `Department: ${job.department}.` : ""} ${job.location ? `Location: ${job.location}.` : ""} ${job.salary ? `Salary: ${job.salary}.` : ""}`;
+      if (metaDescription) {
+        metaDescription.setAttribute('content', description);
+      } else {
+        const meta = document.createElement('meta');
+        meta.name = 'description';
+        meta.content = description;
+        document.head.appendChild(meta);
+      }
+      
+      // Open Graph tags
+      const setOGTag = (property: string, content: string) => {
+        let tag = document.querySelector(`meta[property="${property}"]`);
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.setAttribute('property', property);
+          document.head.appendChild(tag);
+        }
+        tag.setAttribute('content', content);
+      };
+      
+      setOGTag('og:title', `${job.title} | Dreamweldtech`);
+      setOGTag('og:description', description);
+      setOGTag('og:type', 'website');
+      setOGTag('og:url', window.location.href);
+      
+      // Schema.org JobPosting structured data
+      const existingSchema = document.querySelector('script[type="application/ld+json"][data-page="job-detail"]');
+      if (existingSchema) existingSchema.remove();
+      
+      const schemaData = {
+        "@context": "https://schema.org",
+        "@type": "JobPosting",
+        "title": job.title,
+        "description": job.description?.substring(0, 500) || "",
+        "datePosted": job.createdAt,
+        "validThrough": job.deadline || undefined,
+        "employmentType": job.type?.toUpperCase().replace("-", "_") || "FULL_TIME",
+        "hiringOrganization": {
+          "@type": "Organization",
+          "name": "Dreamweldtech",
+          "sameAs": window.location.origin,
+          "logo": `${window.location.origin}/logo.png`
+        },
+        "jobLocation": {
+          "@type": "Place",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": job.location || "TP. Hồ Chí Minh",
+            "addressCountry": "VN"
+          }
+        },
+        "baseSalary": job.salary ? {
+          "@type": "MonetaryAmount",
+          "currency": "VND",
+          "value": {
+            "@type": "QuantitativeValue",
+            "value": job.salary
+          }
+        } : undefined,
+        "experienceRequirements": job.experience || undefined,
+        "industry": "Laser Technology, Industrial Automation"
+      };
+      
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute('data-page', 'job-detail');
+      script.textContent = JSON.stringify(schemaData);
+      document.head.appendChild(script);
+      
+      return () => {
+        const schema = document.querySelector('script[type="application/ld+json"][data-page="job-detail"]');
+        if (schema) schema.remove();
+      };
     }
   }, [job, language]);
 
@@ -156,11 +237,14 @@ export default function JobDetail() {
               {job.description && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>{language === "vi" ? "Mô tả công việc" : "Job Description"}</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      {language === "vi" ? "Mô tả công việc" : "Job Description"}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="prose prose-sm max-w-none whitespace-pre-line">
-                      {job.description}
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown>{job.description}</ReactMarkdown>
                     </div>
                   </CardContent>
                 </Card>
@@ -169,11 +253,14 @@ export default function JobDetail() {
               {job.requirements && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>{language === "vi" ? "Yêu cầu" : "Requirements"}</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-primary" />
+                      {language === "vi" ? "Yêu cầu" : "Requirements"}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="prose prose-sm max-w-none whitespace-pre-line">
-                      {job.requirements}
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown>{job.requirements}</ReactMarkdown>
                     </div>
                   </CardContent>
                 </Card>
@@ -182,11 +269,14 @@ export default function JobDetail() {
               {job.benefits && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>{language === "vi" ? "Quyền lợi" : "Benefits"}</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="h-5 w-5 text-primary" />
+                      {language === "vi" ? "Quyền lợi" : "Benefits"}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="prose prose-sm max-w-none whitespace-pre-line">
-                      {job.benefits}
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown>{job.benefits}</ReactMarkdown>
                     </div>
                   </CardContent>
                 </Card>

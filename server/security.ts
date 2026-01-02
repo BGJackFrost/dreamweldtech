@@ -283,6 +283,177 @@ export function securityLogger(req: Request, _res: Response, next: NextFunction)
 }
 
 // ============================================
+// HONEYPOT DETECTION (Bot protection)
+// ============================================
+export function honeypotMiddleware(req: Request, res: Response, next: NextFunction) {
+  // Check for honeypot fields that bots might fill
+  const honeypotFields = ["website", "url", "fax", "company_website"];
+  
+  for (const field of honeypotFields) {
+    if (req.body && req.body[field]) {
+      const ip = req.ip || req.socket.remoteAddress || "unknown";
+      recordSuspiciousActivity(ip);
+      console.warn(`[Security] Honeypot triggered by IP: ${ip}, field: ${field}`);
+      res.status(400).json({ error: "Invalid request" });
+      return;
+    }
+  }
+  
+  next();
+}
+
+// ============================================
+// FILE UPLOAD VALIDATION
+// ============================================
+const ALLOWED_FILE_TYPES = {
+  documents: [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
+  images: [
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "image/svg+xml",
+  ],
+};
+
+export function validateFileUpload(
+  file: { mimetype: string; size: number; originalname: string },
+  options: { maxSize?: number; allowedTypes?: "documents" | "images" | "all" } = {}
+): { valid: boolean; error?: string } {
+  const { maxSize = 10 * 1024 * 1024, allowedTypes = "all" } = options;
+  
+  // Check file size
+  if (file.size > maxSize) {
+    return { valid: false, error: `File size exceeds ${maxSize / 1024 / 1024}MB limit` };
+  }
+  
+  // Check file type
+  let allowed: string[] = [];
+  if (allowedTypes === "documents") {
+    allowed = ALLOWED_FILE_TYPES.documents;
+  } else if (allowedTypes === "images") {
+    allowed = ALLOWED_FILE_TYPES.images;
+  } else {
+    allowed = [...ALLOWED_FILE_TYPES.documents, ...ALLOWED_FILE_TYPES.images];
+  }
+  
+  if (!allowed.includes(file.mimetype)) {
+    return { valid: false, error: "File type not allowed" };
+  }
+  
+  // Check for dangerous file extensions
+  const dangerousExtensions = [".exe", ".bat", ".cmd", ".sh", ".php", ".js", ".html", ".htm"];
+  const ext = "." + file.originalname.split(".").pop()?.toLowerCase();
+  if (dangerousExtensions.includes(ext)) {
+    return { valid: false, error: "File extension not allowed" };
+  }
+  
+  return { valid: true };
+}
+
+// ============================================
+// BRUTE FORCE PROTECTION
+// ============================================
+const loginAttempts = new Map<string, { count: number; lastAttempt: number; blockedUntil?: number }>();
+
+export function checkBruteForce(identifier: string): { allowed: boolean; waitTime?: number } {
+  const now = Date.now();
+  const entry = loginAttempts.get(identifier);
+  
+  if (!entry) {
+    return { allowed: true };
+  }
+  
+  // Check if blocked
+  if (entry.blockedUntil && entry.blockedUntil > now) {
+    return { allowed: false, waitTime: Math.ceil((entry.blockedUntil - now) / 1000) };
+  }
+  
+  // Reset if last attempt was more than 15 minutes ago
+  if (now - entry.lastAttempt > 15 * 60 * 1000) {
+    loginAttempts.delete(identifier);
+    return { allowed: true };
+  }
+  
+  return { allowed: true };
+}
+
+export function recordLoginAttempt(identifier: string, success: boolean) {
+  const now = Date.now();
+  const entry = loginAttempts.get(identifier) || { count: 0, lastAttempt: now };
+  
+  if (success) {
+    loginAttempts.delete(identifier);
+    return;
+  }
+  
+  entry.count++;
+  entry.lastAttempt = now;
+  
+  // Progressive blocking
+  if (entry.count >= 5) {
+    // Block for increasing durations: 1min, 5min, 15min, 30min, 1hour
+    const blockDurations = [60, 300, 900, 1800, 3600];
+    const blockIndex = Math.min(entry.count - 5, blockDurations.length - 1);
+    entry.blockedUntil = now + blockDurations[blockIndex] * 1000;
+    console.warn(`[Security] Brute force protection: ${identifier} blocked for ${blockDurations[blockIndex]}s`);
+  }
+  
+  loginAttempts.set(identifier, entry);
+}
+
+// Clean up old login attempts
+setInterval(() => {
+  const now = Date.now();
+  const threshold = 30 * 60 * 1000; // 30 minutes
+  Array.from(loginAttempts.entries()).forEach(([key, entry]) => {
+    if (now - entry.lastAttempt > threshold && (!entry.blockedUntil || entry.blockedUntil < now)) {
+      loginAttempts.delete(key);
+    }
+  });
+}, 10 * 60 * 1000); // Every 10 minutes
+
+// ============================================
+// REQUEST SIZE VALIDATION
+// ============================================
+export function validateRequestSize(maxSize: number = 1024 * 1024) { // 1MB default
+  return (req: Request, res: Response, next: NextFunction) => {
+    const contentLength = parseInt(req.headers["content-length"] || "0", 10);
+    
+    if (contentLength > maxSize) {
+      res.status(413).json({ error: "Request entity too large" });
+      return;
+    }
+    
+    next();
+  };
+}
+
+// ============================================
+// SENSITIVE DATA MASKING (for logs)
+// ============================================
+export function maskSensitiveData(data: Record<string, unknown>): Record<string, unknown> {
+  const sensitiveFields = ["password", "token", "secret", "apiKey", "creditCard", "ssn"];
+  const masked: Record<string, unknown> = {};
+  
+  for (const [key, value] of Object.entries(data)) {
+    if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
+      masked[key] = "***MASKED***";
+    } else if (typeof value === "object" && value !== null) {
+      masked[key] = maskSensitiveData(value as Record<string, unknown>);
+    } else {
+      masked[key] = value;
+    }
+  }
+  
+  return masked;
+}
+
+// ============================================
 // EXPORT ALL MIDDLEWARE
 // ============================================
 export const securityMiddleware = [

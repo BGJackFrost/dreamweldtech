@@ -93,3 +93,12 @@
 - [x] Thêm dữ liệu mẫu cho trang Careers (5 vị trí tuyển dụng)
 - [x] Tối ưu SEO cho trang Partners (meta tags, schema markup)
 - [x] Tối ưu SEO cho trang Careers (meta tags, schema markup)
+
+## Tính năng mới (Phase 12)
+- [x] Tạo trang chi tiết việc làm /careers/:slug (có sẵn)
+- [x] Thêm form ứng tuyển với validation + SEO schema
+- [x] Tích hợp upload CV lên S3 (đã có sẵn FileUpload component + /api/upload)
+- [x] Tạo sitemap.xml động cho SEO + robots.txt
+- [x] Tăng cường bảo mật: rate limiting, input sanitization (đã có sẵn)
+- [x] Tăng cường bảo mật: CSRF, XSS, honeypot, brute force, file validation
+- [x] Viết unit tests cho các tính năng mới (85 tests passed)

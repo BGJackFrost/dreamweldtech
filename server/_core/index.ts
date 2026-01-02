@@ -10,7 +10,8 @@ import { serveStatic, setupVite } from "./vite";
 import { storagePut } from "../storage";
 import multer from "multer";
 import type { Request, Response } from "express";
-import { securityHeaders, apiRateLimit, sanitizeMiddleware, securityLogger, checkBlockedIP, strictRateLimit } from "../security";
+import { securityHeaders, apiRateLimit, sanitizeMiddleware, securityLogger, checkBlockedIP, strictRateLimit, validateFileUpload, honeypotMiddleware } from "../security";
+import { generateSitemap, generateRobotsTxt } from "../sitemap";
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -62,7 +63,33 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
-  // File upload endpoint
+  // Sitemap.xml endpoint
+  app.get("/sitemap.xml", async (_req: Request, res: Response) => {
+    try {
+      const sitemap = await generateSitemap();
+      res.setHeader("Content-Type", "application/xml");
+      res.setHeader("Cache-Control", "public, max-age=3600"); // Cache for 1 hour
+      res.send(sitemap);
+    } catch (error) {
+      console.error("Sitemap generation error:", error);
+      res.status(500).send("Error generating sitemap");
+    }
+  });
+
+  // Robots.txt endpoint
+  app.get("/robots.txt", async (_req: Request, res: Response) => {
+    try {
+      const robots = await generateRobotsTxt();
+      res.setHeader("Content-Type", "text/plain");
+      res.setHeader("Cache-Control", "public, max-age=86400"); // Cache for 24 hours
+      res.send(robots);
+    } catch (error) {
+      console.error("Robots.txt generation error:", error);
+      res.status(500).send("Error generating robots.txt");
+    }
+  });
+
+  // File upload endpoint with enhanced security
   app.post("/api/upload", upload.single("file"), async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
@@ -70,8 +97,23 @@ async function startServer() {
       }
 
       const file = req.file;
+      
+      // Validate file with security checks
+      const validation = validateFileUpload(file, {
+        maxSize: 10 * 1024 * 1024, // 10MB
+        allowedTypes: "all",
+      });
+      
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+      
       const timestamp = Date.now();
-      const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, "_");
+      // Sanitize filename more strictly
+      const safeName = file.originalname
+        .replace(/[^a-zA-Z0-9.-]/g, "_")
+        .replace(/\.{2,}/g, ".") // Prevent directory traversal
+        .substring(0, 100); // Limit filename length
       const key = `uploads/cv/${timestamp}-${safeName}`;
 
       const result = await storagePut(key, file.buffer, file.mimetype);
