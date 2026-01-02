@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO product_categories (name, slug, description, sortOrder, isActive) VALUES \n('Máy Hàn Laser', 'may-han-laser', 'Dòng máy hàn laser công nghiệp với công suất từ 1000W đến 3000W, phù hợp cho hàn kim loại tấm, ống và các chi tiết cơ khí chính xác.', 1, 'true'),\n('Máy Cắt Laser', 'may-cat-laser', 'Máy cắt laser fiber công suất cao, cắt nhanh và chính xác các loại kim loại như thép, inox, nhôm, đồng với độ dày lên đến 30mm.', 2, 'true'),\n('Máy Làm Sạch Laser', 'may-lam-sach-laser', 'Thiết bị làm sạch bề mặt kim loại bằng công nghệ laser, loại bỏ rỉ sét, sơn cũ, dầu mỡ mà không làm hư hại vật liệu gốc.', 3, 'true'),\n('Phụ Kiện & Vật Tư', 'phu-kien-vat-tu', 'Các loại phụ kiện, vật tư tiêu hao và linh kiện thay thế cho máy laser công nghiệp.', 4, 'true')\nON DUPLICATE KEY UPDATE name=VALUES(name);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute INSERT INTO product_categories (name, slug, description, sortOrder, isActive) VALUES \n('Máy Hàn Laser', 'may-han-laser', 'Dòng máy hàn laser công nghiệp với công suất từ 1000W đến 3000W, phù hợp cho hàn kim loại tấm, ống và các chi tiết cơ khí chính xác.', 1, 'true'),\n('Máy Cắt Laser', 'may-cat-laser', 'Máy cắt laser fiber công suất cao, cắt nhanh và chính xác các loại kim loại như thép, inox, nhôm, đồng với độ dày lên đến 30mm.', 2, 'true'),\n('Máy Làm Sạch Laser', 'may-lam-sach-laser', 'Thiết bị làm sạch bề mặt kim loại bằng công nghệ laser, loại bỏ rỉ sét, sơn cũ, dầu mỡ mà không làm hư hại vật liệu gốc.', 3, 'true'),\n('Phụ Kiện & Vật Tư', 'phu-kien-vat-tu', 'Các loại phụ kiện, vật tư tiêu hao và linh kiện thay thế cho máy laser công nghiệp.', 4, 'true')\nON DUPLICATE KEY UPDATE name=VALUES(name);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1669
+}

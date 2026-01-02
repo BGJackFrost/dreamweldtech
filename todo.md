@@ -128,3 +128,9 @@
 - [x] Thống kê liên hệ và ứng tuyển theo thời gian (7d/30d/90d/1y)
 - [x] Thống kê phân bố trạng thái liên hệ và ứng tuyển
 - [x] Viết unit tests cho các tính năng mới (128 tests passed)
+
+## Tính năng mới (Phase 16)
+- [x] Thêm danh mục sản phẩm mẫu (4 danh mục)
+- [x] Thêm sản phẩm mẫu cho từng danh mục (10 sản phẩm)
+- [x] Tích hợp chatbot AI hỗ trợ khách hàng (nâng cấp knowledge base)
+- [x] Viết unit tests cho các tính năng mới (152 tests passed)
