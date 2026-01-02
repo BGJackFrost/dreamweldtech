@@ -1415,15 +1415,16 @@ const analyticsRouter = router({
     const days = input.period === "7d" ? 7 : input.period === "30d" ? 30 : input.period === "90d" ? 90 : 365;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
+    const startDateStr = startDate.toISOString().slice(0, 10);
 
     const results = await db.select({
-      date: sql<string>`DATE(${contactRequests.createdAt})`,
-      count: sql<number>`count(*)`,
+      date: sql<string>`DATE(createdAt)`.as('date'),
+      count: sql<number>`count(*)`.as('count'),
     })
       .from(contactRequests)
-      .where(sql`${contactRequests.createdAt} >= ${startDate.toISOString()}`)
-      .groupBy(sql`DATE(${contactRequests.createdAt})`)
-      .orderBy(sql`DATE(${contactRequests.createdAt})`);
+      .where(sql`DATE(createdAt) >= ${startDateStr}`)
+      .groupBy(sql`DATE(createdAt)`)
+      .orderBy(sql`DATE(createdAt)`);
 
     return results;
   }),
@@ -1438,15 +1439,16 @@ const analyticsRouter = router({
     const days = input.period === "7d" ? 7 : input.period === "30d" ? 30 : input.period === "90d" ? 90 : 365;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
+    const startDateStr = startDate.toISOString().slice(0, 10);
 
     const results = await db.select({
-      date: sql<string>`DATE(${jobApplications.createdAt})`,
-      count: sql<number>`count(*)`,
+      date: sql<string>`DATE(createdAt)`.as('date'),
+      count: sql<number>`count(*)`.as('count'),
     })
       .from(jobApplications)
-      .where(sql`${jobApplications.createdAt} >= ${startDate.toISOString()}`)
-      .groupBy(sql`DATE(${jobApplications.createdAt})`)
-      .orderBy(sql`DATE(${jobApplications.createdAt})`);
+      .where(sql`DATE(createdAt) >= ${startDateStr}`)
+      .groupBy(sql`DATE(createdAt)`)
+      .orderBy(sql`DATE(createdAt)`);
 
     return results;
   }),
@@ -1494,26 +1496,27 @@ const analyticsRouter = router({
 
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - 12);
+    const startDateStr = startDate.toISOString().slice(0, 10);
 
     // Get contacts by month
     const contactsByMonth = await db.select({
-      month: sql<string>`DATE_FORMAT(${contactRequests.createdAt}, '%Y-%m')`,
-      count: sql<number>`count(*)`,
+      month: sql<string>`DATE_FORMAT(createdAt, '%Y-%m')`.as('month'),
+      count: sql<number>`count(*)`.as('count'),
     })
       .from(contactRequests)
-      .where(sql`${contactRequests.createdAt} >= ${startDate.toISOString()}`)
-      .groupBy(sql`DATE_FORMAT(${contactRequests.createdAt}, '%Y-%m')`)
-      .orderBy(sql`DATE_FORMAT(${contactRequests.createdAt}, '%Y-%m')`);
+      .where(sql`DATE(createdAt) >= ${startDateStr}`)
+      .groupBy(sql`DATE_FORMAT(createdAt, '%Y-%m')`)
+      .orderBy(sql`DATE_FORMAT(createdAt, '%Y-%m')`);
 
     // Get applications by month
     const applicationsByMonth = await db.select({
-      month: sql<string>`DATE_FORMAT(${jobApplications.createdAt}, '%Y-%m')`,
-      count: sql<number>`count(*)`,
+      month: sql<string>`DATE_FORMAT(createdAt, '%Y-%m')`.as('month'),
+      count: sql<number>`count(*)`.as('count'),
     })
       .from(jobApplications)
-      .where(sql`${jobApplications.createdAt} >= ${startDate.toISOString()}`)
-      .groupBy(sql`DATE_FORMAT(${jobApplications.createdAt}, '%Y-%m')`)
-      .orderBy(sql`DATE_FORMAT(${jobApplications.createdAt}, '%Y-%m')`);
+      .where(sql`DATE(createdAt) >= ${startDateStr}`)
+      .groupBy(sql`DATE_FORMAT(createdAt, '%Y-%m')`)
+      .orderBy(sql`DATE_FORMAT(createdAt, '%Y-%m')`);
 
     // Merge data
     const months: string[] = [];

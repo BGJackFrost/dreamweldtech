@@ -149,3 +149,7 @@
 - [x] Cập nhật schema portfolio với media fields (thêm slug)
 - [x] Thêm dữ liệu mẫu cho portfolio (5 dự án với hình ảnh và video)
 - [x] Viết unit tests cho các tính năng mới (185 tests passed)
+
+## Bug Fixes (Phase 19)
+- [x] Sửa lỗi SQL query DATE_FORMAT trong analyticsRouter
+- [x] Sửa lỗi SQL query DATE trong analyticsRouter
