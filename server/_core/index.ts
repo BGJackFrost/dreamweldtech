@@ -12,6 +12,7 @@ import multer from "multer";
 import type { Request, Response } from "express";
 import { securityHeaders, apiRateLimit, sanitizeMiddleware, securityLogger, checkBlockedIP, strictRateLimit, validateFileUpload, honeypotMiddleware } from "../security";
 import { generateSitemap, generateRobotsTxt } from "../sitemap";
+import { setupWebSocket } from "../websocket";
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -145,8 +146,13 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
+  // Setup WebSocket server for real-time notifications
+  const wss = setupWebSocket(server);
+  console.log('[WebSocket] Server initialized at /api/ws/notifications');
+
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    console.log(`WebSocket server ready for connections`);
   });
 }
 

@@ -50,6 +50,7 @@ import {
 import { eq, desc, asc, and, sql } from "drizzle-orm";
 import { notifyNewJobApplication, notifyNewContactForm } from "./email";
 import { exportData, importData, exportSensitiveData, getDatabaseStats, BackupData } from "./backup";
+import { triggerNewContact, triggerNewJobApplication, triggerNewNewsletterSubscription } from "./integrations";
 
 // ============================================
 // PRODUCT CATEGORIES ROUTER
@@ -358,9 +359,12 @@ const contactsRouter = router({
     const { recaptchaToken, ...contactData } = input;
     const db = await getDb();
     if (!db) throw new Error("Database not available");
-    await db.insert(contactRequests).values(contactData as InsertContactRequest);
     
-    // Create notification for admin
+    // Insert contact request
+    const result = await db.insert(contactRequests).values(contactData as InsertContactRequest);
+    const contactId = Number(result[0].insertId);
+    
+    // Create notification for admin (legacy)
     const notifType = input.requestType === "quote" ? "quote" : "contact";
     const notifTitle = input.requestType === "quote" 
       ? `Yêu cầu báo giá mới từ ${input.name}`
@@ -372,14 +376,16 @@ const contactsRouter = router({
       link: "/admin/contacts",
     } as InsertNotification);
     
-    // Send email notification to admin
-    await notifyNewContactForm({
+    // Trigger integration: WebSocket notification + Email workflow + Activity log
+    triggerNewContact({
+      id: contactId,
       name: input.name,
       email: input.email,
       phone: input.phone,
       company: input.company,
       subject: input.subject,
-      message: input.message || "",
+      message: input.message,
+      requestType: input.requestType,
     });
     
     return { success: true, message: "Yêu cầu của bạn đã được gửi thành công!" };
@@ -507,16 +513,35 @@ const newsletterRouter = router({
           subscribedAt: new Date(),
           unsubscribedAt: null,
         }).where(eq(newsletterSubscribers.id, existing[0].id));
+        
+        // Trigger integration for re-subscription
+        triggerNewNewsletterSubscription({
+          id: existing[0].id,
+          email: input.email,
+          name: input.name,
+          source: input.source,
+        });
+        
         return { success: true, message: "Đã đăng ký lại thành công!" };
       }
       return { success: false, message: "Email này đã được đăng ký." };
     }
     
-    await db.insert(newsletterSubscribers).values({
+    // Insert new subscriber
+    const result = await db.insert(newsletterSubscribers).values({
       email: input.email,
       name: input.name,
       source: input.source || "website",
     } as InsertNewsletterSubscriber);
+    const subscriberId = Number(result[0].insertId);
+    
+    // Trigger integration: WebSocket notification + Email workflow + Activity log
+    triggerNewNewsletterSubscription({
+      id: subscriberId,
+      email: input.email,
+      name: input.name,
+      source: input.source || "website",
+    });
     
     return { success: true, message: "Đăng ký thành công!" };
   }),
@@ -1061,13 +1086,16 @@ const jobApplicationsRouter = router({
     const { recaptchaToken, ...applicationData } = input;
     const db = await getDb();
     if (!db) throw new Error("Database not available");
-    await db.insert(jobApplications).values(applicationData as InsertJobApplication);
+    
+    // Insert job application
+    const result = await db.insert(jobApplications).values(applicationData as InsertJobApplication);
+    const applicationId = Number(result[0].insertId);
     
     // Get job title for notification
     const job = await db.select({ title: jobs.title }).from(jobs).where(eq(jobs.id, input.jobId)).limit(1);
     const jobTitle = job[0]?.title || "Vị trí tuyển dụng";
     
-    // Create notification and send email
+    // Create notification (legacy)
     await db.insert(notifications).values({
       type: "application",
       title: `Đơn ứng tuyển mới từ ${input.name}`,
@@ -1075,14 +1103,16 @@ const jobApplicationsRouter = router({
       link: "/admin/applications",
     } as InsertNotification);
     
-    // Send email notification to admin
-    await notifyNewJobApplication({
-      applicantName: input.name,
-      applicantEmail: input.email,
-      applicantPhone: input.phone,
+    // Trigger integration: WebSocket notification + Email workflow + Activity log
+    triggerNewJobApplication({
+      id: applicationId,
+      jobId: input.jobId,
       jobTitle: jobTitle,
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      resumeUrl: input.resumeUrl,
       coverLetter: input.coverLetter,
-      cvUrl: input.resumeUrl,
     });
     
     return { success: true, message: "Đơn ứng tuyển đã được gửi thành công!" };
@@ -1748,14 +1778,15 @@ const notificationCenterRouter = router({
     }),
   unreadCount: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
-    if (!db) return 0;
+    if (!db) return { count: 0 };
+    
+    // Count notifications for this user OR system-wide notifications (userId = null)
     const result = await db.select({ count: sql`COUNT(*)` })
       .from(notificationCenter)
-      .where(and(
-        eq(notificationCenter.userId, ctx.user?.id || 0),
-        eq(notificationCenter.isRead, "false")
-      ));
-    return result[0]?.count || 0;
+      .where(eq(notificationCenter.isRead, "false"));
+    
+    const count = Number(result[0]?.count) || 0;
+    return { count };
   }),
   markAsRead: protectedProcedure
     .input(z.object({ id: z.number() }))

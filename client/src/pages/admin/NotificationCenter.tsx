@@ -126,9 +126,9 @@ export default function NotificationCenter() {
           </h1>
           <p className="text-gray-600 mt-2">Quản lý tất cả thông báo từ hệ thống</p>
         </div>
-        {unreadCount && (unreadCount as number) > 0 && (
+        {unreadCount && (unreadCount as { count: number })?.count > 0 && (
           <div className="text-right">
-            <div className="text-4xl font-bold text-cyan-500">{unreadCount as number}</div>
+            <div className="text-4xl font-bold text-cyan-500">{(unreadCount as { count: number })?.count}</div>
             <p className="text-gray-600">Thông báo chưa đọc</p>
           </div>
         )}

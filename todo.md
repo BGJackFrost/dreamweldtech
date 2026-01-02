@@ -291,3 +291,31 @@
 - [x] Dashboard setup recommendations - MONITORING_GUIDE.md
 - [x] Alerting rules (critical & warning) - MONITORING_GUIDE.md
 **Status: 100/100 - Phase 4 hoàn thành 100%**
+
+
+## PHASE 5: WebSocket & Email Automation Integration
+
+- [ ] Integrate Real WebSocket Backend for admin notifications
+- [ ] Connect frontend WebSocket hook to /api/ws/notifications endpoint
+- [ ] Replace mock data with real WebSocket events
+- [ ] Setup Email Automation Triggers with SendGrid
+- [ ] Auto-send emails for new contacts
+- [ ] Auto-send emails for job applications
+- [ ] Auto-send emails for newsletter subscriptions
+- [ ] Auto-log activities to database
+- [ ] Prepare deployment guide for dreamweldtech.vn
+- [ ] Test all critical user flows
+
+
+## PHASE 33: WebSocket & Email Automation Integration
+- [x] Integrate Real WebSocket Backend - Connect frontend WebSocket hook to production endpoint (/api/ws/notifications)
+- [x] Setup Email Automation Triggers - Implement database triggers to automatically log activities and send emails via SendGrid
+- [x] Update contactsRouter with WebSocket + Email integration
+- [x] Update jobApplicationsRouter with WebSocket + Email integration
+- [x] Update newsletterRouter with WebSocket + Email integration
+- [x] Create integrations.ts module for unified WebSocket + Email workflows
+- [x] Update NotificationProvider with user authentication and subscription
+- [x] Update emailWorkflows.ts with Vietnamese templates and lead scoring
+- [x] Tạo hướng dẫn deploy chi tiết (DEPLOYMENT_DREAMWELDTECH_VN.md)
+- [x] Viết unit tests cho integrations (262 tests passed)
+- [ ] Deploy to Custom Domain - Use Manus Publish button to deploy to dreamweldtech.vn
