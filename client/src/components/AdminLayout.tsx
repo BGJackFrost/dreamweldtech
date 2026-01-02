@@ -11,7 +11,10 @@ import {
   Menu,
   X,
   Home,
-  FolderTree
+  FolderTree,
+  Layout,
+  Mail,
+  HelpCircle
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -22,9 +25,12 @@ interface AdminLayoutProps {
 
 const menuItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/homepage", icon: Layout, label: "Trang Chủ" },
   { href: "/admin/products", icon: Package, label: "Sản Phẩm" },
   { href: "/admin/categories", icon: FolderTree, label: "Danh Mục" },
   { href: "/admin/news", icon: FileText, label: "Tin Tức" },
+  { href: "/admin/faq", icon: HelpCircle, label: "FAQ" },
+  { href: "/admin/newsletter", icon: Mail, label: "Newsletter" },
   { href: "/admin/contacts", icon: MessageSquare, label: "Liên Hệ" },
   { href: "/admin/settings", icon: Settings, label: "Cài Đặt" },
 ];

@@ -15,6 +15,13 @@
       "when": 1767321946198,
       "tag": "0001_stormy_baron_zemo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1767324006105,
+      "tag": "0002_luxuriant_jimmy_woo",
+      "breakpoints": true
     }
   ]
 }

@@ -39,3 +39,9 @@
 - [x] Thêm tính năng đa ngôn ngữ (Việt/Anh)
 - [x] Tích hợp Live Chat (Zalo, Facebook Messenger)
 - [x] Thêm gallery ảnh/video cho sản phẩm
+
+## Tính năng mới (Phase 3)
+- [x] Quản lý trang Home trong Admin (Hero Banner, Sections)
+- [x] Tính năng Newsletter (form đăng ký, quản lý subscribers)
+- [x] Tích hợp Google Analytics (sử dụng Umami Analytics tích hợp sẵn)
+- [x] Trang FAQ và quản lý câu hỏi trong Admin

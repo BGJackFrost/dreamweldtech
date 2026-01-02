@@ -10,11 +10,17 @@ import {
   news, 
   contactRequests, 
   siteSettings,
+  newsletterSubscribers,
+  faqs,
+  homePageSections,
   InsertProduct,
   InsertProductCategory,
   InsertNews,
   InsertContactRequest,
-  InsertSiteSetting
+  InsertSiteSetting,
+  InsertNewsletterSubscriber,
+  InsertFAQ,
+  InsertHomePageSection
 } from "../drizzle/schema";
 import { eq, desc, asc, and, sql } from "drizzle-orm";
 
@@ -426,6 +432,218 @@ const settingsRouter = router({
 });
 
 // ============================================
+// NEWSLETTER ROUTER
+// ============================================
+const newsletterRouter = router({
+  subscribe: publicProcedure.input(z.object({
+    email: z.string().email(),
+    name: z.string().optional(),
+    source: z.string().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    
+    // Check if already subscribed
+    const existing = await db.select().from(newsletterSubscribers).where(eq(newsletterSubscribers.email, input.email)).limit(1);
+    
+    if (existing[0]) {
+      if (existing[0].status === "unsubscribed") {
+        // Re-subscribe
+        await db.update(newsletterSubscribers).set({ 
+          status: "active",
+          subscribedAt: new Date(),
+          unsubscribedAt: null,
+        }).where(eq(newsletterSubscribers.id, existing[0].id));
+        return { success: true, message: "Đã đăng ký lại thành công!" };
+      }
+      return { success: false, message: "Email này đã được đăng ký." };
+    }
+    
+    await db.insert(newsletterSubscribers).values({
+      email: input.email,
+      name: input.name,
+      source: input.source || "website",
+    } as InsertNewsletterSubscriber);
+    
+    return { success: true, message: "Đăng ký thành công!" };
+  }),
+
+  unsubscribe: publicProcedure.input(z.object({
+    email: z.string().email(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    
+    await db.update(newsletterSubscribers).set({ 
+      status: "unsubscribed",
+      unsubscribedAt: new Date(),
+    }).where(eq(newsletterSubscribers.email, input.email));
+    
+    return { success: true };
+  }),
+
+  // Admin operations
+  list: protectedProcedure.input(z.object({
+    status: z.enum(["active", "unsubscribed"]).optional(),
+  }).optional()).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    
+    if (input?.status) {
+      return db.select().from(newsletterSubscribers).where(eq(newsletterSubscribers.status, input.status)).orderBy(desc(newsletterSubscribers.subscribedAt));
+    }
+    
+    return db.select().from(newsletterSubscribers).orderBy(desc(newsletterSubscribers.subscribedAt));
+  }),
+
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(newsletterSubscribers).where(eq(newsletterSubscribers.id, input.id));
+    return { success: true };
+  }),
+
+  stats: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { total: 0, active: 0, unsubscribed: 0 };
+    
+    const all = await db.select().from(newsletterSubscribers);
+    const active = all.filter(s => s.status === "active").length;
+    const unsubscribed = all.filter(s => s.status === "unsubscribed").length;
+    
+    return { total: all.length, active, unsubscribed };
+  }),
+});
+
+// ============================================
+// FAQ ROUTER
+// ============================================
+const faqRouter = router({
+  list: publicProcedure.input(z.object({
+    category: z.string().optional(),
+  }).optional()).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    
+    let results = await db.select().from(faqs).where(eq(faqs.isActive, "true")).orderBy(asc(faqs.sortOrder));
+    
+    if (input?.category) {
+      results = results.filter(f => f.category === input.category);
+    }
+    
+    return results;
+  }),
+
+  // Admin operations
+  listAll: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(faqs).orderBy(asc(faqs.sortOrder));
+  }),
+
+  create: protectedProcedure.input(z.object({
+    question: z.string(),
+    questionEn: z.string().optional(),
+    answer: z.string(),
+    answerEn: z.string().optional(),
+    category: z.string().optional(),
+    sortOrder: z.number().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.insert(faqs).values(input as InsertFAQ);
+    return { success: true };
+  }),
+
+  update: protectedProcedure.input(z.object({
+    id: z.number(),
+    question: z.string().optional(),
+    questionEn: z.string().optional(),
+    answer: z.string().optional(),
+    answerEn: z.string().optional(),
+    category: z.string().optional(),
+    sortOrder: z.number().optional(),
+    isActive: z.enum(["true", "false"]).optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const { id, ...data } = input;
+    await db.update(faqs).set(data).where(eq(faqs.id, id));
+    return { success: true };
+  }),
+
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(faqs).where(eq(faqs.id, input.id));
+    return { success: true };
+  }),
+});
+
+// ============================================
+// HOME PAGE SECTIONS ROUTER
+// ============================================
+const homePageRouter = router({
+  getSections: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(homePageSections).where(eq(homePageSections.isActive, "true")).orderBy(asc(homePageSections.sortOrder));
+  }),
+
+  getSection: publicProcedure.input(z.object({ key: z.string() })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return null;
+    const result = await db.select().from(homePageSections).where(eq(homePageSections.sectionKey, input.key)).limit(1);
+    return result[0] || null;
+  }),
+
+  // Admin operations
+  listAll: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(homePageSections).orderBy(asc(homePageSections.sortOrder));
+  }),
+
+  upsert: protectedProcedure.input(z.object({
+    sectionKey: z.string(),
+    title: z.string().optional(),
+    titleEn: z.string().optional(),
+    subtitle: z.string().optional(),
+    subtitleEn: z.string().optional(),
+    content: z.string().optional(),
+    contentEn: z.string().optional(),
+    image: z.string().optional(),
+    backgroundImage: z.string().optional(),
+    buttonText: z.string().optional(),
+    buttonTextEn: z.string().optional(),
+    buttonLink: z.string().optional(),
+    sortOrder: z.number().optional(),
+    isActive: z.enum(["true", "false"]).optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    
+    const existing = await db.select().from(homePageSections).where(eq(homePageSections.sectionKey, input.sectionKey)).limit(1);
+    
+    if (existing[0]) {
+      const { sectionKey, ...data } = input;
+      await db.update(homePageSections).set(data).where(eq(homePageSections.sectionKey, sectionKey));
+    } else {
+      await db.insert(homePageSections).values(input as InsertHomePageSection);
+    }
+    
+    return { success: true };
+  }),
+
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(homePageSections).where(eq(homePageSections.id, input.id));
+    return { success: true };
+  }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -444,6 +662,9 @@ export const appRouter = router({
   news: newsRouter,
   contacts: contactsRouter,
   settings: settingsRouter,
+  newsletter: newsletterRouter,
+  faq: faqRouter,
+  homePage: homePageRouter,
 });
 
 export type AppRouter = typeof appRouter;

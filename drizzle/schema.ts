@@ -129,3 +129,66 @@ export const siteSettings = mysqlTable("site_settings", {
 
 export type SiteSetting = typeof siteSettings.$inferSelect;
 export type InsertSiteSetting = typeof siteSettings.$inferInsert;
+
+// ============================================
+// NEWSLETTER SUBSCRIBERS
+// ============================================
+export const newsletterSubscribers = mysqlTable("newsletter_subscribers", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  name: varchar("name", { length: 255 }),
+  status: mysqlEnum("status", ["active", "unsubscribed"]).default("active").notNull(),
+  source: varchar("source", { length: 100 }), // Where they subscribed from (homepage, footer, popup, etc.)
+  subscribedAt: timestamp("subscribedAt").defaultNow().notNull(),
+  unsubscribedAt: timestamp("unsubscribedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
+export type InsertNewsletterSubscriber = typeof newsletterSubscribers.$inferInsert;
+
+// ============================================
+// FAQ (Frequently Asked Questions)
+// ============================================
+export const faqs = mysqlTable("faqs", {
+  id: int("id").autoincrement().primaryKey(),
+  question: text("question").notNull(),
+  questionEn: text("questionEn"), // English version
+  answer: text("answer").notNull(),
+  answerEn: text("answerEn"), // English version
+  category: varchar("category", { length: 100 }), // e.g., "products", "shipping", "warranty", "general"
+  sortOrder: int("sortOrder").default(0),
+  isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FAQ = typeof faqs.$inferSelect;
+export type InsertFAQ = typeof faqs.$inferInsert;
+
+// ============================================
+// HOME PAGE SECTIONS (for dynamic home page management)
+// ============================================
+export const homePageSections = mysqlTable("home_page_sections", {
+  id: int("id").autoincrement().primaryKey(),
+  sectionKey: varchar("sectionKey", { length: 100 }).notNull().unique(), // e.g., "hero", "about", "products", "solutions", "cta"
+  title: varchar("title", { length: 500 }),
+  titleEn: varchar("titleEn", { length: 500 }),
+  subtitle: text("subtitle"),
+  subtitleEn: text("subtitleEn"),
+  content: text("content"), // JSON or HTML content
+  contentEn: text("contentEn"),
+  image: varchar("image", { length: 500 }),
+  backgroundImage: varchar("backgroundImage", { length: 500 }),
+  buttonText: varchar("buttonText", { length: 100 }),
+  buttonTextEn: varchar("buttonTextEn", { length: 100 }),
+  buttonLink: varchar("buttonLink", { length: 500 }),
+  sortOrder: int("sortOrder").default(0),
+  isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type HomePageSection = typeof homePageSections.$inferSelect;
+export type InsertHomePageSection = typeof homePageSections.$inferInsert;

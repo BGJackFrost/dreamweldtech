@@ -7,6 +7,7 @@ import { SearchDialog } from "./SearchDialog";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LiveChat } from "./LiveChat";
 import { useLanguage } from "@/contexts/LanguageContext";
+import NewsletterForm from "./NewsletterForm";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -179,6 +180,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <li><Link href="/solutions" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.footer.industrySolutions}</Link></li>
               <li><Link href="/news" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.footer.newsEvents}</Link></li>
               <li><Link href="/contact" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>{t.nav.contact}</Link></li>
+              <li><Link href="/faq" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>FAQ</Link></li>
             </ul>
           </div>
 
@@ -198,6 +200,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <span>contact@dreamweldtech.com</span>
               </li>
             </ul>
+            {/* Newsletter */}
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <h5 className="text-sm font-semibold mb-3">{t.newsletter.title}</h5>
+              <NewsletterForm variant="footer" source="footer" />
+            </div>
           </div>
         </div>
 

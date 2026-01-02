@@ -18,6 +18,9 @@ import AdminNews from "./pages/admin/News";
 import NewsForm from "./pages/admin/NewsForm";
 import AdminContacts from "./pages/admin/Contacts";
 import AdminSettings from "./pages/admin/Settings";
+import AdminHomePage from "./pages/admin/HomePage";
+import AdminNewsletter from "./pages/admin/Newsletter";
+import AdminFAQ from "./pages/admin/FAQ";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -27,6 +30,7 @@ import NewsDetail from "./pages/NewsDetail";
 import About from "./pages/About";
 import Solutions from "./pages/Solutions";
 import Contact from "./pages/Contact";
+import FAQPage from "./pages/FAQ";
 
 function PublicRouter() {
   return (
@@ -40,6 +44,7 @@ function PublicRouter() {
         <Route path="/news" component={News} />
         <Route path="/news/:slug" component={NewsDetail} />
         <Route path="/contact" component={Contact} />
+        <Route path="/faq" component={FAQPage} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
@@ -61,6 +66,9 @@ function AdminRouter() {
         <Route path="/admin/news/:id" component={NewsForm} />
         <Route path="/admin/contacts" component={AdminContacts} />
         <Route path="/admin/settings" component={AdminSettings} />
+        <Route path="/admin/homepage" component={AdminHomePage} />
+        <Route path="/admin/newsletter" component={AdminNewsletter} />
+        <Route path="/admin/faq" component={AdminFAQ} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>

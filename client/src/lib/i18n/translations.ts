@@ -130,6 +130,16 @@ export const translations = {
       payment: "Phương thức thanh toán như thế nào?",
       paymentAnswer: "Chúng tôi hỗ trợ nhiều phương thức thanh toán linh hoạt: chuyển khoản, trả góp, và thanh toán theo tiến độ.",
     },
+    // Newsletter
+    newsletter: {
+      title: "Đăng Ký Nhận Tin",
+      description: "Nhận thông tin khuyến mãi và sản phẩm mới từ Dreamweldtech",
+      emailPlaceholder: "Nhập email của bạn",
+      namePlaceholder: "Tên của bạn (không bắt buộc)",
+      subscribe: "Đăng Ký",
+      subscribing: "Đang đăng ký...",
+      success: "Cảm ơn bạn đã đăng ký!",
+    },
     // Product Detail
     productDetail: {
       specifications: "Thông Số Kỹ Thuật",
@@ -272,6 +282,16 @@ export const translations = {
       demoAnswer: "Yes, you can visit our showroom for a live demo or request a demo at your factory.",
       payment: "What are the payment methods?",
       paymentAnswer: "We support flexible payment methods: bank transfer, installment, and progress-based payment.",
+    },
+    // Newsletter
+    newsletter: {
+      title: "Subscribe to Newsletter",
+      description: "Get promotions and new product updates from Dreamweldtech",
+      emailPlaceholder: "Enter your email",
+      namePlaceholder: "Your name (optional)",
+      subscribe: "Subscribe",
+      subscribing: "Subscribing...",
+      success: "Thank you for subscribing!",
     },
     // Product Detail
     productDetail: {
