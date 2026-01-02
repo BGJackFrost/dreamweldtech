@@ -34,3 +34,8 @@
 - [x] Thêm tính năng tìm kiếm sản phẩm và tin tức
 - [x] Kiểm tra và sửa lỗi nested anchor trên các trang khác
 - [x] Hướng dẫn cập nhật nội dung thực tế qua Admin Panel
+
+## Tính năng mới (Phase 2)
+- [x] Thêm tính năng đa ngôn ngữ (Việt/Anh)
+- [x] Tích hợp Live Chat (Zalo, Facebook Messenger)
+- [x] Thêm gallery ảnh/video cho sản phẩm

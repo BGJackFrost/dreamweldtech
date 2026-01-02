@@ -16,6 +16,7 @@ import {
   Phone,
   Mail
 } from "lucide-react";
+import { ProductGallery } from "@/components/ProductGallery";
 import { Link, useParams } from "wouter";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -93,7 +94,16 @@ export default function ProductDetail() {
   const specifications = product.specifications ? JSON.parse(product.specifications) : {};
   const features = product.features ? JSON.parse(product.features) : [];
   const applications = product.applications ? JSON.parse(product.applications) : [];
-  const related = relatedProducts?.filter(p => p.id !== product.id && p.categoryId === product.categoryId).slice(0, 3);
+  const gallery = product.gallery ? JSON.parse(product.gallery) : [];
+  const related = relatedProducts?.filter((p: typeof relatedProducts[0]) => p.id !== product.id && p.categoryId === product.categoryId).slice(0, 3);
+
+  // Parse gallery items for ProductGallery component
+  const galleryItems = gallery.map((item: string | { type: string; url: string; thumbnail?: string }) => {
+    if (typeof item === 'string') {
+      return { type: 'image' as const, url: item };
+    }
+    return item;
+  });
 
   return (
     <>
@@ -122,17 +132,15 @@ export default function ProductDetail() {
       <section className="py-12">
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Product Image */}
+            {/* Product Gallery */}
             <div className="relative">
-              <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
-                <img
-                  src={product.image || "/images/product-laser-welder.jpg"}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <ProductGallery
+                items={galleryItems}
+                mainImage={product.image || "/images/product-laser-welder.jpg"}
+                productName={product.name}
+              />
               {product.isFeatured === "true" && (
-                <Badge className="absolute top-4 left-4 bg-chart-1 text-white">Sản Phẩm Nổi Bật</Badge>
+                <Badge className="absolute top-4 left-4 bg-chart-1 text-white z-10">Sản Phẩm Nổi Bật</Badge>
               )}
             </div>
 
