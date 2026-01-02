@@ -25,7 +25,8 @@ import {
   Handshake,
   Database,
   Sliders,
-  Images
+  Images,
+  Globe
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -55,6 +56,7 @@ const menuItems = [
   { href: "/admin/backup", icon: Database, label: "Sao Lưu" },
   { href: "/admin/site-settings", icon: Sliders, label: "Cấu Hình Website" },
   { href: "/admin/banners", icon: Images, label: "Banner/Slider" },
+  { href: "/admin/multi-language-settings", icon: Globe, label: "Đa Ngôn Ngữ" },
   { href: "/admin/settings", icon: Settings, label: "Cài Đặt" },
 ];
 

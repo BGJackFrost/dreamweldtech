@@ -177,3 +177,9 @@
 - [x] Thêm preview trực tiếp cho cấu hình admin (Menu, Home, About, Footer)
 - [ ] Thêm đa ngôn ngữ cho cấu hình (Việt, Anh, Nhật, Trung) - để lại cho phase sau
 - [x] Viết unit tests cho các tính năng mới (224 tests passed)
+
+## Tính năng mới (Phase 23)
+- [x] Thêm banner mẫu cho slider trang chủ (3 banner: Hàn, Cắt, Làm sạch laser)
+- [x] Thêm đa ngôn ngữ cho cấu hình hero section (Trang Admin Đa Ngôn Ngữ)
+- [x] Thêm đa ngôn ngữ cho cấu hình footer (Trang Admin Đa Ngôn Ngữ)
+- [x] Viết unit tests cho các tính năng mới (239 tests passed)
