@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import Layout from "@/components/Layout";
+// Layout is already provided by PublicRouter in App.tsx
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -86,7 +86,7 @@ export default function Careers() {
   };
 
   return (
-    <Layout>
+    <>
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground py-20 overflow-hidden">
         <div className="absolute inset-0 bg-[url('/images/hero-banner.jpg')] bg-cover bg-center opacity-10" />
@@ -261,6 +261,6 @@ export default function Careers() {
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }

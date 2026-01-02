@@ -82,3 +82,7 @@
 - [x] Xây dựng trang quản lý Partners trong Admin
 - [x] Xây dựng trang Partners frontend với logo carousel và testimonials
 - [x] Thêm link Partners vào menu navigation
+
+## Bug Fixes (Phase 10)
+- [x] Sửa lỗi chồng menu trên trang Đối tác
+- [x] Sửa lỗi chồng menu trên trang Tuyển dụng
