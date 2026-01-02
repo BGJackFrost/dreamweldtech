@@ -826,6 +826,86 @@ const usersRouter = router({
       user: allUsers.filter(u => u.role === "user").length,
     };
   }),
+
+  // Get single user by ID
+  getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    const db = await getDb();
+    if (!db) return null;
+    const result = await db.select().from(users).where(eq(users.id, input.id)).limit(1);
+    return result[0] || null;
+  }),
+
+  // Delete user (soft delete or hard delete)
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    // Prevent self-deletion
+    if (ctx.user?.id === input.id) {
+      throw new Error("Cannot delete your own account");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    
+    // Check if user exists
+    const existingUser = await db.select().from(users).where(eq(users.id, input.id)).limit(1);
+    if (!existingUser[0]) {
+      throw new Error("User not found");
+    }
+    
+    // Prevent deleting other admins (optional security measure)
+    if (existingUser[0].role === "admin") {
+      throw new Error("Cannot delete admin users");
+    }
+    
+    await db.delete(users).where(eq(users.id, input.id));
+    return { success: true };
+  }),
+
+  // Update user info (name, email)
+  update: protectedProcedure.input(z.object({
+    id: z.number(),
+    name: z.string().optional(),
+    email: z.string().email().optional(),
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    
+    const updateData: Record<string, unknown> = {};
+    if (input.name) updateData.name = input.name;
+    if (input.email) updateData.email = input.email;
+    updateData.updatedAt = new Date();
+    
+    await db.update(users).set(updateData).where(eq(users.id, input.id));
+    return { success: true };
+  }),
+
+  // Bulk update roles
+  bulkUpdateRole: protectedProcedure.input(z.object({
+    userIds: z.array(z.number()),
+    role: z.enum(["user", "editor", "admin"]),
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    // Prevent changing own role
+    if (input.userIds.includes(ctx.user?.id || 0)) {
+      throw new Error("Cannot change your own role");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    
+    for (const userId of input.userIds) {
+      await db.update(users).set({ role: input.role }).where(eq(users.id, userId));
+    }
+    return { success: true, count: input.userIds.length };
+  }),
 });
 
 // ============================================

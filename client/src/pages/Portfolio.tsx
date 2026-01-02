@@ -20,11 +20,11 @@ import {
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const categories = [
-  { value: "", label: { vi: "Tất cả", en: "All" } },
-  { value: "welding", label: { vi: "Hàn Laser", en: "Laser Welding" } },
-  { value: "cutting", label: { vi: "Cắt Laser", en: "Laser Cutting" } },
-  { value: "cleaning", label: { vi: "Làm Sạch Laser", en: "Laser Cleaning" } },
-  { value: "automation", label: { vi: "Tự Động Hóa", en: "Automation" } },
+  { value: "", label: { vi: "Tất cả", en: "All", ja: "すべて", zh: "全部" } },
+  { value: "welding", label: { vi: "Hàn Laser", en: "Laser Welding", ja: "レーザー溶接", zh: "激光焊接" } },
+  { value: "cutting", label: { vi: "Cắt Laser", en: "Laser Cutting", ja: "レーザー切断", zh: "激光切割" } },
+  { value: "cleaning", label: { vi: "Làm Sạch Laser", en: "Laser Cleaning", ja: "レーザー洗浄", zh: "激光清洗" } },
+  { value: "automation", label: { vi: "Tự Động Hóa", en: "Automation", ja: "オートメーション", zh: "自动化" } },
 ];
 
 export default function Portfolio() {

@@ -76,11 +76,11 @@ export default function Careers() {
   ];
 
   const getJobTypeLabel = (type: string) => {
-    const labels: Record<string, { vi: string; en: string }> = {
-      "full-time": { vi: "Toàn thời gian", en: "Full-time" },
-      "part-time": { vi: "Bán thời gian", en: "Part-time" },
-      "contract": { vi: "Hợp đồng", en: "Contract" },
-      "internship": { vi: "Thực tập", en: "Internship" },
+    const labels: Record<string, { vi: string; en: string; ja: string; zh: string }> = {
+      "full-time": { vi: "Toàn thời gian", en: "Full-time", ja: "フルタイム", zh: "全职" },
+      "part-time": { vi: "Bán thời gian", en: "Part-time", ja: "パートタイム", zh: "兼职" },
+      "contract": { vi: "Hợp đồng", en: "Contract", ja: "契約", zh: "合同" },
+      "internship": { vi: "Thực tập", en: "Internship", ja: "インターンシップ", zh: "实习" },
     };
     return labels[type]?.[language] || type;
   };

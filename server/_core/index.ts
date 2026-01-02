@@ -10,6 +10,7 @@ import { serveStatic, setupVite } from "./vite";
 import { storagePut } from "../storage";
 import multer from "multer";
 import type { Request, Response } from "express";
+import { securityHeaders, apiRateLimit, sanitizeMiddleware, securityLogger, checkBlockedIP, strictRateLimit } from "../security";
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -45,6 +46,19 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  
+  // Security middleware
+  app.use(checkBlockedIP);
+  app.use(securityHeaders);
+  app.use(sanitizeMiddleware);
+  app.use(securityLogger);
+  
+  // Rate limiting for API routes
+  app.use("/api", apiRateLimit);
+  
+  // Stricter rate limit for sensitive endpoints
+  app.use("/api/oauth", strictRateLimit);
+  
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 

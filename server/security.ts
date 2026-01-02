@@ -1,0 +1,294 @@
+import { Request, Response, NextFunction } from "express";
+
+// ============================================
+// RATE LIMITING
+// ============================================
+interface RateLimitEntry {
+  count: number;
+  resetTime: number;
+}
+
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+// Clean up expired entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  Array.from(rateLimitStore.entries()).forEach(([key, entry]) => {
+    if (entry.resetTime < now) {
+      rateLimitStore.delete(key);
+    }
+  });
+}, 5 * 60 * 1000);
+
+export function rateLimit(options: {
+  windowMs?: number;
+  max?: number;
+  message?: string;
+  keyGenerator?: (req: Request) => string;
+}) {
+  const {
+    windowMs = 60 * 1000, // 1 minute default
+    max = 100, // 100 requests per window default
+    message = "Too many requests, please try again later.",
+    keyGenerator = (req) => req.ip || req.socket.remoteAddress || "unknown",
+  } = options;
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    const key = keyGenerator(req);
+    const now = Date.now();
+    
+    let entry = rateLimitStore.get(key);
+    
+    if (!entry || entry.resetTime < now) {
+      entry = { count: 1, resetTime: now + windowMs };
+      rateLimitStore.set(key, entry);
+    } else {
+      entry.count++;
+    }
+
+    // Set rate limit headers
+    res.setHeader("X-RateLimit-Limit", max);
+    res.setHeader("X-RateLimit-Remaining", Math.max(0, max - entry.count));
+    res.setHeader("X-RateLimit-Reset", Math.ceil(entry.resetTime / 1000));
+
+    if (entry.count > max) {
+      res.status(429).json({ error: message });
+      return;
+    }
+
+    next();
+  };
+}
+
+// Stricter rate limit for sensitive endpoints
+export const strictRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 requests per 15 minutes
+  message: "Too many attempts, please try again after 15 minutes.",
+});
+
+// API rate limit
+export const apiRateLimit = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // 60 requests per minute
+  message: "API rate limit exceeded. Please slow down.",
+});
+
+// ============================================
+// INPUT SANITIZATION
+// ============================================
+export function sanitizeInput(input: unknown): unknown {
+  if (typeof input === "string") {
+    // Remove potentially dangerous HTML/script tags
+    return input
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/<[^>]*>/g, "") // Remove all HTML tags
+      .replace(/javascript:/gi, "")
+      .replace(/on\w+\s*=/gi, "") // Remove event handlers
+      .trim();
+  }
+  
+  if (Array.isArray(input)) {
+    return input.map(sanitizeInput);
+  }
+  
+  if (input && typeof input === "object") {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(input)) {
+      sanitized[key] = sanitizeInput(value);
+    }
+    return sanitized;
+  }
+  
+  return input;
+}
+
+export function sanitizeMiddleware(req: Request, _res: Response, next: NextFunction) {
+  if (req.body) {
+    req.body = sanitizeInput(req.body);
+  }
+  if (req.query) {
+    req.query = sanitizeInput(req.query) as typeof req.query;
+  }
+  next();
+}
+
+// ============================================
+// SECURITY HEADERS
+// ============================================
+export function securityHeaders(_req: Request, res: Response, next: NextFunction) {
+  // Prevent clickjacking
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  
+  // Prevent MIME type sniffing
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  
+  // Enable XSS filter
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  
+  // Referrer policy
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  
+  // Content Security Policy (basic)
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://maps.googleapis.com; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com; " +
+    "img-src 'self' data: https: blob:; " +
+    "connect-src 'self' https: wss:; " +
+    "frame-src 'self' https://www.google.com https://maps.google.com;"
+  );
+  
+  // Strict Transport Security (HSTS)
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  
+  // Permissions Policy
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(self), payment=()"
+  );
+  
+  next();
+}
+
+// ============================================
+// CSRF PROTECTION
+// ============================================
+const csrfTokens = new Map<string, { token: string; expires: number }>();
+
+export function generateCsrfToken(sessionId: string): string {
+  const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+  csrfTokens.set(sessionId, {
+    token,
+    expires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+  });
+  return token;
+}
+
+export function validateCsrfToken(sessionId: string, token: string): boolean {
+  const stored = csrfTokens.get(sessionId);
+  if (!stored) return false;
+  if (stored.expires < Date.now()) {
+    csrfTokens.delete(sessionId);
+    return false;
+  }
+  return stored.token === token;
+}
+
+// Clean up expired CSRF tokens
+setInterval(() => {
+  const now = Date.now();
+  Array.from(csrfTokens.entries()).forEach(([key, entry]) => {
+    if (entry.expires < now) {
+      csrfTokens.delete(key);
+    }
+  });
+}, 60 * 60 * 1000); // Every hour
+
+// ============================================
+// SQL INJECTION PREVENTION (for raw queries)
+// ============================================
+export function escapeSqlString(str: string): string {
+  return str
+    .replace(/'/g, "''")
+    .replace(/\\/g, "\\\\")
+    .replace(/\x00/g, "\\0")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\x1a/g, "\\Z");
+}
+
+// ============================================
+// PASSWORD VALIDATION
+// ============================================
+export function validatePassword(password: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (password.length < 8) {
+    errors.push("Password must be at least 8 characters long");
+  }
+  if (!/[A-Z]/.test(password)) {
+    errors.push("Password must contain at least one uppercase letter");
+  }
+  if (!/[a-z]/.test(password)) {
+    errors.push("Password must contain at least one lowercase letter");
+  }
+  if (!/[0-9]/.test(password)) {
+    errors.push("Password must contain at least one number");
+  }
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    errors.push("Password must contain at least one special character");
+  }
+  
+  return { valid: errors.length === 0, errors };
+}
+
+// ============================================
+// EMAIL VALIDATION
+// ============================================
+export function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+// ============================================
+// IP BLOCKING (for suspicious activity)
+// ============================================
+const blockedIPs = new Set<string>();
+const suspiciousActivity = new Map<string, number>();
+
+export function checkBlockedIP(req: Request, res: Response, next: NextFunction) {
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
+  
+  if (blockedIPs.has(ip)) {
+    res.status(403).json({ error: "Access denied" });
+    return;
+  }
+  
+  next();
+}
+
+export function recordSuspiciousActivity(ip: string) {
+  const count = (suspiciousActivity.get(ip) || 0) + 1;
+  suspiciousActivity.set(ip, count);
+  
+  // Block IP after 10 suspicious activities
+  if (count >= 10) {
+    blockedIPs.add(ip);
+    console.warn(`[Security] Blocked IP: ${ip} due to suspicious activity`);
+  }
+}
+
+// ============================================
+// REQUEST LOGGING (for security auditing)
+// ============================================
+export function securityLogger(req: Request, _res: Response, next: NextFunction) {
+  const log = {
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    path: req.path,
+    ip: req.ip || req.socket.remoteAddress,
+    userAgent: req.headers["user-agent"],
+    referer: req.headers["referer"],
+  };
+  
+  // Log to console in development
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[Security Log]", JSON.stringify(log));
+  }
+  
+  next();
+}
+
+// ============================================
+// EXPORT ALL MIDDLEWARE
+// ============================================
+export const securityMiddleware = [
+  checkBlockedIP,
+  securityHeaders,
+  apiRateLimit,
+  sanitizeMiddleware,
+  securityLogger,
+];

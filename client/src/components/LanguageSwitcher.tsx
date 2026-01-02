@@ -8,8 +8,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Globe } from "lucide-react";
 
+const languages = [
+  { code: "vi" as const, name: "Tiếng Việt", flag: "🇻🇳" },
+  { code: "en" as const, name: "English", flag: "🇺🇸" },
+  { code: "ja" as const, name: "日本語", flag: "🇯🇵" },
+  { code: "zh" as const, name: "中文", flag: "🇨🇳" },
+];
+
 export function LanguageSwitcher() {
   const { language, setLanguage } = useLanguage();
+
+  const currentLang = languages.find((l) => l.code === language);
 
   return (
     <DropdownMenu>
@@ -20,20 +29,16 @@ export function LanguageSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => setLanguage("vi")}
-          className={language === "vi" ? "bg-accent" : ""}
-        >
-          <span className="mr-2">🇻🇳</span>
-          Tiếng Việt
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => setLanguage("en")}
-          className={language === "en" ? "bg-accent" : ""}
-        >
-          <span className="mr-2">🇺🇸</span>
-          English
-        </DropdownMenuItem>
+        {languages.map((lang) => (
+          <DropdownMenuItem
+            key={lang.code}
+            onClick={() => setLanguage(lang.code)}
+            className={language === lang.code ? "bg-accent" : ""}
+          >
+            <span className="mr-2">{lang.flag}</span>
+            {lang.name}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

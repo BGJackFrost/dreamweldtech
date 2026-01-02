@@ -69,3 +69,9 @@
 
 ## Bug Fixes (Phase 7)
 - [x] Sửa lỗi DialogContent thiếu DialogTitle (accessibility)
+
+## Tính năng mới (Phase 8)
+- [x] Thêm tiếng Nhật và tiếng Trung vào hệ thống đa ngôn ngữ
+- [x] Cập nhật toàn bộ nội dung website theo ngôn ngữ (không chỉ menu)
+- [x] Hoàn thiện CRUD User với phân quyền chi tiết
+- [x] Triển khai bảo mật: rate limiting, CSRF, input validation, XSS prevention

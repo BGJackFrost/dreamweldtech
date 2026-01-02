@@ -11,15 +11,23 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 const LANGUAGE_KEY = "dreamweldtech-language";
 
+const SUPPORTED_LANGUAGES: Language[] = ["vi", "en", "ja", "zh"];
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem(LANGUAGE_KEY);
-      if (saved === "en" || saved === "vi") {
-        return saved;
+      if (saved && SUPPORTED_LANGUAGES.includes(saved as Language)) {
+        return saved as Language;
       }
       // Detect browser language
       const browserLang = navigator.language.toLowerCase();
+      if (browserLang.startsWith("ja")) {
+        return "ja";
+      }
+      if (browserLang.startsWith("zh")) {
+        return "zh";
+      }
       if (browserLang.startsWith("en")) {
         return "en";
       }

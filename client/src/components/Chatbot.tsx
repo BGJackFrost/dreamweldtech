@@ -54,7 +54,7 @@ const FAQ_RESPONSES: Record<string, { vi: string; en: string }> = {
   },
 };
 
-const QUICK_QUESTIONS = {
+const QUICK_QUESTIONS: Record<string, string[]> = {
   vi: [
     "Báo giá máy hàn laser",
     "Chính sách bảo hành",
@@ -66,6 +66,18 @@ const QUICK_QUESTIONS = {
     "Warranty policy",
     "Delivery time",
     "Contact for consultation",
+  ],
+  ja: [
+    "レーザー溶接機の見積もり",
+    "保証ポリシー",
+    "納期",
+    "お問い合わせ",
+  ],
+  zh: [
+    "激光焊接机报价",
+    "保修政策",
+    "交货时间",
+    "咨询联系",
   ],
 };
 
