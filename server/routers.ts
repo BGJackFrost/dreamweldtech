@@ -37,6 +37,7 @@ import {
 } from "../drizzle/schema";
 import { eq, desc, asc, and, sql } from "drizzle-orm";
 import { notifyNewJobApplication, notifyNewContactForm } from "./email";
+import { exportData, importData, exportSensitiveData, getDatabaseStats, BackupData } from "./backup";
 
 // ============================================
 // PRODUCT CATEGORIES ROUTER
@@ -1530,6 +1531,52 @@ const analyticsRouter = router({
 });
 
 // ============================================
+// BACKUP ROUTER
+// ============================================
+const backupRouter = router({
+  // Export all data (admin only)
+  export: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    return exportData();
+  }),
+
+  // Export sensitive data (admin only)
+  exportSensitive: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    return exportSensitiveData();
+  }),
+
+  // Import data (admin only)
+  import: protectedProcedure
+    .input(z.object({
+      data: z.any(),
+      overwrite: z.boolean().optional().default(false),
+      tables: z.array(z.string()).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user?.role !== "admin") {
+        throw new Error("Unauthorized: Admin access required");
+      }
+      return importData(input.data as BackupData, {
+        overwrite: input.overwrite,
+        tables: input.tables,
+      });
+    }),
+
+  // Get database statistics (admin only)
+  stats: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    return getDatabaseStats();
+  }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -1559,6 +1606,7 @@ export const appRouter = router({
   portfolio: portfolioRouter,
   partners: partnersRouter,
   analytics: analyticsRouter,
+  backup: backupRouter,
 });
 
 // Export createNotification for use in other parts of the app

@@ -134,3 +134,10 @@
 - [x] Thêm sản phẩm mẫu cho từng danh mục (10 sản phẩm)
 - [x] Tích hợp chatbot AI hỗ trợ khách hàng (nâng cấp knowledge base)
 - [x] Viết unit tests cho các tính năng mới (152 tests passed)
+
+## Tính năng mới (Phase 17)
+- [x] Hoàn thiện trang so sánh sản phẩm với bảng thông số kỹ thuật chi tiết
+- [x] Tìm và thêm hình ảnh thực cho sản phẩm (10 hình ảnh chất lượng cao)
+- [x] Thêm chức năng backup dữ liệu (export/import JSON)
+- [x] Tạo hướng dẫn deploy lên host (DEPLOYMENT_GUIDE.md)
+- [x] Viết unit tests cho các tính năng mới (167 tests passed)

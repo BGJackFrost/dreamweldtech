@@ -22,7 +22,8 @@ import {
   Mail,
   Briefcase,
   Image as ImageIcon,
-  Handshake
+  Handshake,
+  Database
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -49,6 +50,7 @@ const menuItems = [
   { href: "/admin/jobs", icon: Briefcase, label: "Tuyển Dụng" },
   { href: "/admin/applications", icon: FileText, label: "Đơn Ứng Tuyển" },
   { href: "/admin/reports", icon: FileBarChart, label: "Báo Cáo" },
+  { href: "/admin/backup", icon: Database, label: "Sao Lưu" },
   { href: "/admin/settings", icon: Settings, label: "Cài Đặt" },
 ];
 
