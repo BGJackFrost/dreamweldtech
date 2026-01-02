@@ -208,3 +208,6 @@
 - [x] Tạo BulkImportExport page với file upload và download
 - [x] Thêm menu Import/Export vào Admin Panel
 - [x] Viết unit tests cho các tính năng mới (239 tests passed)
+
+## Bug Fixes (Phase 27)
+- [x] Sửa lỗi "useAdminTheme must be used within AdminThemeProvider" (loại bỏ early return trong AdminThemeProvider)

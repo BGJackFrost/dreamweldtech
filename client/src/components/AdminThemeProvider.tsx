@@ -43,10 +43,6 @@ export function AdminThemeProvider({ children }: { children: React.ReactNode }) 
     applyTheme(newTheme);
   };
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
   return (
     <AdminThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
