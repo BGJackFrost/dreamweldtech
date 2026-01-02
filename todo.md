@@ -25,3 +25,6 @@
 ## Đang thực hiện
 - [ ] Tối ưu SEO (Meta tags, Schema markup)
 - [x] Viết unit tests cho các API
+
+## Bug Fixes
+- [x] Sửa lỗi nested anchor tags trên trang chủ

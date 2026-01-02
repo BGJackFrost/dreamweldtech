@@ -150,10 +150,8 @@ export default function Home() {
                   <div className="absolute top-0 left-0 w-full h-0.5 bg-chart-1 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                   <h4 className="text-2xl font-heading font-bold text-primary uppercase mb-3 group-hover:text-chart-1 transition-colors">{product.title}</h4>
                   <p className="text-muted-foreground mb-6 line-clamp-3">{product.desc}</p>
-                  <Link href={product.link}>
-                    <a className="inline-flex items-center text-sm font-bold uppercase tracking-wider text-primary hover:text-chart-1 transition-colors">
+                  <Link href={product.link} className="inline-flex items-center text-sm font-bold uppercase tracking-wider text-primary hover:text-chart-1 transition-colors">
                       Tìm Hiểu Thêm <ArrowRight className="ml-2 h-4 w-4" />
-                    </a>
                   </Link>
                 </div>
               </div>
