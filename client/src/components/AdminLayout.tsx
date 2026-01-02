@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   LayoutDashboard, 
   Package, 
   FileText, 
@@ -26,11 +26,15 @@ import {
   Database,
   Sliders,
   Images,
-  Globe
+  Globe,
+  Moon,
+  Sun,
+  Upload
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { NotificationBell } from "@/components/NotificationBell";
+import { useAdminTheme } from "@/components/AdminThemeProvider";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -57,6 +61,7 @@ const menuItems = [
   { href: "/admin/site-settings", icon: Sliders, label: "Cấu Hình Website" },
   { href: "/admin/banners", icon: Images, label: "Banner/Slider" },
   { href: "/admin/multi-language-settings", icon: Globe, label: "Đa Ngôn Ngữ" },
+  { href: "/admin/bulk-import-export", icon: Database, label: "Import/Export" },
   { href: "/admin/settings", icon: Settings, label: "Cài Đặt" },
 ];
 
@@ -64,6 +69,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { theme, toggleTheme } = useAdminTheme();
 
   if (loading) {
     return (
@@ -96,7 +102,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-secondary/30">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      theme === "dark"
+        ? "bg-slate-950 text-slate-50"
+        : "bg-secondary/30 text-foreground"
+    }`}>
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-primary text-white z-50 flex items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
@@ -117,10 +127,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-primary text-white z-40
-        transform transition-transform duration-300 ease-in-out
+        fixed top-0 left-0 h-full w-64 text-white z-40
+        transform transition-all duration-300 ease-in-out
         lg:translate-x-0
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        ${theme === "dark" ? "bg-slate-900" : "bg-primary"}
       `}>
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-white/10">
@@ -199,14 +210,45 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       )}
 
       {/* Main Content */}
-      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
+      <main className={`lg:ml-64 pt-16 lg:pt-0 min-h-screen transition-colors duration-300 ${
+        theme === "dark" ? "bg-slate-950" : "bg-background"
+      }`}>
         {/* Desktop Header with Notifications */}
-        <div className="hidden lg:flex h-16 items-center justify-between px-8 border-b bg-background flex-shrink-0">
+        <div className={`hidden lg:flex h-16 items-center justify-between px-8 border-b flex-shrink-0 transition-colors duration-300 ${
+          theme === "dark"
+            ? "bg-slate-900 border-slate-800"
+            : "bg-background border-border"
+        }`}>
           <div className="flex-1" />
-          <NotificationBell />
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className={`transition-colors ${
+                theme === "dark"
+                  ? "hover:bg-slate-800 text-slate-400"
+                  : "hover:bg-secondary text-muted-foreground"
+              }`}
+              title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+            >
+              {theme === "light" ? (
+                <Moon className="h-5 w-5" />
+              ) : (
+                <Sun className="h-5 w-5" />
+              )}
+            </Button>
+            <NotificationBell />
+          </div>
         </div>
-        <div className="p-6 lg:p-8">
-          {children}
+        <div className={`p-6 lg:p-8 transition-colors duration-300 ${
+          theme === "dark" ? "bg-slate-950" : "bg-background"
+        }`}>
+          <div className={`transition-colors duration-300 ${
+            theme === "dark" ? "text-slate-50" : "text-foreground"
+          }`}>
+            {children}
+          </div>
         </div>
       </main>
     </div>

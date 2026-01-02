@@ -198,3 +198,13 @@
 - [x] Tối ưu layout header admin (chữ menu top xuống dòng)
 - [x] Chuyển tất cả mock data vào database (seed data)
 - [x] Viết unit tests cho các thay đổi (239 tests passed)
+
+## Tính năng mới (Phase 26)
+- [x] Thêm Dark Mode Toggle cho Admin Panel (lưu vào localStorage)
+- [x] Tạo AdminThemeProvider component với theme persistence
+- [x] Tạo Dashboard Analytics Nâng Cao (Traffic, Conversion, Top Pages, User Behavior)
+- [x] Thêm AdvancedAnalytics component với 4 tabs phân tích
+- [x] Bulk Import/Export Data (JSON/CSV cho products, news, categories, FAQ, partners, jobs)
+- [x] Tạo BulkImportExport page với file upload và download
+- [x] Thêm menu Import/Export vào Admin Panel
+- [x] Viết unit tests cho các tính năng mới (239 tests passed)

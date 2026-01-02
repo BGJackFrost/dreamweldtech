@@ -28,6 +28,7 @@ import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
 
@@ -510,6 +511,18 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Advanced Analytics Section */}
+      <div className="mt-12 pt-8 border-t">
+        <div className="mb-6">
+          <h2 className="text-2xl font-heading font-bold uppercase flex items-center gap-3">
+            <Zap className="h-6 w-6 text-primary" />
+            Advanced Analytics
+          </h2>
+          <p className="text-muted-foreground mt-2">Chi tiết phân tích nâng cao về traffic, conversion, và hành vi người dùng</p>
+        </div>
+        <AdvancedAnalytics timeRange={timeRange} />
       </div>
     </div>
   );

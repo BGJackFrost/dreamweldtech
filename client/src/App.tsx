@@ -35,6 +35,7 @@ import AdminBackup from "./pages/admin/Backup";
 import AdminSiteSettings from "./pages/admin/SiteSettings";
 import AdminBanners from "./pages/admin/Banners";
 import MultiLanguageSettings from "./pages/admin/MultiLanguageSettings";
+import BulkImportExport from "./pages/admin/BulkImportExport";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -56,32 +57,33 @@ import Partners from "./pages/Partners";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import { GoogleAnalyticsProvider } from "./components/GoogleAnalytics";
+import { AdminThemeProvider } from "./components/AdminThemeProvider";
 
 function PublicRouter() {
   return (
     <Layout>
       <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/about" component={About} />
-        <Route path="/products" component={Products} />
-        <Route path="/products/:slug" component={ProductDetail} />
-        <Route path="/solutions" component={Solutions} />
-        <Route path="/news" component={News} />
-        <Route path="/news/:slug" component={NewsDetail} />
-        <Route path="/contact" component={Contact} />
-        <Route path="/faq" component={FAQPage} />
-        <Route path="/compare" component={ComparePage} />
-        <Route path="/case-studies" component={CaseStudies} />
-        <Route path="/case-studies/:slug" component={CaseStudyDetail} />
-        <Route path="/careers" component={Careers} />
-        <Route path="/careers/:slug" component={JobDetail} />
-        <Route path="/portfolio" component={Portfolio} />
-        <Route path="/portfolio/:slug" component={PortfolioDetail} />
-        <Route path="/partners" component={Partners} />
-        <Route path="/privacy-policy" component={PrivacyPolicy} />
-        <Route path="/terms-of-service" component={TermsOfService} />
-        <Route path="/404" component={NotFound} />
-        <Route component={NotFound} />
+          <Route path="/" component={Home} />
+          <Route path="/about" component={About} />
+          <Route path="/products" component={Products} />
+          <Route path="/products/:slug" component={ProductDetail} />
+          <Route path="/solutions" component={Solutions} />
+          <Route path="/news" component={News} />
+          <Route path="/news/:slug" component={NewsDetail} />
+          <Route path="/contact" component={Contact} />
+          <Route path="/faq" component={FAQPage} />
+          <Route path="/compare" component={ComparePage} />
+          <Route path="/case-studies" component={CaseStudies} />
+          <Route path="/case-studies/:slug" component={CaseStudyDetail} />
+          <Route path="/careers" component={Careers} />
+          <Route path="/careers/:slug" component={JobDetail} />
+          <Route path="/portfolio" component={Portfolio} />
+          <Route path="/portfolio/:slug" component={PortfolioDetail} />
+          <Route path="/partners" component={Partners} />
+          <Route path="/privacy-policy" component={PrivacyPolicy} />
+          <Route path="/terms-of-service" component={TermsOfService} />
+          <Route path="/404" component={NotFound} />
+          <Route component={NotFound} />
       </Switch>
     </Layout>
   );
@@ -89,36 +91,39 @@ function PublicRouter() {
 
 function AdminRouter() {
   return (
-    <AdminLayout>
-      <Switch>
-        <Route path="/admin" component={AdminDashboard} />
-        <Route path="/admin/products" component={AdminProducts} />
-        <Route path="/admin/products/new" component={ProductForm} />
-        <Route path="/admin/products/:id" component={ProductForm} />
-        <Route path="/admin/categories" component={AdminCategories} />
-        <Route path="/admin/news" component={AdminNews} />
-        <Route path="/admin/news/new" component={NewsForm} />
-        <Route path="/admin/news/:id" component={NewsForm} />
-        <Route path="/admin/contacts" component={AdminContacts} />
-        <Route path="/admin/settings" component={AdminSettings} />
-        <Route path="/admin/homepage" component={AdminHomePage} />
-        <Route path="/admin/newsletter" component={AdminNewsletter} />
-        <Route path="/admin/faq" component={AdminFAQ} />
-        <Route path="/admin/case-studies" component={AdminCaseStudies} />
-        <Route path="/admin/users" component={AdminUsers} />
-        <Route path="/admin/reports" component={AdminReports} />
-        <Route path="/admin/email-campaign" component={AdminEmailCampaign} />
-        <Route path="/admin/jobs" component={AdminJobs} />
-        <Route path="/admin/applications" component={AdminApplications} />
-        <Route path="/admin/portfolio" component={AdminPortfolio} />
-        <Route path="/admin/partners" component={AdminPartners} />
-        <Route path="/admin/backup" component={AdminBackup} />
-        <Route path="/admin/site-settings" component={AdminSiteSettings} />
-        <Route path="/admin/banners" component={AdminBanners} />
-        <Route path="/admin/multi-language-settings" component={MultiLanguageSettings} />
-        <Route component={NotFound} />
+    <AdminThemeProvider>
+      <AdminLayout>
+        <Switch>
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/products" component={AdminProducts} />
+          <Route path="/admin/products/new" component={ProductForm} />
+          <Route path="/admin/products/:id" component={ProductForm} />
+          <Route path="/admin/categories" component={AdminCategories} />
+          <Route path="/admin/news" component={AdminNews} />
+          <Route path="/admin/news/new" component={NewsForm} />
+          <Route path="/admin/news/:id" component={NewsForm} />
+          <Route path="/admin/contacts" component={AdminContacts} />
+          <Route path="/admin/settings" component={AdminSettings} />
+          <Route path="/admin/homepage" component={AdminHomePage} />
+          <Route path="/admin/newsletter" component={AdminNewsletter} />
+          <Route path="/admin/faq" component={AdminFAQ} />
+          <Route path="/admin/case-studies" component={AdminCaseStudies} />
+          <Route path="/admin/users" component={AdminUsers} />
+          <Route path="/admin/reports" component={AdminReports} />
+          <Route path="/admin/email-campaign" component={AdminEmailCampaign} />
+          <Route path="/admin/jobs" component={AdminJobs} />
+          <Route path="/admin/applications" component={AdminApplications} />
+          <Route path="/admin/portfolio" component={AdminPortfolio} />
+          <Route path="/admin/partners" component={AdminPartners} />
+          <Route path="/admin/backup" component={AdminBackup} />
+          <Route path="/admin/site-settings" component={AdminSiteSettings} />
+          <Route path="/admin/banners" component={AdminBanners} />
+          <Route path="/admin/multi-language-settings" component={MultiLanguageSettings} />
+          <Route path="/admin/bulk-import-export" component={BulkImportExport} />
+          <Route component={NotFound} />
       </Switch>
-    </AdminLayout>
+      </AdminLayout>
+    </AdminThemeProvider>
   );
 }
 
