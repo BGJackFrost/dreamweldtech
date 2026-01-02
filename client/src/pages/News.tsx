@@ -7,7 +7,8 @@ import { Link } from "wouter";
 import { useEffect } from "react";
 
 export default function News() {
-  const { data: news, isLoading } = trpc.news.list.useQuery({});
+  const { data: newsData, isLoading } = trpc.news.list.useQuery({});
+  const news = newsData?.items || [];
 
   useEffect(() => {
     document.title = "Tin Tức - Dreamweldtech | Cập Nhật Công Nghệ Laser";

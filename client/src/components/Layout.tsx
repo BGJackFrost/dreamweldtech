@@ -1,8 +1,9 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Phone, Mail, MapPin, Facebook, Linkedin, Youtube } from "lucide-react";
+import { Menu, X, Phone, Mail, MapPin, Facebook, Linkedin, Youtube, Search } from "lucide-react";
 import { useState } from "react";
+import { SearchDialog } from "./SearchDialog";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -43,45 +44,64 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-20 items-center justify-between">
-          <Link href="/">
-            <a className="flex items-center gap-2 font-heading font-bold text-2xl text-primary uppercase tracking-wider">
-              <div className="h-10 w-10 bg-primary text-primary-foreground flex items-center justify-center rounded-sm">
-                D
-              </div>
-              Dreamweldtech
-            </a>
+          <Link href="/" className="flex items-center gap-2 font-heading font-bold text-2xl text-primary uppercase tracking-wider">
+            <div className="h-10 w-10 bg-primary text-primary-foreground flex items-center justify-center rounded-sm">
+              D
+            </div>
+            Dreamweldtech
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6">
             {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <a
-                  className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary uppercase tracking-wide relative group",
-                    location === item.href ? "text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {item.label}
-                  <span className={cn(
-                    "absolute -bottom-1 left-0 w-0 h-0.5 bg-chart-1 transition-all duration-300 group-hover:w-full",
-                    location === item.href ? "w-full" : ""
-                  )} />
-                </a>
+              <Link 
+                key={item.href} 
+                href={item.href}
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary uppercase tracking-wide relative group",
+                  location === item.href ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                {item.label}
+                <span className={cn(
+                  "absolute -bottom-1 left-0 w-0 h-0.5 bg-chart-1 transition-all duration-300 group-hover:w-full",
+                  location === item.href ? "w-full" : ""
+                )} />
               </Link>
             ))}
-            <Button className="bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider rounded-none skew-x-[-10deg]">
-              <span className="skew-x-[10deg]">Báo Giá Ngay</span>
-            </Button>
+            
+            {/* Search Button */}
+            <SearchDialog 
+              trigger={
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Search className="h-4 w-4" />
+                </Button>
+              }
+            />
+            
+            <Link href="/contact">
+              <Button className="bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider rounded-none skew-x-[-10deg]">
+                <span className="skew-x-[10deg]">Báo Giá Ngay</span>
+              </Button>
+            </Link>
           </nav>
 
           {/* Mobile Menu Toggle */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X /> : <Menu />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <SearchDialog 
+              trigger={
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Search className="h-4 w-4" />
+                </Button>
+              }
+            />
+            <button
+              className="p-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X /> : <Menu />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Nav */}
@@ -89,21 +109,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="md:hidden border-t bg-background p-4 absolute w-full shadow-lg">
             <nav className="flex flex-col gap-4">
               {navItems.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  <a
-                    className={cn(
-                      "text-base font-medium transition-colors hover:text-primary block py-2 border-b border-border/50",
-                      location === item.href ? "text-primary" : "text-muted-foreground"
-                    )}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.label}
-                  </a>
+                <Link 
+                  key={item.href} 
+                  href={item.href}
+                  className={cn(
+                    "text-base font-medium transition-colors hover:text-primary block py-2 border-b border-border/50",
+                    location === item.href ? "text-primary" : "text-muted-foreground"
+                  )}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {item.label}
                 </Link>
               ))}
-              <Button className="w-full bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider rounded-none mt-4">
-                Báo Giá Ngay
-              </Button>
+              <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button className="w-full bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider rounded-none mt-4">
+                  Báo Giá Ngay
+                </Button>
+              </Link>
             </nav>
           </div>
         )}
@@ -132,20 +154,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div>
             <h4 className="text-lg font-heading font-bold uppercase mb-6 border-l-4 border-chart-1 pl-3">Sản Phẩm</h4>
             <ul className="space-y-3 text-sm text-primary-foreground/80">
-              <li><a href="#" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Máy Hàn Laser</a></li>
-              <li><a href="#" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Máy Cắt Laser</a></li>
-              <li><a href="#" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Máy Làm Sạch Laser</a></li>
-              <li><a href="#" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Giải Pháp Tự Động Hóa</a></li>
+              <li><Link href="/products" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Máy Hàn Laser</Link></li>
+              <li><Link href="/products" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Máy Cắt Laser</Link></li>
+              <li><Link href="/products" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Máy Làm Sạch Laser</Link></li>
+              <li><Link href="/products" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Giải Pháp Tự Động Hóa</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-lg font-heading font-bold uppercase mb-6 border-l-4 border-chart-1 pl-3">Liên Kết Nhanh</h4>
             <ul className="space-y-3 text-sm text-primary-foreground/80">
-              <li><Link href="/about"><a className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Về Chúng Tôi</a></Link></li>
-              <li><Link href="/solutions"><a className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Giải Pháp Ngành</a></Link></li>
-              <li><Link href="/news"><a className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Tin Tức & Sự Kiện</a></Link></li>
-              <li><Link href="/contact"><a className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Liên Hệ</a></Link></li>
+              <li><Link href="/about" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Về Chúng Tôi</Link></li>
+              <li><Link href="/solutions" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Giải Pháp Ngành</Link></li>
+              <li><Link href="/news" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Tin Tức & Sự Kiện</Link></li>
+              <li><Link href="/contact" className="hover:text-chart-1 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-chart-1"></span>Liên Hệ</Link></li>
             </ul>
           </div>
 

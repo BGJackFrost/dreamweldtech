@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { MapView } from "@/components/Map";
 import { 
   Phone, 
   Mail, 
@@ -15,10 +16,14 @@ import {
   Youtube,
   MessageCircle
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 
+// Tọa độ Khu Công Nghệ Cao, Quận 9, TP.HCM
+const COMPANY_LOCATION = { lat: 10.8544, lng: 106.6297 };
+
 export default function Contact() {
+  const mapRef = useRef<google.maps.Map | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -41,6 +46,17 @@ export default function Contact() {
   useEffect(() => {
     document.title = "Liên Hệ - Dreamweldtech | Tư Vấn Công Nghệ Laser";
   }, []);
+
+  const handleMapReady = (map: google.maps.Map) => {
+    mapRef.current = map;
+    
+    // Thêm marker cho vị trí công ty
+    new google.maps.marker.AdvancedMarkerElement({
+      map,
+      position: COMPANY_LOCATION,
+      title: "Dreamweldtech - Khu Công Nghệ Cao",
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -217,13 +233,14 @@ export default function Contact() {
                 Vị Trí <span className="text-chart-1">Của Chúng Tôi</span>
               </h2>
               
-              {/* Map Placeholder */}
-              <div className="bg-secondary rounded-lg h-80 mb-6 flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">Khu Công Nghệ Cao</p>
-                  <p className="text-muted-foreground">Quận 9, TP. Hồ Chí Minh</p>
-                </div>
+              {/* Google Maps */}
+              <div className="rounded-lg overflow-hidden mb-6 border border-border">
+                <MapView
+                  className="h-80"
+                  initialCenter={COMPANY_LOCATION}
+                  initialZoom={15}
+                  onMapReady={handleMapReady}
+                />
               </div>
 
               {/* Social Media */}

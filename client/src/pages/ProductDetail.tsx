@@ -24,7 +24,8 @@ export default function ProductDetail() {
   const params = useParams<{ slug: string }>();
   const { data: product, isLoading } = trpc.products.getBySlug.useQuery({ slug: params.slug || "" });
   const { data: categories } = trpc.categories.list.useQuery();
-  const { data: relatedProducts } = trpc.products.list.useQuery({ limit: 4 });
+  const { data: relatedProductsData } = trpc.products.list.useQuery({ limit: 4 });
+  const relatedProducts = relatedProductsData?.items || [];
 
   const [quoteForm, setQuoteForm] = useState({
     name: "",

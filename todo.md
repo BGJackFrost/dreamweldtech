@@ -28,3 +28,9 @@
 
 ## Bug Fixes
 - [x] Sửa lỗi nested anchor tags trên trang chủ
+
+## Yêu cầu mới
+- [x] Tích hợp Google Maps vào trang Liên hệ
+- [x] Thêm tính năng tìm kiếm sản phẩm và tin tức
+- [x] Kiểm tra và sửa lỗi nested anchor trên các trang khác
+- [x] Hướng dẫn cập nhật nội dung thực tế qua Admin Panel

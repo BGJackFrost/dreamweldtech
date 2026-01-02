@@ -87,26 +87,38 @@ const productsRouter = router({
     categorySlug: z.string().optional(),
     featured: z.boolean().optional(),
     limit: z.number().optional(),
+    search: z.string().optional(),
   }).optional()).query(async ({ input }) => {
     const db = await getDb();
-    if (!db) return [];
+    if (!db) return { items: [], total: 0 };
     
-    let query = db.select().from(products).where(eq(products.isActive, "true"));
+    let results = await db.select().from(products).where(eq(products.isActive, "true")).orderBy(asc(products.sortOrder));
     
     if (input?.featured) {
-      query = db.select().from(products).where(and(eq(products.isActive, "true"), eq(products.isFeatured, "true")));
+      results = results.filter(p => p.isFeatured === "true");
     }
-    
-    const results = await query.orderBy(asc(products.sortOrder));
     
     if (input?.categorySlug) {
       const category = await db.select().from(productCategories).where(eq(productCategories.slug, input.categorySlug)).limit(1);
       if (category[0]) {
-        return results.filter(p => p.categoryId === category[0].id);
+        results = results.filter(p => p.categoryId === category[0].id);
       }
     }
     
-    return input?.limit ? results.slice(0, input.limit) : results;
+    // Search filter
+    if (input?.search && input.search.length >= 2) {
+      const searchLower = input.search.toLowerCase();
+      results = results.filter(p => 
+        p.name.toLowerCase().includes(searchLower) ||
+        (p.shortDescription && p.shortDescription.toLowerCase().includes(searchLower)) ||
+        (p.description && p.description.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    const total = results.length;
+    const items = input?.limit ? results.slice(0, input.limit) : results;
+    
+    return { items, total };
   }),
 
   getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
@@ -192,9 +204,10 @@ const newsRouter = router({
   list: publicProcedure.input(z.object({
     category: z.string().optional(),
     limit: z.number().optional(),
+    search: z.string().optional(),
   }).optional()).query(async ({ input }) => {
     const db = await getDb();
-    if (!db) return [];
+    if (!db) return { items: [], total: 0 };
     
     let results = await db.select().from(news).where(eq(news.isPublished, "true")).orderBy(desc(news.publishedAt));
     
@@ -202,7 +215,20 @@ const newsRouter = router({
       results = results.filter(n => n.category === input.category);
     }
     
-    return input?.limit ? results.slice(0, input.limit) : results;
+    // Search filter
+    if (input?.search && input.search.length >= 2) {
+      const searchLower = input.search.toLowerCase();
+      results = results.filter(n => 
+        n.title.toLowerCase().includes(searchLower) ||
+        (n.excerpt && n.excerpt.toLowerCase().includes(searchLower)) ||
+        (n.content && n.content.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    const total = results.length;
+    const items = input?.limit ? results.slice(0, input.limit) : results;
+    
+    return { items, total };
   }),
 
   getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {

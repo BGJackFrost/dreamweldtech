@@ -7,12 +7,13 @@ import { Link } from "wouter";
 import { useState, useEffect } from "react";
 
 export default function Products() {
-  const { data: products, isLoading: productsLoading } = trpc.products.list.useQuery({});
+  const { data: productsData, isLoading: productsLoading } = trpc.products.list.useQuery({});
   const { data: categories } = trpc.categories.list.useQuery();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  const products = productsData?.items || [];
   const filteredProducts = selectedCategory
-    ? products?.filter(p => {
+    ? products.filter((p: typeof products[0]) => {
         const category = categories?.find(c => c.id === p.categoryId);
         return category?.slug === selectedCategory;
       })

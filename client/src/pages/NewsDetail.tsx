@@ -9,7 +9,8 @@ import { useEffect } from "react";
 export default function NewsDetail() {
   const params = useParams<{ slug: string }>();
   const { data: article, isLoading } = trpc.news.getBySlug.useQuery({ slug: params.slug || "" });
-  const { data: relatedNews } = trpc.news.list.useQuery({ limit: 4 });
+  const { data: relatedNewsData } = trpc.news.list.useQuery({ limit: 4 });
+  const relatedNews = relatedNewsData?.items || [];
 
   useEffect(() => {
     if (article) {
@@ -51,7 +52,7 @@ export default function NewsDetail() {
   }
 
   const tags = article.tags ? JSON.parse(article.tags) : [];
-  const related = relatedNews?.filter(n => n.id !== article.id).slice(0, 3);
+  const related = relatedNews.filter((n: typeof relatedNews[0]) => n.id !== article.id).slice(0, 3);
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   return (
