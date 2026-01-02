@@ -2,9 +2,9 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
-  Package, FileText, MessageSquare, Settings, Users, TrendingUp, 
-  Mail, Eye, ArrowUpRight, ArrowDownRight, Calendar, Clock,
-  BarChart3, PieChart, Activity, Zap
+  Package, FileText, MessageSquare, Users, TrendingUp, 
+  Mail, ArrowUpRight, ArrowDownRight, Calendar, Clock,
+  BarChart3, PieChart, Activity, Zap, Briefcase, Building2
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -21,49 +21,34 @@ import {
   BarChart,
   Bar,
   Legend,
+  LineChart,
+  Line,
 } from "recharts";
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Mock data for charts - in production, this would come from API
-const generateMonthlyData = () => {
-  const months = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"];
-  return months.map((month, index) => ({
-    name: month,
-    visitors: Math.floor(Math.random() * 5000) + 1000,
-    pageViews: Math.floor(Math.random() * 15000) + 3000,
-    contacts: Math.floor(Math.random() * 50) + 10,
-  }));
-};
-
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("30d");
+  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y">("30d");
   
+  // Fetch real analytics data
+  const { data: dashboardStats } = trpc.analytics.getDashboardStats.useQuery();
+  const { data: contactsByPeriod } = trpc.analytics.getContactsByPeriod.useQuery({ period: timeRange });
+  const { data: applicationsByPeriod } = trpc.analytics.getApplicationsByPeriod.useQuery({ period: timeRange });
+  const { data: contactStatusDist } = trpc.analytics.getContactStatusDistribution.useQuery();
+  const { data: applicationStatusDist } = trpc.analytics.getApplicationStatusDistribution.useQuery();
+  const { data: monthlySummary } = trpc.analytics.getMonthlySummary.useQuery();
+
+  // Fetch additional data
   const { data: products } = trpc.products.listAll.useQuery();
-  const { data: news } = trpc.news.listAll.useQuery();
   const { data: contacts } = trpc.contacts.list.useQuery({});
   const { data: categories } = trpc.categories.listAll.useQuery();
-  const { data: subscribers } = trpc.newsletter.list.useQuery({});
-  const { data: faqs } = trpc.faq.list.useQuery();
 
-  const monthlyData = useMemo(() => generateMonthlyData(), []);
-
-  // Calculate stats
-  const totalProducts = products?.length || 0;
-  const activeProducts = products?.filter(p => p.isActive === "true").length || 0;
-  const totalNews = news?.length || 0;
-  const publishedNews = news?.filter(n => n.isPublished === "true").length || 0;
-  const totalContacts = contacts?.length || 0;
-  const newContacts = contacts?.filter(c => c.status === "new") || [];
-  const totalSubscribers = subscribers?.length || 0;
-  const activeSubscribers = subscribers?.filter(s => s.status === "active").length || 0;
-
-  // Category distribution for pie chart
+  // Calculate category distribution
   const categoryData = useMemo(() => {
     if (!products || !categories) return [];
     return categories.map(cat => ({
@@ -72,59 +57,79 @@ export default function AdminDashboard() {
     })).filter(item => item.value > 0);
   }, [products, categories]);
 
-  // Contact status distribution
-  const contactStatusData = useMemo(() => {
-    if (!contacts) return [];
-    const statusCounts: Record<string, number> = {};
-    contacts.forEach(c => {
-      statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
+  // Merge contacts and applications by date for chart
+  const timeSeriesData = useMemo(() => {
+    if (!contactsByPeriod && !applicationsByPeriod) return [];
+    
+    const dateMap = new Map<string, { date: string; contacts: number; applications: number }>();
+    
+    contactsByPeriod?.forEach(item => {
+      const existing = dateMap.get(item.date) || { date: item.date, contacts: 0, applications: 0 };
+      existing.contacts = item.count;
+      dateMap.set(item.date, existing);
     });
-    return Object.entries(statusCounts).map(([name, value]) => ({
-      name: name === "new" ? "Mới" : name === "processing" ? "Đang xử lý" : "Đã xử lý",
-      value,
-    }));
-  }, [contacts]);
+    
+    applicationsByPeriod?.forEach(item => {
+      const existing = dateMap.get(item.date) || { date: item.date, contacts: 0, applications: 0 };
+      existing.applications = item.count;
+      dateMap.set(item.date, existing);
+    });
+    
+    return Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+  }, [contactsByPeriod, applicationsByPeriod]);
+
+  const newContacts = contacts?.filter(c => c.status === "new") || [];
 
   const stats = [
     {
       title: "Sản Phẩm",
-      value: totalProducts,
-      subValue: `${activeProducts} đang hiển thị`,
+      value: dashboardStats?.products || 0,
+      subValue: `${products?.filter(p => p.isActive === "true").length || 0} đang hiển thị`,
       icon: Package,
       href: "/admin/products",
       color: "bg-blue-500",
-      trend: "+12%",
-      trendUp: true,
     },
     {
       title: "Bài Viết",
-      value: totalNews,
-      subValue: `${publishedNews} đã xuất bản`,
+      value: dashboardStats?.news || 0,
+      subValue: "Tin tức & Sự kiện",
       icon: FileText,
       href: "/admin/news",
       color: "bg-green-500",
-      trend: "+8%",
-      trendUp: true,
     },
     {
-      title: "Yêu Cầu Liên Hệ",
-      value: totalContacts,
-      subValue: `${newContacts.length} chưa xử lý`,
+      title: "Liên Hệ",
+      value: dashboardStats?.contacts || 0,
+      subValue: `${dashboardStats?.newContacts || 0} mới trong 7 ngày`,
       icon: MessageSquare,
       href: "/admin/contacts",
       color: "bg-orange-500",
-      trend: "+23%",
-      trendUp: true,
+      highlight: (dashboardStats?.newContacts || 0) > 0,
+    },
+    {
+      title: "Đơn Ứng Tuyển",
+      value: dashboardStats?.applications || 0,
+      subValue: `${dashboardStats?.newApplications || 0} mới trong 7 ngày`,
+      icon: Briefcase,
+      href: "/admin/applications",
+      color: "bg-purple-500",
+      highlight: (dashboardStats?.newApplications || 0) > 0,
     },
     {
       title: "Newsletter",
-      value: totalSubscribers,
-      subValue: `${activeSubscribers} đang hoạt động`,
+      value: dashboardStats?.subscribers || 0,
+      subValue: "Người đăng ký",
       icon: Mail,
       href: "/admin/newsletter",
-      color: "bg-purple-500",
-      trend: "+15%",
-      trendUp: true,
+      color: "bg-pink-500",
+    },
+    {
+      title: "Đối Tác",
+      value: dashboardStats?.partners || 0,
+      subValue: "Khách hàng & Đối tác",
+      icon: Building2,
+      href: "/admin/partners",
+      color: "bg-teal-500",
     },
   ];
 
@@ -142,11 +147,11 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-3xl font-heading font-bold text-primary uppercase flex items-center gap-3">
             <Activity className="h-8 w-8" />
-            Dashboard
+            Dashboard Analytics
           </h1>
           <p className="text-muted-foreground mt-2">
             Xin chào, <span className="font-semibold text-foreground">{user?.name || "Admin"}</span>! 
-            Đây là tổng quan hệ thống.
+            Đây là tổng quan hệ thống với dữ liệu thực.
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -157,43 +162,28 @@ export default function AdminDashboard() {
             </p>
             <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
               <Clock className="h-3 w-3" />
-              Cập nhật lần cuối: vừa xong
+              Dữ liệu realtime từ database
             </p>
           </div>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {stats.map((stat) => (
           <Link key={stat.title} href={stat.href}>
-            <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer border-l-4 border-l-primary hover:scale-[1.02]">
+            <Card className={`hover:shadow-lg transition-all duration-300 cursor-pointer border-l-4 border-l-primary hover:scale-[1.02] ${stat.highlight ? 'ring-2 ring-orange-500/50' : ''}`}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   {stat.title}
                 </CardTitle>
                 <div className={`p-2 rounded-lg ${stat.color}`}>
-                  <stat.icon className="h-5 w-5 text-white" />
+                  <stat.icon className="h-4 w-4 text-white" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <div className="text-3xl font-bold font-heading">{stat.value}</div>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.subValue}</p>
-                  </div>
-                  <Badge 
-                    variant={stat.trendUp ? "default" : "destructive"} 
-                    className="flex items-center gap-1"
-                  >
-                    {stat.trendUp ? (
-                      <ArrowUpRight className="h-3 w-3" />
-                    ) : (
-                      <ArrowDownRight className="h-3 w-3" />
-                    )}
-                    {stat.trend}
-                  </Badge>
-                </div>
+                <div className="text-2xl font-bold font-heading">{stat.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">{stat.subValue}</p>
               </CardContent>
             </Card>
           </Link>
@@ -202,69 +192,84 @@ export default function AdminDashboard() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Traffic Chart */}
+        {/* Time Series Chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <CardTitle className="flex items-center gap-2 font-heading">
-                  <BarChart3 className="h-5 w-5 text-chart-1" />
-                  Thống Kê Truy Cập
+                  <TrendingUp className="h-5 w-5 text-chart-1" />
+                  Liên Hệ & Ứng Tuyển Theo Thời Gian
                 </CardTitle>
-                <CardDescription>Lượt truy cập và liên hệ theo tháng</CardDescription>
+                <CardDescription>Dữ liệu thực từ database</CardDescription>
               </div>
               <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as typeof timeRange)}>
-                <TabsList className="grid grid-cols-3 w-[200px]">
+                <TabsList className="grid grid-cols-4 w-[280px]">
                   <TabsTrigger value="7d">7 ngày</TabsTrigger>
                   <TabsTrigger value="30d">30 ngày</TabsTrigger>
                   <TabsTrigger value="90d">90 ngày</TabsTrigger>
+                  <TabsTrigger value="1y">1 năm</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthlyData}>
-                  <defs>
-                    <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0088FE" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#0088FE" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorPageViews" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00C49F" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#00C49F" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="name" className="text-xs" />
-                  <YAxis className="text-xs" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: "hsl(var(--background))", 
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px"
-                    }} 
-                  />
-                  <Legend />
-                  <Area 
-                    type="monotone" 
-                    dataKey="visitors" 
-                    name="Lượt truy cập"
-                    stroke="#0088FE" 
-                    fillOpacity={1} 
-                    fill="url(#colorVisitors)" 
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="pageViews" 
-                    name="Lượt xem trang"
-                    stroke="#00C49F" 
-                    fillOpacity={1} 
-                    fill="url(#colorPageViews)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              {timeSeriesData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={timeSeriesData}>
+                    <defs>
+                      <linearGradient id="colorContacts" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#FF8042" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#FF8042" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorApplications" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="date" 
+                      className="text-xs"
+                      tickFormatter={(value) => new Date(value).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" })}
+                    />
+                    <YAxis className="text-xs" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: "hsl(var(--background))", 
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px"
+                      }}
+                      labelFormatter={(value) => new Date(value).toLocaleDateString("vi-VN")}
+                    />
+                    <Legend />
+                    <Area 
+                      type="monotone" 
+                      dataKey="contacts" 
+                      name="Liên hệ"
+                      stroke="#FF8042" 
+                      fillOpacity={1} 
+                      fill="url(#colorContacts)" 
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="applications" 
+                      name="Ứng tuyển"
+                      stroke="#8884d8" 
+                      fillOpacity={1} 
+                      fill="url(#colorApplications)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                    <p>Chưa có dữ liệu trong khoảng thời gian này</p>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -287,14 +292,14 @@ export default function AdminDashboard() {
                       data={categoryData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
+                      innerRadius={50}
                       outerRadius={80}
                       fill="#8884d8"
                       paddingAngle={5}
                       dataKey="value"
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     >
-                      {categoryData.map((entry, index) => (
+                      {categoryData.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -312,26 +317,26 @@ export default function AdminDashboard() {
       </div>
 
       {/* Second Row Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Contact Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Contact Status Distribution */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-heading">
               <MessageSquare className="h-5 w-5 text-chart-1" />
               Trạng Thái Liên Hệ
             </CardTitle>
-            <CardDescription>Phân bố theo trạng thái xử lý</CardDescription>
+            <CardDescription>Phân bố theo trạng thái</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[200px]">
-              {contactStatusData.length > 0 ? (
+              {contactStatusDist && contactStatusDist.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={contactStatusData} layout="vertical">
+                  <BarChart data={contactStatusDist} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={100} />
+                    <YAxis dataKey="name" type="category" width={80} className="text-xs" />
                     <Tooltip />
-                    <Bar dataKey="value" fill="#0088FE" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="value" fill="#FF8042" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -343,26 +348,64 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Monthly Contacts */}
+        {/* Application Status Distribution */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-heading">
-              <TrendingUp className="h-5 w-5 text-chart-1" />
-              Liên Hệ Theo Tháng
+              <Briefcase className="h-5 w-5 text-chart-1" />
+              Trạng Thái Ứng Tuyển
             </CardTitle>
-            <CardDescription>Số lượng yêu cầu liên hệ mỗi tháng</CardDescription>
+            <CardDescription>Phân bố theo trạng thái</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="contacts" name="Liên hệ" fill="#FF8042" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {applicationStatusDist && applicationStatusDist.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={applicationStatusDist} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={100} className="text-xs" />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#8884d8" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  Chưa có dữ liệu
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Monthly Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 font-heading">
+              <BarChart3 className="h-5 w-5 text-chart-1" />
+              Tổng Hợp 12 Tháng
+            </CardTitle>
+            <CardDescription>Liên hệ & Ứng tuyển theo tháng</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[200px]">
+              {monthlySummary && monthlySummary.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={monthlySummary}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="name" className="text-xs" />
+                    <YAxis className="text-xs" />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="contacts" name="Liên hệ" stroke="#FF8042" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="applications" name="Ứng tuyển" stroke="#8884d8" strokeWidth={2} dot={{ r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  Chưa có dữ liệu
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -440,52 +483,34 @@ export default function AdminDashboard() {
                   <p className="font-medium">Thêm Bài Viết</p>
                 </div>
               </Link>
-              <Link href="/admin/homepage">
+              <Link href="/admin/jobs/new">
                 <div className="p-4 bg-gradient-to-br from-purple-500/10 to-purple-500/5 hover:from-purple-500/20 hover:to-purple-500/10 border border-purple-500/20 transition-all duration-300 rounded-lg cursor-pointer text-center group">
-                  <Eye className="h-8 w-8 mx-auto mb-2 text-purple-500 group-hover:scale-110 transition-transform" />
-                  <p className="font-medium">Chỉnh Trang Chủ</p>
+                  <Briefcase className="h-8 w-8 mx-auto mb-2 text-purple-500 group-hover:scale-110 transition-transform" />
+                  <p className="font-medium">Thêm Việc Làm</p>
                 </div>
               </Link>
-              <Link href="/admin/settings">
+              <Link href="/admin/partners/new">
+                <div className="p-4 bg-gradient-to-br from-teal-500/10 to-teal-500/5 hover:from-teal-500/20 hover:to-teal-500/10 border border-teal-500/20 transition-all duration-300 rounded-lg cursor-pointer text-center group">
+                  <Building2 className="h-8 w-8 mx-auto mb-2 text-teal-500 group-hover:scale-110 transition-transform" />
+                  <p className="font-medium">Thêm Đối Tác</p>
+                </div>
+              </Link>
+              <Link href="/admin/contacts">
                 <div className="p-4 bg-gradient-to-br from-orange-500/10 to-orange-500/5 hover:from-orange-500/20 hover:to-orange-500/10 border border-orange-500/20 transition-all duration-300 rounded-lg cursor-pointer text-center group">
-                  <Settings className="h-8 w-8 mx-auto mb-2 text-orange-500 group-hover:scale-110 transition-transform" />
-                  <p className="font-medium">Cài Đặt Website</p>
+                  <MessageSquare className="h-8 w-8 mx-auto mb-2 text-orange-500 group-hover:scale-110 transition-transform" />
+                  <p className="font-medium">Xem Liên Hệ</p>
+                </div>
+              </Link>
+              <Link href="/admin/users">
+                <div className="p-4 bg-gradient-to-br from-pink-500/10 to-pink-500/5 hover:from-pink-500/20 hover:to-pink-500/10 border border-pink-500/20 transition-all duration-300 rounded-lg cursor-pointer text-center group">
+                  <Users className="h-8 w-8 mx-auto mb-2 text-pink-500 group-hover:scale-110 transition-transform" />
+                  <p className="font-medium">Quản Lý Users</p>
                 </div>
               </Link>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* System Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-heading uppercase">
-            <Activity className="h-5 w-5 text-chart-1" />
-            Thông Tin Hệ Thống
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-secondary/50 rounded-lg">
-              <p className="text-sm text-muted-foreground">Danh Mục</p>
-              <p className="text-2xl font-bold">{categories?.length || 0}</p>
-            </div>
-            <div className="p-4 bg-secondary/50 rounded-lg">
-              <p className="text-sm text-muted-foreground">FAQ</p>
-              <p className="text-2xl font-bold">{faqs?.length || 0}</p>
-            </div>
-            <div className="p-4 bg-secondary/50 rounded-lg">
-              <p className="text-sm text-muted-foreground">Subscribers</p>
-              <p className="text-2xl font-bold">{totalSubscribers}</p>
-            </div>
-            <div className="p-4 bg-secondary/50 rounded-lg">
-              <p className="text-sm text-muted-foreground">Trạng Thái</p>
-              <p className="text-2xl font-bold text-green-500">Online</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

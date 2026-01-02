@@ -117,3 +117,14 @@
 - [x] Tích hợp reCAPTCHA bảo vệ form liên hệ
 - [x] Tích hợp reCAPTCHA bảo vệ form ứng tuyển
 - [x] Viết unit tests cho các tính năng mới (104 tests passed)
+
+## Tính năng mới (Phase 15)
+- [x] Yêu cầu cấu hình SendGrid API key (đã xác thực thành công)
+- [x] Yêu cầu cấu hình reCAPTCHA site key và secret key (đã cấu hình)
+- [x] Tạo trang chi tiết tin tức /news/:slug (đã có sẵn, nâng cấp)
+- [x] Thêm SEO schema cho trang tin tức (Article, BreadcrumbList, Open Graph)
+- [x] Thêm nút chia sẻ mạng xã hội (Facebook, Twitter, LinkedIn, Zalo, Email)
+- [x] Tạo dashboard analytics với biểu đồ (dữ liệu thực từ database)
+- [x] Thống kê liên hệ và ứng tuyển theo thời gian (7d/30d/90d/1y)
+- [x] Thống kê phân bố trạng thái liên hệ và ứng tuyển
+- [x] Viết unit tests cho các tính năng mới (128 tests passed)

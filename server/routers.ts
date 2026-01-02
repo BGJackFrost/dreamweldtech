@@ -1357,6 +1357,179 @@ const partnersRouter = router({
 });
 
 // ============================================
+// ANALYTICS ROUTER
+// ============================================
+const analyticsRouter = router({
+  // Get dashboard stats
+  getDashboardStats: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return null;
+
+    // Get counts
+    const [productsCount] = await db.select({ count: sql<number>`count(*)` }).from(products);
+    const [newsCount] = await db.select({ count: sql<number>`count(*)` }).from(news);
+    const [contactsCount] = await db.select({ count: sql<number>`count(*)` }).from(contactRequests);
+    const [subscribersCount] = await db.select({ count: sql<number>`count(*)` }).from(newsletterSubscribers);
+    const [applicationsCount] = await db.select({ count: sql<number>`count(*)` }).from(jobApplications);
+    const [partnersCount] = await db.select({ count: sql<number>`count(*)` }).from(partners);
+
+    // Get new contacts (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const [newContactsCount] = await db.select({ count: sql<number>`count(*)` })
+      .from(contactRequests)
+      .where(sql`${contactRequests.createdAt} >= ${sevenDaysAgo.toISOString()}`);
+
+    // Get new applications (last 7 days)
+    const [newApplicationsCount] = await db.select({ count: sql<number>`count(*)` })
+      .from(jobApplications)
+      .where(sql`${jobApplications.createdAt} >= ${sevenDaysAgo.toISOString()}`);
+
+    return {
+      products: productsCount?.count || 0,
+      news: newsCount?.count || 0,
+      contacts: contactsCount?.count || 0,
+      subscribers: subscribersCount?.count || 0,
+      applications: applicationsCount?.count || 0,
+      partners: partnersCount?.count || 0,
+      newContacts: newContactsCount?.count || 0,
+      newApplications: newApplicationsCount?.count || 0,
+    };
+  }),
+
+  // Get contacts by time period
+  getContactsByPeriod: protectedProcedure.input(z.object({
+    period: z.enum(["7d", "30d", "90d", "1y"]),
+  })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const days = input.period === "7d" ? 7 : input.period === "30d" ? 30 : input.period === "90d" ? 90 : 365;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const results = await db.select({
+      date: sql<string>`DATE(${contactRequests.createdAt})`,
+      count: sql<number>`count(*)`,
+    })
+      .from(contactRequests)
+      .where(sql`${contactRequests.createdAt} >= ${startDate.toISOString()}`)
+      .groupBy(sql`DATE(${contactRequests.createdAt})`)
+      .orderBy(sql`DATE(${contactRequests.createdAt})`);
+
+    return results;
+  }),
+
+  // Get applications by time period
+  getApplicationsByPeriod: protectedProcedure.input(z.object({
+    period: z.enum(["7d", "30d", "90d", "1y"]),
+  })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const days = input.period === "7d" ? 7 : input.period === "30d" ? 30 : input.period === "90d" ? 90 : 365;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const results = await db.select({
+      date: sql<string>`DATE(${jobApplications.createdAt})`,
+      count: sql<number>`count(*)`,
+    })
+      .from(jobApplications)
+      .where(sql`${jobApplications.createdAt} >= ${startDate.toISOString()}`)
+      .groupBy(sql`DATE(${jobApplications.createdAt})`)
+      .orderBy(sql`DATE(${jobApplications.createdAt})`);
+
+    return results;
+  }),
+
+  // Get contact status distribution
+  getContactStatusDistribution: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const results = await db.select({
+      status: contactRequests.status,
+      count: sql<number>`count(*)`,
+    })
+      .from(contactRequests)
+      .groupBy(contactRequests.status);
+
+    return results.map(r => ({
+      name: r.status === "new" ? "Mới" : r.status === "read" ? "Đã xem" : r.status === "replied" ? "Đã trả lời" : "Đã đóng",
+      value: r.count,
+    }));
+  }),
+
+  // Get application status distribution
+  getApplicationStatusDistribution: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const results = await db.select({
+      status: jobApplications.status,
+      count: sql<number>`count(*)`,
+    })
+      .from(jobApplications)
+      .groupBy(jobApplications.status);
+
+    return results.map(r => ({
+      name: r.status === "pending" ? "Chờ duyệt" : r.status === "reviewing" ? "Đang xem xét" : r.status === "interviewed" ? "Đã phỏng vấn" : r.status === "accepted" ? "Đã nhận" : "Từ chối",
+      value: r.count,
+    }));
+  }),
+
+  // Get monthly summary
+  getMonthlySummary: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 12);
+
+    // Get contacts by month
+    const contactsByMonth = await db.select({
+      month: sql<string>`DATE_FORMAT(${contactRequests.createdAt}, '%Y-%m')`,
+      count: sql<number>`count(*)`,
+    })
+      .from(contactRequests)
+      .where(sql`${contactRequests.createdAt} >= ${startDate.toISOString()}`)
+      .groupBy(sql`DATE_FORMAT(${contactRequests.createdAt}, '%Y-%m')`)
+      .orderBy(sql`DATE_FORMAT(${contactRequests.createdAt}, '%Y-%m')`);
+
+    // Get applications by month
+    const applicationsByMonth = await db.select({
+      month: sql<string>`DATE_FORMAT(${jobApplications.createdAt}, '%Y-%m')`,
+      count: sql<number>`count(*)`,
+    })
+      .from(jobApplications)
+      .where(sql`${jobApplications.createdAt} >= ${startDate.toISOString()}`)
+      .groupBy(sql`DATE_FORMAT(${jobApplications.createdAt}, '%Y-%m')`)
+      .orderBy(sql`DATE_FORMAT(${jobApplications.createdAt}, '%Y-%m')`);
+
+    // Merge data
+    const months: string[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      months.push(d.toISOString().slice(0, 7));
+    }
+
+    return months.map(month => {
+      const contacts = contactsByMonth.find(c => c.month === month)?.count || 0;
+      const applications = applicationsByMonth.find(a => a.month === month)?.count || 0;
+      const monthName = new Date(month + "-01").toLocaleDateString("vi-VN", { month: "short" });
+      return {
+        name: monthName,
+        month,
+        contacts,
+        applications,
+      };
+    });
+  }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -1385,6 +1558,7 @@ export const appRouter = router({
   notifications: notificationsRouter,
   portfolio: portfolioRouter,
   partners: partnersRouter,
+  analytics: analyticsRouter,
 });
 
 // Export createNotification for use in other parts of the app
