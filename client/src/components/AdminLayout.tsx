@@ -30,10 +30,14 @@ import {
   Moon,
   Sun,
   Upload,
-  ChevronDown
+  ChevronDown,
+  Search,
+  Plus,
+  BarChart3,
+  ChevronRight
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useAdminTheme } from "@/components/AdminThemeProvider";
 
@@ -100,12 +104,43 @@ const menuCategories: MenuCategory[] = [
   },
 ];
 
+const quickActions = [
+  { label: "Tạo Sản Phẩm", href: "/admin/products/new", icon: Plus },
+  { label: "Xem Báo Cáo", href: "/admin/reports", icon: BarChart3 },
+  { label: "Gửi Newsletter", href: "/admin/newsletter", icon: Send },
+];
+
+// Get breadcrumb from current path
+function getBreadcrumb(pathname: string) {
+  const pathParts = pathname.split("/").filter(Boolean);
+  const breadcrumbs = [];
+
+  for (let i = 0; i < pathParts.length; i++) {
+    const path = "/" + pathParts.slice(0, i + 1).join("/");
+    let label = pathParts[i];
+
+    // Find label from menu
+    for (const category of menuCategories) {
+      const item = category.items.find((item) => item.href === path);
+      if (item) {
+        label = item.label;
+        break;
+      }
+    }
+
+    breadcrumbs.push({ label, path });
+  }
+
+  return breadcrumbs;
+}
+
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { theme, toggleTheme } = useAdminTheme();
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Initialize expanded categories based on current location
   useEffect(() => {
@@ -125,6 +160,34 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       [categoryLabel]: !prev[categoryLabel],
     }));
   };
+
+  // Keyboard shortcut for search (Cmd+K or Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        const searchInput = document.getElementById("admin-menu-search") as HTMLInputElement;
+        searchInput?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Filter menu items based on search query
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) return menuCategories;
+    return menuCategories
+      .map((category) => ({
+        ...category,
+        items: category.items.filter((item) =>
+          item.label.toLowerCase().includes(searchQuery.toLowerCase())
+        ),
+      }))
+      .filter((category) => category.items.length > 0);
+  }, [searchQuery]);
+
+  const breadcrumbs = getBreadcrumb(location);
 
   if (loading) {
     return (
@@ -202,9 +265,33 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Link>
         </div>
 
+        {/* Search Box */}
+        <div className="p-4 border-b border-white/10 flex-shrink-0">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+            <input
+              id="admin-menu-search"
+              type="text"
+              placeholder="Tìm menu..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40 text-sm"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+            <div className="text-xs text-white/40 mt-2">Cmd+K để tìm kiếm</div>
+          </div>
+        </div>
+
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-          {menuCategories.map((category) => {
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-2" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+          {(searchQuery ? filteredCategories : menuCategories).map((category) => {
             const isExpanded = expandedCategories[category.label] ?? false;
             return (
               <div key={category.label}>
@@ -223,7 +310,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
                 {/* Category Items */}
                 {isExpanded && (
-                  <div className="space-y-1 pl-2">
+                  <div className="space-y-1 pl-2 pr-2">
                     {category.items.map((item) => {
                       const isActive = location === item.href || 
                         (item.href !== "/admin" && location.startsWith(item.href));
@@ -231,13 +318,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         <Link key={item.href} href={item.href}>
                           <div
                             className={`
-                              flex items-center gap-3 px-4 py-2 rounded transition-colors text-sm
+                              flex items-center gap-3 px-4 py-2 rounded transition-colors text-sm truncate
                               ${isActive 
                                 ? "bg-chart-1 text-white" 
                                 : "text-white/70 hover:bg-white/10 hover:text-white"
                               }
                             `}
-                            onClick={() => setSidebarOpen(false)}
+                            onClick={() => {
+                              setSidebarOpen(false);
+                              setSearchQuery("");
+                            }}
                           >
                             <item.icon className="h-4 w-4 flex-shrink-0" />
                             <span className="font-medium">{item.label}</span>
@@ -294,34 +384,68 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <main className={`lg:ml-64 pt-16 lg:pt-0 min-h-screen transition-colors duration-300 ${
         theme === "dark" ? "bg-slate-950" : "bg-background"
       }`}>
-        {/* Desktop Header with Notifications */}
-        <div className={`hidden lg:flex h-16 items-center justify-between px-8 border-b flex-shrink-0 transition-colors duration-300 ${
+        {/* Desktop Header with Breadcrumb & Quick Actions */}
+        <div className={`hidden lg:block border-b transition-colors duration-300 ${
           theme === "dark"
             ? "bg-slate-900 border-slate-800"
             : "bg-background border-border"
         }`}>
-          <div className="flex-1" />
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className={`transition-colors ${
-                theme === "dark"
-                  ? "hover:bg-slate-800 text-slate-400"
-                  : "hover:bg-secondary text-muted-foreground"
-              }`}
-              title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-            >
-              {theme === "light" ? (
-                <Moon className="h-5 w-5" />
-              ) : (
-                <Sun className="h-5 w-5" />
-              )}
-            </Button>
-            <NotificationBell />
+          {/* Breadcrumb */}
+          <div className="px-8 py-3 flex items-center gap-2 text-sm">
+            <Link href="/admin">
+              <span className="text-muted-foreground hover:text-foreground cursor-pointer">Admin</span>
+            </Link>
+            {breadcrumbs.map((crumb, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <Link href={crumb.path}>
+                  <span className={`cursor-pointer ${
+                    idx === breadcrumbs.length - 1
+                      ? "text-foreground font-medium"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}>
+                    {crumb.label}
+                  </span>
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Actions & Notifications */}
+          <div className="px-8 py-3 flex items-center justify-between border-t border-border/50">
+            <div className="flex items-center gap-2">
+              {quickActions.map((action) => (
+                <Link key={action.href} href={action.href}>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <action.icon className="h-4 w-4 mr-2" />
+                    {action.label}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className={`transition-colors ${
+                  theme === "dark"
+                    ? "hover:bg-slate-800 text-slate-400"
+                    : "hover:bg-secondary text-muted-foreground"
+                }`}
+                title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              >
+                {theme === "light" ? (
+                  <Moon className="h-5 w-5" />
+                ) : (
+                  <Sun className="h-5 w-5" />
+                )}
+              </Button>
+              <NotificationBell />
+            </div>
           </div>
         </div>
+
         <div className={`p-6 lg:p-8 transition-colors duration-300 ${
           theme === "dark" ? "bg-slate-950" : "bg-background"
         }`}>

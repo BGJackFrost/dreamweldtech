@@ -215,3 +215,10 @@
 ## Bug Fixes (Phase 28)
 - [x] Sửa lỗi lưu trạng thái khi click vào menu Newsletter và Tin tức
 - [x] Tối ưu menu trái trong trang quản trị theo category (5 categories với collapse/expand)
+
+## Bug Fixes & Features (Phase 29)
+- [x] Fix lỗi hiển thị menu trái (overflow-x-hidden, adjust maxHeight, truncate)
+- [x] Thêm Search/Filter cho Admin Menu (fuzzy search + Cmd+K keyboard shortcut)
+- [x] Tạo Admin Quick Actions Bar (3 buttons: Create Product, View Reports, Send Newsletter)
+- [x] Thêm Breadcrumb Navigation ở header admin (Admin > Category > Item)
+- [x] Tất cả 239 unit tests passed
