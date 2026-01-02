@@ -36,6 +36,9 @@ import AdminSiteSettings from "./pages/admin/SiteSettings";
 import AdminBanners from "./pages/admin/Banners";
 import MultiLanguageSettings from "./pages/admin/MultiLanguageSettings";
 import BulkImportExport from "./pages/admin/BulkImportExport";
+import ActivityLog from "./pages/admin/ActivityLog";
+import NotificationCenter from "./pages/admin/NotificationCenter";
+import PermissionMatrix from "./pages/admin/PermissionMatrix";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -120,6 +123,9 @@ function AdminRouter() {
           <Route path="/admin/banners" component={AdminBanners} />
           <Route path="/admin/multi-language-settings" component={MultiLanguageSettings} />
           <Route path="/admin/bulk-import-export" component={BulkImportExport} />
+          <Route path="/admin/activity-log" component={ActivityLog} />
+          <Route path="/admin/notification-center" component={NotificationCenter} />
+          <Route path="/admin/permission-matrix" component={PermissionMatrix} />
           <Route component={NotFound} />
       </Switch>
       </AdminLayout>

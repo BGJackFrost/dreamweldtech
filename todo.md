@@ -228,3 +228,10 @@
 - [x] Tạo Admin User Roles & Permissions (Super Admin, Editor, Viewer)
 - [x] Thêm Notification Center (list, unreadCount, markAsRead APIs)
 - [x] Tất cả 239 unit tests passed
+
+## Tính năng mới (Phase 31)
+- [x] Tạo Admin UI cho Activity Log (filter by action, entity, date) - ActivityLog.tsx
+- [x] Tạo Admin UI cho Notification Center (filter by type, priority, read status) - NotificationCenter.tsx
+- [x] Tạo Permission Matrix UI (manage roles, assign permissions) - PermissionMatrix.tsx
+- [x] Thêm 3 routes và menu items vào AdminLayout
+- [x] Tất cả 239 unit tests passed
