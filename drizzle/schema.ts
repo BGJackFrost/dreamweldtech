@@ -297,6 +297,7 @@ export const portfolioItems = mysqlTable("portfolio_items", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   titleEn: varchar("titleEn", { length: 255 }),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
   description: text("description"),
   descriptionEn: text("descriptionEn"),
   category: varchar("category", { length: 100 }),

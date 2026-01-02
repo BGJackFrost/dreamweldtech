@@ -1,0 +1,74 @@
+{
+  "query": "SELECT id, title FROM portfolio_items;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute SELECT id, title FROM portfolio_items;",
+  "rows": [
+    {
+      "id": "1",
+      "title": "Test Project"
+    },
+    {
+      "id": "2",
+      "title": "Test Project"
+    },
+    {
+      "id": "3",
+      "title": "Test Project"
+    },
+    {
+      "id": "4",
+      "title": "Test Project"
+    },
+    {
+      "id": "5",
+      "title": "Test Project"
+    },
+    {
+      "id": "6",
+      "title": "Test Project"
+    },
+    {
+      "id": "7",
+      "title": "Test Project"
+    },
+    {
+      "id": "8",
+      "title": "Test Project"
+    },
+    {
+      "id": "9",
+      "title": "Test Project"
+    },
+    {
+      "id": "10",
+      "title": "Test Project"
+    },
+    {
+      "id": "11",
+      "title": "Test Project"
+    },
+    {
+      "id": "12",
+      "title": "Test Project"
+    },
+    {
+      "id": "13",
+      "title": "Test Project"
+    },
+    {
+      "id": "14",
+      "title": "Test Project"
+    },
+    {
+      "id": "15",
+      "title": "Test Project"
+    },
+    {
+      "id": "16",
+      "title": "Test Project"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\n1\tTest Project\n2\tTest Project\n3\tTest Project\n4\tTest Project\n5\tTest Project\n6\tTest Project\n7\tTest Project\n8\tTest Project\n9\tTest Project\n10\tTest Project\n11\tTest Project\n12\tTest Project\n13\tTest Project\n14\tTest Project\n15\tTest Project\n16\tTest Project\n",
+  "stderr": "",
+  "execution_time_ms": 1554
+}

@@ -48,6 +48,7 @@ import CaseStudyDetail from "./pages/CaseStudyDetail";
 import Careers from "./pages/Careers";
 import JobDetail from "./pages/JobDetail";
 import Portfolio from "./pages/Portfolio";
+import PortfolioDetail from "./pages/PortfolioDetail";
 import Partners from "./pages/Partners";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -72,6 +73,7 @@ function PublicRouter() {
         <Route path="/careers" component={Careers} />
         <Route path="/careers/:slug" component={JobDetail} />
         <Route path="/portfolio" component={Portfolio} />
+        <Route path="/portfolio/:slug" component={PortfolioDetail} />
         <Route path="/partners" component={Partners} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-of-service" component={TermsOfService} />

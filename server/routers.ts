@@ -1212,6 +1212,13 @@ const portfolioRouter = router({
     return result[0] || null;
   }),
 
+  getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return null;
+    const result = await db.select().from(portfolioItems).where(eq(portfolioItems.slug, input.slug)).limit(1);
+    return result[0] || null;
+  }),
+
   // Admin operations
   listAll: protectedProcedure.query(async () => {
     const db = await getDb();

@@ -141,3 +141,11 @@
 - [x] Thêm chức năng backup dữ liệu (export/import JSON)
 - [x] Tạo hướng dẫn deploy lên host (DEPLOYMENT_GUIDE.md)
 - [x] Viết unit tests cho các tính năng mới (167 tests passed)
+
+## Tính năng mới (Phase 18)
+- [x] Tạo trang chi tiết portfolio /portfolio/:slug
+- [x] Thêm gallery ảnh với lightbox (hỗ trợ keyboard navigation)
+- [x] Thêm hỗ trợ video demo (YouTube, Vimeo embed)
+- [x] Cập nhật schema portfolio với media fields (thêm slug)
+- [x] Thêm dữ liệu mẫu cho portfolio (5 dự án với hình ảnh và video)
+- [x] Viết unit tests cho các tính năng mới (185 tests passed)

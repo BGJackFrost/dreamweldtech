@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, title, slug FROM portfolio_items LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute SELECT id, title, slug FROM portfolio_items LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "title": "Test Project",
+      "slug": ""
+    },
+    {
+      "id": "2",
+      "title": "Test Project",
+      "slug": ""
+    },
+    {
+      "id": "3",
+      "title": "Test Project",
+      "slug": ""
+    },
+    {
+      "id": "4",
+      "title": "Test Project",
+      "slug": ""
+    },
+    {
+      "id": "5",
+      "title": "Test Project",
+      "slug": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tslug\n1\tTest Project\t\n2\tTest Project\t\n3\tTest Project\t\n4\tTest Project\t\n5\tTest Project\t\n",
+  "stderr": "",
+  "execution_time_ms": 1498
+}

@@ -16,6 +16,7 @@ describe("Portfolio API", () => {
       await db.insert(portfolioItems).values({
         title: "Test Project",
         titleEn: "Test Project EN",
+        slug: "test-project-" + Date.now(),
         description: "Test description",
         descriptionEn: "Test description EN",
         category: "welding",
