@@ -45,3 +45,10 @@
 - [x] Tính năng Newsletter (form đăng ký, quản lý subscribers)
 - [x] Tích hợp Google Analytics (sử dụng Umami Analytics tích hợp sẵn)
 - [x] Trang FAQ và quản lý câu hỏi trong Admin
+
+## Tính năng mới (Phase 4)
+- [x] Dashboard thống kê chuyên nghiệp (biểu đồ, thống kê tổng quan)
+- [x] Tính năng so sánh sản phẩm (2-3 sản phẩm)
+- [x] Tích hợp Chatbot AI
+- [x] Trang Case Studies/Dự án tiêu biểu
+- [x] Quản lý User và phân quyền (admin/editor/viewer)

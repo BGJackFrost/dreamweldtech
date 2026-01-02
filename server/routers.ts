@@ -13,6 +13,8 @@ import {
   newsletterSubscribers,
   faqs,
   homePageSections,
+  caseStudies,
+  users,
   InsertProduct,
   InsertProductCategory,
   InsertNews,
@@ -20,7 +22,8 @@ import {
   InsertSiteSetting,
   InsertNewsletterSubscriber,
   InsertFAQ,
-  InsertHomePageSection
+  InsertHomePageSection,
+  InsertCaseStudy
 } from "../drizzle/schema";
 import { eq, desc, asc, and, sql } from "drizzle-orm";
 
@@ -644,6 +647,167 @@ const homePageRouter = router({
 });
 
 // ============================================
+// CASE STUDIES ROUTER
+// ============================================
+const caseStudiesRouter = router({
+  list: publicProcedure.input(z.object({
+    industry: z.string().optional(),
+    featured: z.boolean().optional(),
+  }).optional()).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    
+    let results = await db.select().from(caseStudies).where(eq(caseStudies.isActive, "true")).orderBy(desc(caseStudies.publishedAt));
+    
+    if (input?.industry) {
+      results = results.filter(c => c.industry === input.industry);
+    }
+    if (input?.featured) {
+      results = results.filter(c => c.isFeatured === "true");
+    }
+    
+    return results;
+  }),
+
+  getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return null;
+    const result = await db.select().from(caseStudies).where(eq(caseStudies.slug, input.slug)).limit(1);
+    return result[0] || null;
+  }),
+
+  // Admin operations
+  listAll: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(caseStudies).orderBy(desc(caseStudies.createdAt));
+  }),
+
+  create: protectedProcedure.input(z.object({
+    title: z.string(),
+    titleEn: z.string().optional(),
+    slug: z.string(),
+    clientName: z.string(),
+    clientLogo: z.string().optional(),
+    industry: z.string().optional(),
+    challenge: z.string().optional(),
+    challengeEn: z.string().optional(),
+    solution: z.string().optional(),
+    solutionEn: z.string().optional(),
+    results: z.string().optional(),
+    resultsEn: z.string().optional(),
+    testimonial: z.string().optional(),
+    testimonialEn: z.string().optional(),
+    testimonialAuthor: z.string().optional(),
+    testimonialPosition: z.string().optional(),
+    image: z.string().optional(),
+    gallery: z.string().optional(),
+    videoUrl: z.string().optional(),
+    productsUsed: z.string().optional(),
+    metrics: z.string().optional(),
+    sortOrder: z.number().optional(),
+    isFeatured: z.enum(["true", "false"]).optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.insert(caseStudies).values({
+      ...input,
+      publishedAt: new Date(),
+    } as InsertCaseStudy);
+    return { success: true };
+  }),
+
+  update: protectedProcedure.input(z.object({
+    id: z.number(),
+    title: z.string().optional(),
+    titleEn: z.string().optional(),
+    slug: z.string().optional(),
+    clientName: z.string().optional(),
+    clientLogo: z.string().optional(),
+    industry: z.string().optional(),
+    challenge: z.string().optional(),
+    challengeEn: z.string().optional(),
+    solution: z.string().optional(),
+    solutionEn: z.string().optional(),
+    results: z.string().optional(),
+    resultsEn: z.string().optional(),
+    testimonial: z.string().optional(),
+    testimonialEn: z.string().optional(),
+    testimonialAuthor: z.string().optional(),
+    testimonialPosition: z.string().optional(),
+    image: z.string().optional(),
+    gallery: z.string().optional(),
+    videoUrl: z.string().optional(),
+    productsUsed: z.string().optional(),
+    metrics: z.string().optional(),
+    sortOrder: z.number().optional(),
+    isFeatured: z.enum(["true", "false"]).optional(),
+    isActive: z.enum(["true", "false"]).optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const { id, ...data } = input;
+    await db.update(caseStudies).set(data).where(eq(caseStudies.id, id));
+    return { success: true };
+  }),
+
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(caseStudies).where(eq(caseStudies.id, input.id));
+    return { success: true };
+  }),
+});
+
+// ============================================
+// USERS ROUTER (Admin only)
+// ============================================
+const usersRouter = router({
+  list: protectedProcedure.query(async ({ ctx }) => {
+    // Only admin can list users
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(users).orderBy(desc(users.createdAt));
+  }),
+
+  updateRole: protectedProcedure.input(z.object({
+    userId: z.number(),
+    role: z.enum(["user", "editor", "admin"]),
+  })).mutation(async ({ ctx, input }) => {
+    // Only admin can update roles
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    // Prevent self-role change
+    if (ctx.user?.id === input.userId) {
+      throw new Error("Cannot change your own role");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.update(users).set({ role: input.role }).where(eq(users.id, input.userId));
+    return { success: true };
+  }),
+
+  getStats: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+    const db = await getDb();
+    if (!db) return { total: 0, admin: 0, editor: 0, user: 0 };
+    const allUsers = await db.select().from(users);
+    return {
+      total: allUsers.length,
+      admin: allUsers.filter(u => u.role === "admin").length,
+      editor: allUsers.filter(u => u.role === "editor").length,
+      user: allUsers.filter(u => u.role === "user").length,
+    };
+  }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -665,6 +829,8 @@ export const appRouter = router({
   newsletter: newsletterRouter,
   faq: faqRouter,
   homePage: homePageRouter,
+  caseStudies: caseStudiesRouter,
+  users: usersRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -16,7 +16,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "editor", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -192,3 +192,40 @@ export const homePageSections = mysqlTable("home_page_sections", {
 
 export type HomePageSection = typeof homePageSections.$inferSelect;
 export type InsertHomePageSection = typeof homePageSections.$inferInsert;
+
+// ============================================
+// CASE STUDIES / PROJECTS
+// ============================================
+export const caseStudies = mysqlTable("case_studies", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 500 }).notNull(),
+  titleEn: varchar("titleEn", { length: 500 }),
+  slug: varchar("slug", { length: 500 }).notNull().unique(),
+  clientName: varchar("clientName", { length: 255 }).notNull(),
+  clientLogo: varchar("clientLogo", { length: 500 }),
+  industry: varchar("industry", { length: 100 }), // e.g., "automotive", "aerospace", "electronics"
+  challenge: text("challenge"), // Problem description
+  challengeEn: text("challengeEn"),
+  solution: text("solution"), // How Dreamweldtech solved it
+  solutionEn: text("solutionEn"),
+  results: text("results"), // Outcomes and benefits
+  resultsEn: text("resultsEn"),
+  testimonial: text("testimonial"), // Client quote
+  testimonialEn: text("testimonialEn"),
+  testimonialAuthor: varchar("testimonialAuthor", { length: 255 }),
+  testimonialPosition: varchar("testimonialPosition", { length: 255 }),
+  image: varchar("image", { length: 500 }), // Main image
+  gallery: text("gallery"), // JSON array of image URLs
+  videoUrl: varchar("videoUrl", { length: 500 }),
+  productsUsed: text("productsUsed"), // JSON array of product IDs
+  metrics: text("metrics"), // JSON object with key metrics (e.g., {"efficiency": "+30%", "cost_savings": "25%"})
+  sortOrder: int("sortOrder").default(0),
+  isFeatured: mysqlEnum("isFeatured", ["true", "false"]).default("false").notNull(),
+  isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
+  publishedAt: timestamp("publishedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CaseStudy = typeof caseStudies.$inferSelect;
+export type InsertCaseStudy = typeof caseStudies.$inferInsert;

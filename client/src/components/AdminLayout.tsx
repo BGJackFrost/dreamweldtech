@@ -14,7 +14,9 @@ import {
   FolderTree,
   Layout,
   Mail,
-  HelpCircle
+  HelpCircle,
+  Award,
+  Users
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -30,8 +32,10 @@ const menuItems = [
   { href: "/admin/categories", icon: FolderTree, label: "Danh Mục" },
   { href: "/admin/news", icon: FileText, label: "Tin Tức" },
   { href: "/admin/faq", icon: HelpCircle, label: "FAQ" },
+  { href: "/admin/case-studies", icon: Award, label: "Case Studies" },
   { href: "/admin/newsletter", icon: Mail, label: "Newsletter" },
   { href: "/admin/contacts", icon: MessageSquare, label: "Liên Hệ" },
+  { href: "/admin/users", icon: Users, label: "Người Dùng" },
   { href: "/admin/settings", icon: Settings, label: "Cài Đặt" },
 ];
 

@@ -2,14 +2,18 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Filter } from "lucide-react";
+import { ArrowRight, Filter, GitCompare, Check } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
+import { useCompare } from "@/contexts/CompareContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Products() {
   const { data: productsData, isLoading: productsLoading } = trpc.products.list.useQuery({});
   const { data: categories } = trpc.categories.list.useQuery();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { addToCompare, removeFromCompare, isInCompare, compareList } = useCompare();
+  const { language, t } = useLanguage();
 
   const products = productsData?.items || [];
   const filteredProducts = selectedCategory
@@ -20,24 +24,46 @@ export default function Products() {
     : products;
 
   useEffect(() => {
-    document.title = "Sản Phẩm - Dreamweldtech | Máy Hàn, Cắt, Làm Sạch Laser";
-  }, []);
+    document.title = language === "vi" 
+      ? "Sản Phẩm - Dreamweldtech | Máy Hàn, Cắt, Làm Sạch Laser"
+      : "Products - Dreamweldtech | Laser Welding, Cutting, Cleaning Machines";
+  }, [language]);
+
+  const handleCompareToggle = (product: typeof products[0]) => {
+    if (isInCompare(product.id)) {
+      removeFromCompare(product.id);
+    } else {
+      addToCompare({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        image: product.image,
+        price: null,
+        categoryId: product.categoryId,
+      });
+    }
+  };
 
   return (
     <>
-
       {/* Hero Section */}
       <section className="bg-primary text-white py-16">
         <div className="container">
           <div className="max-w-3xl">
             <span className="inline-block px-4 py-1 bg-chart-1/20 text-chart-1 text-sm font-bold uppercase tracking-wider rounded mb-4">
-              Sản Phẩm
+              {language === "vi" ? "Sản Phẩm" : "Products"}
             </span>
             <h1 className="text-4xl md:text-5xl font-heading font-bold uppercase mb-4">
-              Giải Pháp <span className="text-chart-1">Laser</span> Toàn Diện
+              {language === "vi" ? (
+                <>Giải Pháp <span className="text-chart-1">Laser</span> Toàn Diện</>
+              ) : (
+                <>Comprehensive <span className="text-chart-1">Laser</span> Solutions</>
+              )}
             </h1>
             <p className="text-lg text-white/80">
-              Khám phá các dòng máy hàn, cắt và làm sạch laser công nghệ cao, được thiết kế cho hiệu suất tối ưu và độ bền vượt trội.
+              {language === "vi"
+                ? "Khám phá các dòng máy hàn, cắt và làm sạch laser công nghệ cao, được thiết kế cho hiệu suất tối ưu và độ bền vượt trội."
+                : "Explore our high-tech laser welding, cutting, and cleaning machines, designed for optimal performance and superior durability."}
             </p>
           </div>
         </div>
@@ -46,27 +72,37 @@ export default function Products() {
       {/* Categories Filter */}
       <section className="bg-secondary/50 py-6 sticky top-16 z-30 border-b">
         <div className="container">
-          <div className="flex items-center gap-4 overflow-x-auto pb-2">
-            <Filter className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-            <Button
-              variant={selectedCategory === null ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(null)}
-              className="flex-shrink-0"
-            >
-              Tất Cả
-            </Button>
-            {categories?.map((category) => (
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 overflow-x-auto pb-2 flex-1">
+              <Filter className="h-5 w-5 text-muted-foreground flex-shrink-0" />
               <Button
-                key={category.id}
-                variant={selectedCategory === category.slug ? "default" : "outline"}
+                variant={selectedCategory === null ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedCategory(category.slug)}
+                onClick={() => setSelectedCategory(null)}
                 className="flex-shrink-0"
               >
-                {category.name}
+                {language === "vi" ? "Tất Cả" : "All"}
               </Button>
-            ))}
+              {categories?.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.slug ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category.slug)}
+                  className="flex-shrink-0"
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
+            {compareList.length > 0 && (
+              <Link href="/compare">
+                <Button variant="outline" size="sm" className="flex-shrink-0">
+                  <GitCompare className="h-4 w-4 mr-2" />
+                  {language === "vi" ? `So sánh (${compareList.length})` : `Compare (${compareList.length})`}
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -91,6 +127,7 @@ export default function Products() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProducts.map((product) => {
                 const category = categories?.find(c => c.id === product.categoryId);
+                const inCompare = isInCompare(product.id);
                 return (
                   <Card key={product.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 bg-white">
                     <div className="relative h-56 overflow-hidden">
@@ -100,8 +137,31 @@ export default function Products() {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                       {product.isFeatured === "true" && (
-                        <Badge className="absolute top-4 left-4 bg-chart-1">Nổi Bật</Badge>
+                        <Badge className="absolute top-4 left-4 bg-chart-1">
+                          {language === "vi" ? "Nổi Bật" : "Featured"}
+                        </Badge>
                       )}
+                      {/* Compare Button */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCompareToggle(product);
+                        }}
+                        className={`absolute top-4 right-4 p-2 rounded-full transition-all duration-300 ${
+                          inCompare
+                            ? "bg-primary text-white"
+                            : "bg-white/90 text-primary hover:bg-primary hover:text-white"
+                        }`}
+                        title={inCompare 
+                          ? (language === "vi" ? "Xóa khỏi so sánh" : "Remove from compare")
+                          : (language === "vi" ? "Thêm vào so sánh" : "Add to compare")}
+                      >
+                        {inCompare ? (
+                          <Check className="h-5 w-5" />
+                        ) : (
+                          <GitCompare className="h-5 w-5" />
+                        )}
+                      </button>
                       <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                     <CardContent className="p-6">
@@ -116,12 +176,14 @@ export default function Products() {
                       <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
                         {product.shortDescription}
                       </p>
-                      <Link href={`/products/${product.slug}`}>
-                        <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors">
-                          Xem Chi Tiết
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      </Link>
+                      <div className="flex gap-2">
+                        <Link href={`/products/${product.slug}`} className="flex-1">
+                          <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors">
+                            {language === "vi" ? "Xem Chi Tiết" : "View Details"}
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Button>
+                        </Link>
+                      </div>
                     </CardContent>
                   </Card>
                 );
@@ -129,9 +191,11 @@ export default function Products() {
             </div>
           ) : (
             <div className="text-center py-16">
-              <p className="text-muted-foreground text-lg">Không tìm thấy sản phẩm nào.</p>
+              <p className="text-muted-foreground text-lg">
+                {language === "vi" ? "Không tìm thấy sản phẩm nào." : "No products found."}
+              </p>
               <Button className="mt-4" onClick={() => setSelectedCategory(null)}>
-                Xem tất cả sản phẩm
+                {language === "vi" ? "Xem tất cả sản phẩm" : "View all products"}
               </Button>
             </div>
           )}
@@ -142,14 +206,16 @@ export default function Products() {
       <section className="bg-primary py-16">
         <div className="container text-center">
           <h2 className="text-3xl font-heading font-bold text-white uppercase mb-4">
-            Cần Tư Vấn Sản Phẩm?
+            {language === "vi" ? "Cần Tư Vấn Sản Phẩm?" : "Need Product Consultation?"}
           </h2>
           <p className="text-white/80 mb-8 max-w-2xl mx-auto">
-            Đội ngũ kỹ thuật của chúng tôi sẵn sàng hỗ trợ bạn lựa chọn giải pháp phù hợp nhất.
+            {language === "vi"
+              ? "Đội ngũ kỹ thuật của chúng tôi sẵn sàng hỗ trợ bạn lựa chọn giải pháp phù hợp nhất."
+              : "Our technical team is ready to help you choose the most suitable solution."}
           </p>
           <Link href="/contact">
             <Button size="lg" className="bg-chart-1 hover:bg-chart-1/90 text-white">
-              Liên Hệ Ngay
+              {language === "vi" ? "Liên Hệ Ngay" : "Contact Us"}
               <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
           </Link>

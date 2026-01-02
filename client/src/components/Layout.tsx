@@ -6,6 +6,7 @@ import { useState } from "react";
 import { SearchDialog } from "./SearchDialog";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LiveChat } from "./LiveChat";
+import { Chatbot } from "./Chatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
 import NewsletterForm from "./NewsletterForm";
 
@@ -147,6 +148,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Live Chat */}
       <LiveChat />
+      
+      {/* AI Chatbot */}
+      <Chatbot />
 
       {/* Footer */}
       <footer className="bg-primary text-primary-foreground pt-16 pb-8">

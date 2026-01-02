@@ -5,8 +5,10 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { CompareProvider } from "./contexts/CompareContext";
 import Layout from "./components/Layout";
 import AdminLayout from "./components/AdminLayout";
+import { CompareBar } from "./components/CompareBar";
 import Home from "./pages/Home";
 
 // Admin Pages
@@ -21,6 +23,8 @@ import AdminSettings from "./pages/admin/Settings";
 import AdminHomePage from "./pages/admin/HomePage";
 import AdminNewsletter from "./pages/admin/Newsletter";
 import AdminFAQ from "./pages/admin/FAQ";
+import AdminCaseStudies from "./pages/admin/CaseStudies";
+import AdminUsers from "./pages/admin/Users";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -31,6 +35,9 @@ import About from "./pages/About";
 import Solutions from "./pages/Solutions";
 import Contact from "./pages/Contact";
 import FAQPage from "./pages/FAQ";
+import ComparePage from "./pages/Compare";
+import CaseStudies from "./pages/CaseStudies";
+import CaseStudyDetail from "./pages/CaseStudyDetail";
 
 function PublicRouter() {
   return (
@@ -45,6 +52,9 @@ function PublicRouter() {
         <Route path="/news/:slug" component={NewsDetail} />
         <Route path="/contact" component={Contact} />
         <Route path="/faq" component={FAQPage} />
+        <Route path="/compare" component={ComparePage} />
+        <Route path="/case-studies" component={CaseStudies} />
+        <Route path="/case-studies/:slug" component={CaseStudyDetail} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
@@ -69,6 +79,8 @@ function AdminRouter() {
         <Route path="/admin/homepage" component={AdminHomePage} />
         <Route path="/admin/newsletter" component={AdminNewsletter} />
         <Route path="/admin/faq" component={AdminFAQ} />
+        <Route path="/admin/case-studies" component={AdminCaseStudies} />
+        <Route path="/admin/users" component={AdminUsers} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>
@@ -91,10 +103,13 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <LanguageProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
+          <CompareProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+              <CompareBar />
+            </TooltipProvider>
+          </CompareProvider>
         </LanguageProvider>
       </ThemeProvider>
     </ErrorBoundary>
