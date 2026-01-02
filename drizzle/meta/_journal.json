@@ -85,6 +85,13 @@
       "when": 1767344953726,
       "tag": "0011_warm_mesmero",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1767349075088,
+      "tag": "0012_curved_exodus",
+      "breakpoints": true
     }
   ]
 }

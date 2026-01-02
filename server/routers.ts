@@ -47,7 +47,11 @@ import {
   InsertNotificationCenterItem,
   InsertNotificationPreference
 } from "../drizzle/schema";
-import { eq, desc, asc, and, sql } from "drizzle-orm";
+import { eq, desc, asc, and, sql, gte } from "drizzle-orm";
+import { emailDigestSettings, emailDigestLog, dndSchedule, pushSubscriptions } from "../drizzle/schema";
+import { getDigestSettings, updateDigestSettings, getDigestLog, sendEmailDigest } from "./emailDigest";
+import { getDndSchedule, getAllDndSchedules, upsertDndSchedule, deleteDndSchedule, toggleDndSchedule as toggleDndScheduleDb } from "./dndSchedule";
+import { savePushSubscription, removePushSubscription, getUserSubscriptions, getVapidPublicKey, isPushConfigured } from "./pushNotifications";
 import { notifyNewJobApplication, notifyNewContactForm } from "./email";
 import { exportData, importData, exportSensitiveData, getDatabaseStats, BackupData } from "./backup";
 import { triggerNewContact, triggerNewJobApplication, triggerNewNewsletterSubscription } from "./integrations";
@@ -1801,6 +1805,131 @@ const notificationCenterRouter = router({
 });
 
 // ============================================
+// EMAIL DIGEST ROUTER
+// ============================================
+const emailDigestRouter = router({
+  getSettings: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user?.id) return null;
+    return await getDigestSettings(ctx.user.id);
+  }),
+
+  updateSettings: protectedProcedure
+    .input(z.object({
+      isEnabled: z.enum(["true", "false"]).optional(),
+      frequency: z.enum(["daily", "weekly", "monthly"]).optional(),
+      sendTime: z.string().optional(),
+      sendDay: z.number().optional(),
+      timezone: z.string().optional(),
+      includeContacts: z.enum(["true", "false"]).optional(),
+      includeApplications: z.enum(["true", "false"]).optional(),
+      includeNewsletter: z.enum(["true", "false"]).optional(),
+      includeSystem: z.enum(["true", "false"]).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.user?.id) throw new Error("Unauthorized");
+      return await updateDigestSettings(ctx.user.id, input);
+    }),
+
+  getLog: protectedProcedure
+    .input(z.object({ limit: z.number().default(10) }))
+    .query(async ({ ctx, input }) => {
+      if (!ctx.user?.id) return [];
+      return await getDigestLog(ctx.user.id, input.limit);
+    }),
+
+  sendNow: protectedProcedure.mutation(async ({ ctx }) => {
+    if (!ctx.user?.id) throw new Error("Unauthorized");
+    return await sendEmailDigest(ctx.user.id);
+  }),
+});
+
+// ============================================
+// DND SCHEDULE ROUTER
+// ============================================
+const dndScheduleRouter = router({
+  get: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user?.id) return null;
+    return await getDndSchedule(ctx.user.id);
+  }),
+
+  getAll: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user?.id) return [];
+    return await getAllDndSchedules(ctx.user.id);
+  }),
+
+  upsert: protectedProcedure
+    .input(z.object({
+      startTime: z.string(),
+      endTime: z.string(),
+      daysOfWeek: z.string().optional(),
+      timezone: z.string().optional(),
+      isEnabled: z.enum(["true", "false"]).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.user?.id) throw new Error("Unauthorized");
+      return await upsertDndSchedule(ctx.user.id, input);
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ scheduleId: z.number().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.user?.id) throw new Error("Unauthorized");
+      return await deleteDndSchedule(ctx.user.id, input.scheduleId);
+    }),
+
+  toggle: protectedProcedure
+    .input(z.object({ scheduleId: z.number(), enabled: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.user?.id) throw new Error("Unauthorized");
+      return await toggleDndScheduleDb(ctx.user.id, input.scheduleId, input.enabled);
+    }),
+});
+
+// ============================================
+// PUSH NOTIFICATIONS ROUTER
+// ============================================
+const pushNotificationsRouter = router({
+  getVapidKey: publicProcedure.query(() => {
+    return {
+      publicKey: getVapidPublicKey(),
+      isConfigured: isPushConfigured(),
+    };
+  }),
+
+  subscribe: protectedProcedure
+    .input(z.object({
+      endpoint: z.string(),
+      keys: z.object({
+        p256dh: z.string(),
+        auth: z.string(),
+      }),
+      userAgent: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.user?.id) throw new Error("Unauthorized");
+      const subscriptionId = await savePushSubscription(
+        ctx.user.id,
+        { endpoint: input.endpoint, keys: input.keys },
+        input.userAgent
+      );
+      return { success: true, subscriptionId };
+    }),
+
+  unsubscribe: protectedProcedure
+    .input(z.object({ endpoint: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.user?.id) throw new Error("Unauthorized");
+      await removePushSubscription(ctx.user.id, input.endpoint);
+      return { success: true };
+    }),
+
+  getSubscriptions: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user?.id) return [];
+    return await getUserSubscriptions(ctx.user.id);
+  }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -1835,6 +1964,9 @@ export const appRouter = router({
   activityLog: activityLogRouter,
   adminRoles: adminRolesRouter,
   notificationCenter: notificationCenterRouter,
+  emailDigest: emailDigestRouter,
+  dndSchedule: dndScheduleRouter,
+  pushNotifications: pushNotificationsRouter,
 });
 
 // Export createNotification for use in other parts of the app

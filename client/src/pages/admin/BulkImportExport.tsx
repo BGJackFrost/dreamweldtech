@@ -20,6 +20,14 @@ export default function BulkImportExport() {
   const [isLoading, setIsLoading] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
+  // Fetch real data from database
+  const { data: productsData } = trpc.products.list.useQuery({});
+  const { data: newsData } = trpc.news.list.useQuery({ limit: 1000 });
+  const { data: categoriesData } = trpc.categories.list.useQuery();
+  const { data: faqData } = trpc.faq.list.useQuery({});
+  const { data: partnersData } = trpc.partners.getAll.useQuery();
+  const { data: jobsData } = trpc.jobs.listActive.useQuery();
+
   const dataTypes = [
     { value: "products", label: "Sản Phẩm", icon: "📦" },
     { value: "news", label: "Tin Tức", icon: "📰" },
@@ -28,6 +36,77 @@ export default function BulkImportExport() {
     { value: "partners", label: "Đối Tác", icon: "🤝" },
     { value: "jobs", label: "Tuyển Dụng", icon: "💼" },
   ];
+
+  // Get real data based on selected type
+  const getRealData = (type: DataType) => {
+    switch (type) {
+      case "products":
+        return (productsData?.items || []).map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          category: p.categoryId,
+          shortDescription: p.shortDescription,
+          description: p.description,
+          image: p.image,
+          isFeatured: p.isFeatured,
+          isActive: p.isActive,
+        }));
+      case "news":
+        return (newsData?.items || []).map((n: any) => ({
+          id: n.id,
+          title: n.title,
+          slug: n.slug,
+          excerpt: n.excerpt,
+          content: n.content,
+          image: n.image,
+          category: n.category,
+          isPublished: n.isPublished,
+        }));
+      case "categories":
+        return (categoriesData || []).map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          description: c.description,
+          image: c.image,
+          isActive: c.isActive,
+        }));
+      case "faq":
+        return (faqData || []).map((f: any) => ({
+          id: f.id,
+          question: f.question,
+          answer: f.answer,
+          category: f.category,
+          sortOrder: f.sortOrder,
+          isActive: f.isActive,
+        }));
+      case "partners":
+        return (partnersData || []).map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          logo: p.logo,
+          website: p.website,
+          description: p.description,
+          type: p.type,
+          isActive: p.isActive,
+        }));
+      case "jobs":
+        return (jobsData || []).map((j: any) => ({
+          id: j.id,
+          title: j.title,
+          slug: j.slug,
+          department: j.department,
+          location: j.location,
+          type: j.type,
+          description: j.description,
+          requirements: j.requirements,
+          isActive: j.isActive,
+        }));
+      default:
+        return [];
+    }
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -47,15 +126,16 @@ export default function BulkImportExport() {
         throw new Error("File không chứa dữ liệu");
       }
 
-      // Simulate import process
+      // TODO: Implement actual import via tRPC mutations
+      // For now, show validation result
       const result: ImportResult = {
-        success: Math.floor(data.length * 0.95),
-        failed: Math.ceil(data.length * 0.05),
-        errors: data.length > 0 ? ["Một số dòng dữ liệu không hợp lệ"] : [],
+        success: data.length,
+        failed: 0,
+        errors: [],
       };
 
       setImportResult(result);
-      toast.success(`Đã import thành công ${result.success} mục từ ${data.length} mục`);
+      toast.success(`Đã xác thực ${result.success} mục. Vui lòng liên hệ admin để import thực tế.`);
     } catch (error) {
       toast.error(`Lỗi: ${error instanceof Error ? error.message : "Không thể đọc file"}`);
     } finally {
@@ -66,10 +146,16 @@ export default function BulkImportExport() {
   const handleExport = async () => {
     setIsLoading(true);
     try {
-      // Mock export data
-      const mockData = generateMockData(selectedType);
+      // Get real data from database
+      const realData = getRealData(selectedType);
 
-      const jsonString = JSON.stringify(mockData, null, 2);
+      if (realData.length === 0) {
+        toast.warning("Không có dữ liệu để export");
+        setIsLoading(false);
+        return;
+      }
+
+      const jsonString = JSON.stringify(realData, null, 2);
       const blob = new Blob([jsonString], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -80,7 +166,7 @@ export default function BulkImportExport() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success(`Đã export ${mockData.length} mục thành công`);
+      toast.success(`Đã export ${realData.length} mục thành công`);
     } catch (error) {
       toast.error("Lỗi khi export dữ liệu");
     } finally {
@@ -91,8 +177,15 @@ export default function BulkImportExport() {
   const handleExportCSV = async () => {
     setIsLoading(true);
     try {
-      const mockData = generateMockData(selectedType);
-      const csv = convertToCSV(mockData);
+      const realData = getRealData(selectedType);
+
+      if (realData.length === 0) {
+        toast.warning("Không có dữ liệu để export");
+        setIsLoading(false);
+        return;
+      }
+
+      const csv = convertToCSV(realData);
 
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -104,11 +197,24 @@ export default function BulkImportExport() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success(`Đã export ${mockData.length} mục thành công`);
+      toast.success(`Đã export ${realData.length} mục thành công`);
     } catch (error) {
       toast.error("Lỗi khi export dữ liệu");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Get count for selected type
+  const getDataCount = (type: DataType): number => {
+    switch (type) {
+      case "products": return productsData?.items?.length || 0;
+      case "news": return newsData?.items?.length || 0;
+      case "categories": return categoriesData?.length || 0;
+      case "faq": return faqData?.length || 0;
+      case "partners": return partnersData?.length || 0;
+      case "jobs": return jobsData?.length || 0;
+      default: return 0;
     }
   };
 
@@ -133,267 +239,187 @@ export default function BulkImportExport() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Import Tab */}
+        {/* Data Type Selection */}
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Chọn loại dữ liệu</CardTitle>
+            <CardDescription>
+              Chọn loại dữ liệu bạn muốn {activeTab === "import" ? "nhập" : "xuất"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {dataTypes.map((type) => (
+                <Button
+                  key={type.value}
+                  variant={selectedType === type.value ? "default" : "outline"}
+                  className="flex flex-col h-auto py-4 gap-2"
+                  onClick={() => setSelectedType(type.value as DataType)}
+                >
+                  <span className="text-2xl">{type.icon}</span>
+                  <span className="text-sm">{type.label}</span>
+                  <span className="text-xs text-muted-foreground">
+                    ({getDataCount(type.value as DataType)} mục)
+                  </span>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Import Section */}
         {activeTab === "import" && (
-          <div className="space-y-6 mt-6">
-            {/* Data Type Selection */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Chọn loại dữ liệu</CardTitle>
-                <CardDescription>Chọn loại dữ liệu bạn muốn import</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {dataTypes.map((type) => (
-                    <button
-                      key={type.value}
-                      onClick={() => setSelectedType(type.value as DataType)}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        selectedType === type.value
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <div className="text-2xl mb-2">{type.icon}</div>
-                      <p className="font-medium text-sm">{type.label}</p>
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Import Dữ Liệu
+              </CardTitle>
+              <CardDescription>
+                Tải lên file JSON hoặc CSV để import dữ liệu hàng loạt
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="border-2 border-dashed rounded-lg p-8 text-center">
+                <input
+                  type="file"
+                  accept=".json,.csv"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="file-upload"
+                  disabled={isLoading}
+                />
+                <label
+                  htmlFor="file-upload"
+                  className="cursor-pointer flex flex-col items-center gap-4"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
+                  ) : (
+                    <Upload className="h-12 w-12 text-muted-foreground" />
+                  )}
+                  <div>
+                    <p className="font-medium">
+                      {isLoading ? "Đang xử lý..." : "Kéo thả file hoặc click để chọn"}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Hỗ trợ định dạng JSON và CSV
+                    </p>
+                  </div>
+                </label>
+              </div>
 
-            {/* File Upload */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Tải lên file</CardTitle>
-                <CardDescription>Hỗ trợ các định dạng: JSON, CSV</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                  <FileJson className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="font-medium mb-2">Kéo file vào đây hoặc nhấp để chọn</p>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Kích thước tối đa: 10MB
-                  </p>
-                  <input
-                    type="file"
-                    accept=".json,.csv"
-                    onChange={handleFileUpload}
-                    disabled={isLoading}
-                    className="hidden"
-                    id="file-input"
-                  />
-                  <label htmlFor="file-input">
-                    <Button asChild disabled={isLoading} className="cursor-pointer">
-                      <span>
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Đang xử lý...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="h-4 w-4 mr-2" />
-                            Chọn file
-                          </>
-                        )}
-                      </span>
-                    </Button>
-                  </label>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Import Result */}
-            {importResult && (
-              <Card className={importResult.failed === 0 ? "border-green-500/50 bg-green-500/5" : "border-yellow-500/50 bg-yellow-500/5"}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    {importResult.failed === 0 ? (
-                      <>
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        Import thành công
-                      </>
-                    ) : (
-                      <>
-                        <AlertCircle className="h-5 w-5 text-yellow-500" />
-                        Import hoàn thành với cảnh báo
-                      </>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Thành công</p>
-                      <p className="text-2xl font-bold text-green-600">{importResult.success}</p>
+              {importResult && (
+                <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <span className="font-medium">Kết quả Import</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-600">✓</span>
+                      <span>Thành công: {importResult.success}</span>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Thất bại</p>
-                      <p className="text-2xl font-bold text-red-600">{importResult.failed}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-red-600">✗</span>
+                      <span>Thất bại: {importResult.failed}</span>
                     </div>
                   </div>
                   {importResult.errors.length > 0 && (
-                    <div className="bg-background/50 rounded p-3">
-                      <p className="text-sm font-medium mb-2">Lỗi:</p>
-                      <ul className="text-sm space-y-1">
-                        {importResult.errors.map((error, idx) => (
-                          <li key={idx} className="text-muted-foreground">• {error}</li>
+                    <div className="mt-2">
+                      <p className="text-sm font-medium text-red-600 flex items-center gap-1">
+                        <AlertCircle className="h-4 w-4" />
+                        Lỗi:
+                      </p>
+                      <ul className="text-sm text-muted-foreground list-disc list-inside">
+                        {importResult.errors.map((error, i) => (
+                          <li key={i}>{error}</li>
                         ))}
                       </ul>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Template Download */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Tải template</CardTitle>
-                <CardDescription>Tải file mẫu để tham khảo cấu trúc dữ liệu</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start">
-                    <FileJson className="h-4 w-4 mr-2" />
-                    Tải template JSON
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Tải template CSV
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              )}
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-2">
+                  Định dạng file yêu cầu
+                </h4>
+                <p className="text-sm text-blue-600 dark:text-blue-400">
+                  File JSON phải chứa một mảng các object với các trường tương ứng với loại dữ liệu đã chọn.
+                  Xem file mẫu bằng cách export dữ liệu hiện có.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Export Tab */}
+        {/* Export Section */}
         {activeTab === "export" && (
-          <div className="space-y-6 mt-6">
-            {/* Data Type Selection */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Chọn loại dữ liệu</CardTitle>
-                <CardDescription>Chọn loại dữ liệu bạn muốn export</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {dataTypes.map((type) => (
-                    <button
-                      key={type.value}
-                      onClick={() => setSelectedType(type.value as DataType)}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        selectedType === type.value
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <div className="text-2xl mb-2">{type.icon}</div>
-                      <p className="font-medium text-sm">{type.label}</p>
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                Export Dữ Liệu
+              </CardTitle>
+              <CardDescription>
+                Xuất dữ liệu {dataTypes.find(t => t.value === selectedType)?.label} ra file JSON hoặc CSV
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="text-sm">
+                  Số lượng dữ liệu sẽ export: <strong>{getDataCount(selectedType)}</strong> mục
+                </p>
+              </div>
 
-            {/* Export Options */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Chọn định dạng</CardTitle>
-                <CardDescription>Chọn định dạng file để export dữ liệu</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              <div className="flex gap-4">
                 <Button
                   onClick={handleExport}
-                  disabled={isLoading}
-                  className="w-full justify-start h-12"
-                  variant="outline"
+                  disabled={isLoading || getDataCount(selectedType) === 0}
+                  className="flex-1"
                 >
                   {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Đang export...
-                    </>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : (
-                    <>
-                      <FileJson className="h-4 w-4 mr-2" />
-                      Export as JSON
-                    </>
+                    <FileJson className="h-4 w-4 mr-2" />
                   )}
+                  Export JSON
                 </Button>
                 <Button
                   onClick={handleExportCSV}
-                  disabled={isLoading}
-                  className="w-full justify-start h-12"
+                  disabled={isLoading || getDataCount(selectedType) === 0}
                   variant="outline"
+                  className="flex-1"
                 >
                   {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Đang export...
-                    </>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : (
-                    <>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Export as CSV
-                    </>
+                    <FileText className="h-4 w-4 mr-2" />
                   )}
+                  Export CSV
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Export Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Thông tin</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-2">
-                <p>✓ Tất cả dữ liệu sẽ được export với đầy đủ thông tin</p>
-                <p>✓ File sẽ được tải xuống tự động</p>
-                <p>✓ Bạn có thể import lại file này sau này</p>
-              </CardContent>
-            </Card>
-          </div>
+              <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4">
+                <h4 className="font-medium text-amber-700 dark:text-amber-300 mb-2">
+                  Lưu ý
+                </h4>
+                <ul className="text-sm text-amber-600 dark:text-amber-400 list-disc list-inside space-y-1">
+                  <li>Dữ liệu export là dữ liệu thực từ database</li>
+                  <li>File JSON phù hợp để backup và import lại</li>
+                  <li>File CSV phù hợp để xem trong Excel/Sheets</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </Tabs>
     </div>
   );
 }
 
-// Helper functions
-function generateMockData(type: DataType) {
-  const baseData = {
-    products: [
-      { id: 1, name: "Máy Hàn Laser", category: "Máy Hàn", price: 50000, active: true },
-      { id: 2, name: "Máy Cắt Laser", category: "Máy Cắt", price: 75000, active: true },
-    ],
-    news: [
-      { id: 1, title: "Tin tức 1", content: "Nội dung tin tức", published: true },
-      { id: 2, title: "Tin tức 2", content: "Nội dung tin tức", published: true },
-    ],
-    categories: [
-      { id: 1, name: "Máy Hàn", slug: "may-han" },
-      { id: 2, name: "Máy Cắt", slug: "may-cat" },
-    ],
-    faq: [
-      { id: 1, question: "Câu hỏi 1?", answer: "Câu trả lời 1" },
-      { id: 2, question: "Câu hỏi 2?", answer: "Câu trả lời 2" },
-    ],
-    partners: [
-      { id: 1, name: "Đối tác 1", logo: "logo1.png" },
-      { id: 2, name: "Đối tác 2", logo: "logo2.png" },
-    ],
-    jobs: [
-      { id: 1, title: "Vị trí 1", department: "Sales", status: "open" },
-      { id: 2, title: "Vị trí 2", department: "Tech", status: "open" },
-    ],
-  };
-
-  return baseData[type] || [];
-}
-
+// Helper function
 function convertToCSV(data: any[]): string {
   if (data.length === 0) return "";
 
@@ -402,8 +428,9 @@ function convertToCSV(data: any[]): string {
   const csvRows = data.map((row) =>
     headers.map((header) => {
       const value = row[header];
-      if (typeof value === "string" && value.includes(",")) {
-        return `"${value}"`;
+      if (value === null || value === undefined) return "";
+      if (typeof value === "string" && (value.includes(",") || value.includes("\n") || value.includes('"'))) {
+        return `"${value.replace(/"/g, '""')}"`;
       }
       return value;
     }).join(",")

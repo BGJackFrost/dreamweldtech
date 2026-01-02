@@ -458,3 +458,82 @@ export const notificationPreferences = mysqlTable("notification_preferences", {
 
 export type NotificationPreference = typeof notificationPreferences.$inferSelect;
 export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;
+
+
+// ============================================
+// EMAIL DIGEST SETTINGS
+// ============================================
+export const emailDigestSettings = mysqlTable("email_digest_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  isEnabled: mysqlEnum("isEnabled", ["true", "false"]).default("false").notNull(),
+  frequency: mysqlEnum("frequency", ["daily", "weekly", "monthly"]).default("daily").notNull(),
+  sendTime: varchar("sendTime", { length: 5 }).default("09:00").notNull(), // HH:mm format
+  sendDay: int("sendDay").default(1), // 1-7 for weekly (Monday=1), 1-31 for monthly
+  timezone: varchar("timezone", { length: 50 }).default("Asia/Ho_Chi_Minh").notNull(),
+  includeContacts: mysqlEnum("includeContacts", ["true", "false"]).default("true").notNull(),
+  includeApplications: mysqlEnum("includeApplications", ["true", "false"]).default("true").notNull(),
+  includeNewsletter: mysqlEnum("includeNewsletter", ["true", "false"]).default("true").notNull(),
+  includeSystem: mysqlEnum("includeSystem", ["true", "false"]).default("true").notNull(),
+  lastSentAt: timestamp("lastSentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EmailDigestSetting = typeof emailDigestSettings.$inferSelect;
+export type InsertEmailDigestSetting = typeof emailDigestSettings.$inferInsert;
+
+// ============================================
+// DND SCHEDULE (Do Not Disturb Schedule)
+// ============================================
+export const dndSchedule = mysqlTable("dnd_schedule", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  isEnabled: mysqlEnum("isEnabled", ["true", "false"]).default("true").notNull(),
+  startTime: varchar("startTime", { length: 5 }).notNull(), // HH:mm format (e.g., "22:00")
+  endTime: varchar("endTime", { length: 5 }).notNull(), // HH:mm format (e.g., "08:00")
+  timezone: varchar("timezone", { length: 50 }).default("Asia/Ho_Chi_Minh").notNull(),
+  daysOfWeek: varchar("daysOfWeek", { length: 20 }).default("1,2,3,4,5,6,7").notNull(), // Comma-separated: 1=Mon, 7=Sun
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DndSchedule = typeof dndSchedule.$inferSelect;
+export type InsertDndSchedule = typeof dndSchedule.$inferInsert;
+
+// ============================================
+// PUSH NOTIFICATION SUBSCRIPTIONS
+// ============================================
+export const pushSubscriptions = mysqlTable("push_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  endpoint: text("endpoint").notNull(),
+  p256dh: varchar("p256dh", { length: 255 }).notNull(), // Public key
+  auth: varchar("auth", { length: 255 }).notNull(), // Auth secret
+  userAgent: varchar("userAgent", { length: 500 }),
+  isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
+
+// ============================================
+// EMAIL DIGEST LOG (Track sent digests)
+// ============================================
+export const emailDigestLog = mysqlTable("email_digest_log", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+  frequency: varchar("frequency", { length: 20 }).notNull(),
+  contactsCount: int("contactsCount").default(0),
+  applicationsCount: int("applicationsCount").default(0),
+  newsletterCount: int("newsletterCount").default(0),
+  systemCount: int("systemCount").default(0),
+  status: mysqlEnum("status", ["sent", "failed", "skipped"]).default("sent").notNull(),
+  errorMessage: text("errorMessage"),
+});
+
+export type EmailDigestLogEntry = typeof emailDigestLog.$inferSelect;
+export type InsertEmailDigestLogEntry = typeof emailDigestLog.$inferInsert;

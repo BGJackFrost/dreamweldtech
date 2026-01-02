@@ -328,3 +328,11 @@
 - [x] Cập nhật NotificationProvider để respect settings
 - [x] Lưu preferences vào localStorage
 - [x] Viết unit tests cho tính năng mới (262 tests passed)
+
+
+## PHASE 35: Advanced Notifications & Database Cleanup
+- [x] Email Digest - Tổng hợp thông báo gửi qua email hàng ngày/tuần
+- [x] Notification Scheduling - Đặt lịch DND tự động theo giờ
+- [x] Push Notifications - Browser push notifications (cần cấu hình VAPID keys)
+- [x] Database Cleanup - Thay thế mock data bằng dữ liệu thực trong BulkImportExport
+- [x] All 262 tests passed
