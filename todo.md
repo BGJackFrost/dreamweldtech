@@ -377,3 +377,28 @@
 - [x] Tạo TranslationManager page với Export JSON/CSV
 - [x] Tạo Import Translations feature (JSON/CSV)
 - [x] 262 tests passed
+
+
+## PHASE 39: Apply Translations & Database-backed i18n
+- [ ] Cập nhật News.tsx với useAdminTranslation hook
+- [ ] Cập nhật Jobs.tsx với useAdminTranslation hook
+- [ ] Cập nhật Partners.tsx với useAdminTranslation hook
+- [ ] Cập nhật Banners.tsx với useAdminTranslation hook
+- [ ] Tạo custom_translations table trong database
+- [ ] Tạo API endpoints cho CRUD custom translations
+- [ ] Cập nhật TranslationManager với database editing UI
+- [ ] Tích hợp custom translations vào useAdminTranslation hook
+- [ ] Viết unit tests cho các tính năng mới
+
+
+## PHASE 39: Apply Translations & Database-backed i18n - COMPLETED
+- [x] Cập nhật News.tsx với useAdminTranslation (4 ngôn ngữ)
+- [x] Cập nhật Jobs.tsx với useAdminTranslation (4 ngôn ngữ)
+- [x] Cập nhật Partners.tsx với useAdminTranslation (4 ngôn ngữ)
+- [x] Cập nhật Banners.tsx với useAdminTranslation (4 ngôn ngữ)
+- [x] Tạo bảng custom_translations trong database
+- [x] Tạo API customTranslationsRouter (CRUD, bulk upsert, export)
+- [x] Cập nhật TranslationManager với database editing
+- [x] Cho phép admin thêm/sửa/xóa translations trong UI
+- [x] Import translations từ file JSON/CSV vào database
+- [x] 262 tests passed

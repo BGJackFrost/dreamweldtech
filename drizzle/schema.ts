@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, uniqueIndex } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -555,3 +555,30 @@ export const userPreferences = mysqlTable("user_preferences", {
 
 export type UserPreference = typeof userPreferences.$inferSelect;
 export type InsertUserPreference = typeof userPreferences.$inferInsert;
+
+
+// ============================================
+// CUSTOM TRANSLATIONS (Database-backed i18n)
+// ============================================
+export const customTranslations = mysqlTable("custom_translations", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Translation key path, e.g., "admin.dashboard.title" or "public.home.hero.title" */
+  key: varchar("key", { length: 255 }).notNull(),
+  /** Language code: vi, en, ja, zh */
+  language: varchar("language", { length: 10 }).notNull(),
+  /** The translated value */
+  value: text("value").notNull(),
+  /** Category for grouping: admin, public, common */
+  category: varchar("category", { length: 50 }).default("common"),
+  /** Description/context for translators */
+  description: text("description"),
+  /** Who last modified this translation */
+  updatedBy: int("updatedBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  keyLangUnique: uniqueIndex("key_lang_unique").on(table.key, table.language),
+}));
+
+export type CustomTranslation = typeof customTranslations.$inferSelect;
+export type InsertCustomTranslation = typeof customTranslations.$inferInsert;

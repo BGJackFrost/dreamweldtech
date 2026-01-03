@@ -40,6 +40,7 @@ import {
   Users
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAdminTranslation } from "@/hooks/useAdminTranslation";
 
 type JobType = "full-time" | "part-time" | "contract" | "internship";
 
@@ -70,9 +71,54 @@ const initialForm: JobForm = {
 };
 
 export default function AdminJobs() {
+  const { adminT, language } = useAdminTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<JobForm>(initialForm);
+
+  // Get translations with fallbacks
+  const t = {
+    title: (adminT as any).jobs?.title || "Quản Lý Tuyển Dụng",
+    subtitle: (adminT as any).jobs?.subtitle || "Quản lý các vị trí tuyển dụng và đơn ứng tuyển",
+    addPosition: (adminT as any).jobs?.addPosition || "Thêm vị trí",
+    editPosition: (adminT as any).jobs?.editPosition || "Chỉnh sửa vị trí",
+    addNewPosition: (adminT as any).jobs?.addNewPosition || "Thêm vị trí mới",
+    totalPositions: (adminT as any).jobs?.totalPositions || "Tổng vị trí",
+    activeHiring: (adminT as any).jobs?.activeHiring || "Đang tuyển",
+    applications: (adminT as any).jobs?.applications || "Đơn ứng tuyển",
+    positionList: (adminT as any).jobs?.positionList || "Danh sách vị trí tuyển dụng",
+    position: (adminT as any).jobs?.position || "Vị trí",
+    department: (adminT as any).jobs?.department || "Phòng ban",
+    location: (adminT as any).jobs?.location || "Địa điểm",
+    jobType: (adminT as any).jobs?.jobType || "Loại hình",
+    status: (adminT as any).jobs?.status || "Trạng thái",
+    actions: (adminT as any).common?.actions || "Thao tác",
+    hiring: (adminT as any).jobs?.hiring || "Đang tuyển",
+    closed: (adminT as any).jobs?.closed || "Đã đóng",
+    noPositions: (adminT as any).jobs?.noPositions || "Chưa có vị trí tuyển dụng nào",
+    fullTime: (adminT as any).jobs?.fullTime || "Toàn thời gian",
+    partTime: (adminT as any).jobs?.partTime || "Bán thời gian",
+    contract: (adminT as any).jobs?.contract || "Hợp đồng",
+    internship: (adminT as any).jobs?.internship || "Thực tập",
+    jobTitle: (adminT as any).jobs?.jobTitle || "Tiêu đề",
+    slug: (adminT as any).jobs?.slug || "Slug",
+    experience: (adminT as any).jobs?.experience || "Kinh nghiệm",
+    salary: (adminT as any).jobs?.salary || "Mức lương",
+    description: (adminT as any).jobs?.description || "Mô tả công việc",
+    requirements: (adminT as any).jobs?.requirements || "Yêu cầu",
+    benefits: (adminT as any).jobs?.benefits || "Quyền lợi",
+    cancel: (adminT as any).common?.cancel || "Hủy",
+    update: (adminT as any).common?.update || "Cập nhật",
+    addNew: (adminT as any).common?.addNew || "Thêm mới",
+    updateSuccess: (adminT as any).jobs?.updateSuccess || "Đã cập nhật vị trí tuyển dụng",
+    createSuccess: (adminT as any).jobs?.createSuccess || "Đã thêm vị trí tuyển dụng mới",
+    deleteSuccess: (adminT as any).jobs?.deleteSuccess || "Đã xóa vị trí tuyển dụng",
+    hideSuccess: (adminT as any).jobs?.hideSuccess || "Đã ẩn vị trí",
+    showSuccess: (adminT as any).jobs?.showSuccess || "Đã hiển thị vị trí",
+    confirmDelete: (adminT as any).jobs?.confirmDelete || "Bạn có chắc muốn xóa vị trí này?",
+    error: (adminT as any).common?.error || "Có lỗi xảy ra",
+    applicationCount: (adminT as any).jobs?.applicationCount || "đơn",
+  };
 
   const { data: jobs, refetch } = trpc.jobs.listAll.useQuery();
   const { data: applications } = trpc.jobApplications.list.useQuery({});
@@ -103,17 +149,17 @@ export default function AdminJobs() {
     try {
       if (editingId) {
         await updateJob.mutateAsync({ id: editingId, ...formData });
-        toast.success("Đã cập nhật vị trí tuyển dụng");
+        toast.success(t.updateSuccess);
       } else {
         await createJob.mutateAsync(formData);
-        toast.success("Đã thêm vị trí tuyển dụng mới");
+        toast.success(t.createSuccess);
       }
       setIsDialogOpen(false);
       setFormData(initialForm);
       setEditingId(null);
       refetch();
     } catch (error) {
-      toast.error("Có lỗi xảy ra");
+      toast.error(t.error);
     }
   };
 
@@ -136,13 +182,13 @@ export default function AdminJobs() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Bạn có chắc muốn xóa vị trí này?")) return;
+    if (!confirm(t.confirmDelete)) return;
     try {
       await deleteJob.mutateAsync({ id });
-      toast.success("Đã xóa vị trí tuyển dụng");
+      toast.success(t.deleteSuccess);
       refetch();
     } catch (error) {
-      toast.error("Có lỗi xảy ra");
+      toast.error(t.error);
     }
   };
 
@@ -152,10 +198,10 @@ export default function AdminJobs() {
         id,
         isActive: currentStatus === "true" ? "false" : "true",
       });
-      toast.success(currentStatus === "true" ? "Đã ẩn vị trí" : "Đã hiển thị vị trí");
+      toast.success(currentStatus === "true" ? t.hideSuccess : t.showSuccess);
       refetch();
     } catch (error) {
-      toast.error("Có lỗi xảy ra");
+      toast.error(t.error);
     }
   };
 
@@ -165,10 +211,10 @@ export default function AdminJobs() {
 
   const getJobTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      "full-time": "Toàn thời gian",
-      "part-time": "Bán thời gian",
-      "contract": "Hợp đồng",
-      "internship": "Thực tập",
+      "full-time": t.fullTime,
+      "part-time": t.partTime,
+      "contract": t.contract,
+      "internship": t.internship,
     };
     return labels[type] || type;
   };
@@ -177,28 +223,26 @@ export default function AdminJobs() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Quản Lý Tuyển Dụng</h1>
-          <p className="text-muted-foreground">
-            Quản lý các vị trí tuyển dụng và đơn ứng tuyển
-          </p>
+          <h1 className="text-3xl font-bold">{t.title}</h1>
+          <p className="text-muted-foreground">{t.subtitle}</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => { setEditingId(null); setFormData(initialForm); }}>
               <Plus className="h-4 w-4 mr-2" />
-              Thêm vị trí
+              {t.addPosition}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingId ? "Chỉnh sửa vị trí" : "Thêm vị trí mới"}
+                {editingId ? t.editPosition : t.addNewPosition}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="title">Tiêu đề *</Label>
+                  <Label htmlFor="title">{t.jobTitle} *</Label>
                   <Input
                     id="title"
                     value={formData.title}
@@ -207,7 +251,7 @@ export default function AdminJobs() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="slug">Slug *</Label>
+                  <Label htmlFor="slug">{t.slug} *</Label>
                   <Input
                     id="slug"
                     value={formData.slug}
@@ -219,7 +263,7 @@ export default function AdminJobs() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="department">Phòng ban</Label>
+                  <Label htmlFor="department">{t.department}</Label>
                   <Input
                     id="department"
                     value={formData.department}
@@ -228,7 +272,7 @@ export default function AdminJobs() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="location">Địa điểm</Label>
+                  <Label htmlFor="location">{t.location}</Label>
                   <Input
                     id="location"
                     value={formData.location}
@@ -240,7 +284,7 @@ export default function AdminJobs() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="type">Loại hình</Label>
+                  <Label htmlFor="type">{t.jobType}</Label>
                   <Select
                     value={formData.type}
                     onValueChange={(v) => setFormData({ ...formData, type: v as JobType })}
@@ -249,15 +293,15 @@ export default function AdminJobs() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="full-time">Toàn thời gian</SelectItem>
-                      <SelectItem value="part-time">Bán thời gian</SelectItem>
-                      <SelectItem value="contract">Hợp đồng</SelectItem>
-                      <SelectItem value="internship">Thực tập</SelectItem>
+                      <SelectItem value="full-time">{t.fullTime}</SelectItem>
+                      <SelectItem value="part-time">{t.partTime}</SelectItem>
+                      <SelectItem value="contract">{t.contract}</SelectItem>
+                      <SelectItem value="internship">{t.internship}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="experience">Kinh nghiệm</Label>
+                  <Label htmlFor="experience">{t.experience}</Label>
                   <Input
                     id="experience"
                     value={formData.experience}
@@ -266,7 +310,7 @@ export default function AdminJobs() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="salary">Mức lương</Label>
+                  <Label htmlFor="salary">{t.salary}</Label>
                   <Input
                     id="salary"
                     value={formData.salary}
@@ -277,7 +321,7 @@ export default function AdminJobs() {
               </div>
 
               <div>
-                <Label htmlFor="description">Mô tả công việc</Label>
+                <Label htmlFor="description">{t.description}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
@@ -287,7 +331,7 @@ export default function AdminJobs() {
               </div>
 
               <div>
-                <Label htmlFor="requirements">Yêu cầu</Label>
+                <Label htmlFor="requirements">{t.requirements}</Label>
                 <Textarea
                   id="requirements"
                   value={formData.requirements}
@@ -297,7 +341,7 @@ export default function AdminJobs() {
               </div>
 
               <div>
-                <Label htmlFor="benefits">Quyền lợi</Label>
+                <Label htmlFor="benefits">{t.benefits}</Label>
                 <Textarea
                   id="benefits"
                   value={formData.benefits}
@@ -308,10 +352,10 @@ export default function AdminJobs() {
 
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Hủy
+                  {t.cancel}
                 </Button>
                 <Button type="submit">
-                  {editingId ? "Cập nhật" : "Thêm mới"}
+                  {editingId ? t.update : t.addNew}
                 </Button>
               </div>
             </form>
@@ -328,7 +372,7 @@ export default function AdminJobs() {
             </div>
             <div>
               <p className="text-2xl font-bold">{jobs?.length || 0}</p>
-              <p className="text-sm text-muted-foreground">Tổng vị trí</p>
+              <p className="text-sm text-muted-foreground">{t.totalPositions}</p>
             </div>
           </CardContent>
         </Card>
@@ -341,7 +385,7 @@ export default function AdminJobs() {
               <p className="text-2xl font-bold">
                 {jobs?.filter(j => j.isActive === "true").length || 0}
               </p>
-              <p className="text-sm text-muted-foreground">Đang tuyển</p>
+              <p className="text-sm text-muted-foreground">{t.activeHiring}</p>
             </div>
           </CardContent>
         </Card>
@@ -352,7 +396,7 @@ export default function AdminJobs() {
             </div>
             <div>
               <p className="text-2xl font-bold">{applications?.length || 0}</p>
-              <p className="text-sm text-muted-foreground">Đơn ứng tuyển</p>
+              <p className="text-sm text-muted-foreground">{t.applications}</p>
             </div>
           </CardContent>
         </Card>
@@ -361,19 +405,19 @@ export default function AdminJobs() {
       {/* Jobs Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách vị trí tuyển dụng</CardTitle>
+          <CardTitle>{t.positionList}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Vị trí</TableHead>
-                <TableHead>Phòng ban</TableHead>
-                <TableHead>Địa điểm</TableHead>
-                <TableHead>Loại hình</TableHead>
-                <TableHead>Đơn ứng tuyển</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
+                <TableHead>{t.position}</TableHead>
+                <TableHead>{t.department}</TableHead>
+                <TableHead>{t.location}</TableHead>
+                <TableHead>{t.jobType}</TableHead>
+                <TableHead>{t.applications}</TableHead>
+                <TableHead>{t.status}</TableHead>
+                <TableHead className="text-right">{t.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -400,11 +444,11 @@ export default function AdminJobs() {
                     <Badge variant="outline">{getJobTypeLabel(job.type || "full-time")}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{getApplicationCount(job.id)} đơn</Badge>
+                    <Badge variant="secondary">{getApplicationCount(job.id)} {t.applicationCount}</Badge>
                   </TableCell>
                   <TableCell>
                     <Badge variant={job.isActive === "true" ? "default" : "secondary"}>
-                      {job.isActive === "true" ? "Đang tuyển" : "Đã đóng"}
+                      {job.isActive === "true" ? t.hiring : t.closed}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -441,7 +485,7 @@ export default function AdminJobs() {
               {(!jobs || jobs.length === 0) && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    Chưa có vị trí tuyển dụng nào
+                    {t.noPositions}
                   </TableCell>
                 </TableRow>
               )}

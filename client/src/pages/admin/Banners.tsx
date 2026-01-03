@@ -14,6 +14,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Image, Eye, EyeOff, Loader2, GripVertical, ExternalLink } from "lucide-react";
 import { FileUpload } from "@/components/FileUpload";
+import { useAdminTranslation } from "@/hooks/useAdminTranslation";
 
 interface BannerFormData {
   title: string;
@@ -45,19 +46,77 @@ const defaultFormData: BannerFormData = {
   slideEffect: "fade",
 };
 
-const positionLabels: Record<string, string> = {
-  hero: "Hero (Trang chủ)",
-  promo: "Khuyến mãi",
-  sidebar: "Sidebar",
-  footer: "Footer",
-};
-
 export default function AdminBanners() {
+  const { adminT, language } = useAdminTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<BannerFormData>(defaultFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  // Get translations with fallbacks
+  const t = {
+    title: (adminT as any).banners?.title || "Quản Lý Banner/Slider",
+    subtitle: (adminT as any).banners?.subtitle || "Quản lý các banner quảng cáo hiển thị trên website",
+    addBanner: (adminT as any).banners?.addBanner || "Thêm Banner",
+    editBanner: (adminT as any).banners?.editBanner || "Chỉnh Sửa Banner",
+    addNewBanner: (adminT as any).banners?.addNewBanner || "Thêm Banner Mới",
+    bannerList: (adminT as any).banners?.bannerList || "Danh Sách Banner",
+    bannersManaged: (adminT as any).banners?.bannersManaged || "banner đang được quản lý",
+    order: (adminT as any).banners?.order || "STT",
+    image: (adminT as any).banners?.image || "Hình ảnh",
+    bannerTitle: (adminT as any).banners?.bannerTitle || "Tiêu đề",
+    position: (adminT as any).banners?.position || "Vị trí",
+    status: (adminT as any).banners?.status || "Trạng thái",
+    actions: (adminT as any).common?.actions || "Thao tác",
+    heroHome: (adminT as any).banners?.heroHome || "Hero (Trang chủ)",
+    promo: (adminT as any).banners?.promo || "Khuyến mãi",
+    sidebar: (adminT as any).banners?.sidebar || "Sidebar",
+    footer: (adminT as any).banners?.footer || "Footer",
+    noBanners: (adminT as any).banners?.noBanners || "Chưa có banner nào. Nhấn \"Thêm Banner\" để tạo mới.",
+    updateBannerInfo: (adminT as any).banners?.updateBannerInfo || "Cập nhật thông tin banner",
+    createNewBanner: (adminT as any).banners?.createNewBanner || "Tạo banner mới để hiển thị trên website",
+    bannerTitleLabel: (adminT as any).banners?.bannerTitleLabel || "Tiêu đề",
+    displayPosition: (adminT as any).banners?.displayPosition || "Vị trí hiển thị",
+    subtitleLabel: (adminT as any).banners?.subtitleLabel || "Phụ đề",
+    subtitlePlaceholder: (adminT as any).banners?.subtitlePlaceholder || "Phụ đề hoặc tagline",
+    description: (adminT as any).banners?.description || "Mô tả",
+    descriptionPlaceholder: (adminT as any).banners?.descriptionPlaceholder || "Mô tả chi tiết...",
+    desktopImage: (adminT as any).banners?.desktopImage || "Hình ảnh Desktop",
+    mobileImage: (adminT as any).banners?.mobileImage || "Hình ảnh Mobile (tùy chọn)",
+    selectImage: (adminT as any).banners?.selectImage || "Chọn hình ảnh",
+    imageHint: (adminT as any).banners?.imageHint || "JPG, PNG, WebP (max 5MB)",
+    bannerLink: (adminT as any).banners?.bannerLink || "Link khi click banner",
+    displayOrder: (adminT as any).banners?.displayOrder || "Thứ tự hiển thị",
+    ctaButtonText: (adminT as any).banners?.ctaButtonText || "Text nút CTA",
+    ctaButtonLink: (adminT as any).banners?.ctaButtonLink || "Link nút CTA",
+    slideEffect: (adminT as any).banners?.slideEffect || "Hiệu ứng chuyển slide",
+    fade: (adminT as any).banners?.fade || "Mờ dần (Fade)",
+    slide: (adminT as any).banners?.slide || "Trượt (Slide)",
+    zoom: (adminT as any).banners?.zoom || "Phóng to (Zoom)",
+    showBanner: (adminT as any).banners?.showBanner || "Hiển thị banner",
+    cancel: (adminT as any).common?.cancel || "Hủy",
+    update: (adminT as any).common?.update || "Cập nhật",
+    create: (adminT as any).common?.create || "Tạo mới",
+    confirmDelete: (adminT as any).banners?.confirmDelete || "Xác nhận xóa",
+    confirmDeleteDesc: (adminT as any).banners?.confirmDeleteDesc || "Bạn có chắc chắn muốn xóa banner này? Hành động này không thể hoàn tác.",
+    delete: (adminT as any).common?.delete || "Xóa",
+    fillTitleAndImage: (adminT as any).banners?.fillTitleAndImage || "Vui lòng điền tiêu đề và hình ảnh",
+    updateSuccess: (adminT as any).banners?.updateSuccess || "Đã cập nhật banner thành công!",
+    createSuccess: (adminT as any).banners?.createSuccess || "Đã tạo banner mới thành công!",
+    deleteSuccess: (adminT as any).banners?.deleteSuccess || "Đã xóa banner thành công!",
+    hiddenBanner: (adminT as any).banners?.hiddenBanner || "Đã ẩn banner",
+    shownBanner: (adminT as any).banners?.shownBanner || "Đã hiển thị banner",
+    error: (adminT as any).common?.error || "Có lỗi xảy ra. Vui lòng thử lại.",
+    deleteError: (adminT as any).banners?.deleteError || "Có lỗi xảy ra khi xóa banner",
+  };
+
+  const positionLabels: Record<string, string> = {
+    hero: t.heroHome,
+    promo: t.promo,
+    sidebar: t.sidebar,
+    footer: t.footer,
+  };
 
   const { data: banners, refetch } = trpc.banners.listAll.useQuery();
   const createMutation = trpc.banners.create.useMutation();
@@ -91,7 +150,7 @@ export default function AdminBanners() {
 
   const handleSubmit = async () => {
     if (!formData.title || !formData.image) {
-      toast.error("Vui lòng điền tiêu đề và hình ảnh");
+      toast.error(t.fillTitleAndImage);
       return;
     }
 
@@ -102,15 +161,15 @@ export default function AdminBanners() {
           id: editingId,
           ...formData,
         });
-        toast.success("Đã cập nhật banner thành công!");
+        toast.success(t.updateSuccess);
       } else {
         await createMutation.mutateAsync(formData);
-        toast.success("Đã tạo banner mới thành công!");
+        toast.success(t.createSuccess);
       }
       setIsDialogOpen(false);
       refetch();
     } catch (error) {
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+      toast.error(t.error);
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -120,10 +179,10 @@ export default function AdminBanners() {
   const handleDelete = async (id: number) => {
     try {
       await deleteMutation.mutateAsync({ id });
-      toast.success("Đã xóa banner thành công!");
+      toast.success(t.deleteSuccess);
       refetch();
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi xóa banner");
+      toast.error(t.deleteError);
       console.error(error);
     }
     setDeleteConfirmId(null);
@@ -135,10 +194,10 @@ export default function AdminBanners() {
         id,
         isActive: currentStatus === "true" ? "false" : "true",
       });
-      toast.success(currentStatus === "true" ? "Đã ẩn banner" : "Đã hiển thị banner");
+      toast.success(currentStatus === "true" ? t.hiddenBanner : t.shownBanner);
       refetch();
     } catch (error) {
-      toast.error("Có lỗi xảy ra");
+      toast.error(t.error);
       console.error(error);
     }
   };
@@ -150,35 +209,33 @@ export default function AdminBanners() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Image className="h-6 w-6" />
-              Quản Lý Banner/Slider
+              {t.title}
             </h1>
-            <p className="text-muted-foreground">
-              Quản lý các banner quảng cáo hiển thị trên website
-            </p>
+            <p className="text-muted-foreground">{t.subtitle}</p>
           </div>
           <Button onClick={() => handleOpenDialog()}>
             <Plus className="h-4 w-4 mr-2" />
-            Thêm Banner
+            {t.addBanner}
           </Button>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Danh Sách Banner</CardTitle>
+            <CardTitle>{t.bannerList}</CardTitle>
             <CardDescription>
-              {banners?.length || 0} banner đang được quản lý
+              {banners?.length || 0} {t.bannersManaged}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]">STT</TableHead>
-                  <TableHead className="w-[100px]">Hình ảnh</TableHead>
-                  <TableHead>Tiêu đề</TableHead>
-                  <TableHead>Vị trí</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
+                  <TableHead className="w-[50px]">{t.order}</TableHead>
+                  <TableHead className="w-[100px]">{t.image}</TableHead>
+                  <TableHead>{t.bannerTitle}</TableHead>
+                  <TableHead>{t.position}</TableHead>
+                  <TableHead>{t.status}</TableHead>
+                  <TableHead className="text-right">{t.actions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -268,7 +325,7 @@ export default function AdminBanners() {
                 {(!banners || banners.length === 0) && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      Chưa có banner nào. Nhấn "Thêm Banner" để tạo mới.
+                      {t.noBanners}
                     </TableCell>
                   </TableRow>
                 )}
@@ -282,28 +339,26 @@ export default function AdminBanners() {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingId ? "Chỉnh Sửa Banner" : "Thêm Banner Mới"}
+                {editingId ? t.editBanner : t.addNewBanner}
               </DialogTitle>
               <DialogDescription>
-                {editingId
-                  ? "Cập nhật thông tin banner"
-                  : "Tạo banner mới để hiển thị trên website"}
+                {editingId ? t.updateBannerInfo : t.createNewBanner}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Tiêu đề *</Label>
+                  <Label htmlFor="title">{t.bannerTitleLabel} *</Label>
                   <Input
                     id="title"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Tiêu đề banner"
+                    placeholder={t.bannerTitleLabel}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="position">Vị trí hiển thị</Label>
+                  <Label htmlFor="position">{t.displayPosition}</Label>
                   <Select
                     value={formData.position}
                     onValueChange={(value) => setFormData({ ...formData, position: value as any })}
@@ -312,45 +367,45 @@ export default function AdminBanners() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="hero">Hero (Trang chủ)</SelectItem>
-                      <SelectItem value="promo">Khuyến mãi</SelectItem>
-                      <SelectItem value="sidebar">Sidebar</SelectItem>
-                      <SelectItem value="footer">Footer</SelectItem>
+                      <SelectItem value="hero">{t.heroHome}</SelectItem>
+                      <SelectItem value="promo">{t.promo}</SelectItem>
+                      <SelectItem value="sidebar">{t.sidebar}</SelectItem>
+                      <SelectItem value="footer">{t.footer}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="subtitle">Phụ đề</Label>
+                <Label htmlFor="subtitle">{t.subtitleLabel}</Label>
                 <Input
                   id="subtitle"
                   value={formData.subtitle}
                   onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                  placeholder="Phụ đề hoặc tagline"
+                  placeholder={t.subtitlePlaceholder}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Mô tả</Label>
+                <Label htmlFor="description">{t.description}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Mô tả chi tiết..."
+                  placeholder={t.descriptionPlaceholder}
                   rows={3}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Hình ảnh Desktop *</Label>
+                  <Label>{t.desktopImage} *</Label>
                   <FileUpload
                     accept="image/*"
                     onFileSelect={() => {}}
                     onUploadComplete={(url: string) => setFormData({ ...formData, image: url })}
-                    label="Chọn hình ảnh"
-                    hint="JPG, PNG, WebP (max 5MB)"
+                    label={t.selectImage}
+                    hint={t.imageHint}
                   />
                   {formData.image && (
                     <div className="mt-2">
@@ -359,13 +414,13 @@ export default function AdminBanners() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label>Hình ảnh Mobile (tùy chọn)</Label>
+                  <Label>{t.mobileImage}</Label>
                   <FileUpload
                     accept="image/*"
                     onFileSelect={() => {}}
                     onUploadComplete={(url: string) => setFormData({ ...formData, mobileImage: url })}
-                    label="Chọn hình ảnh"
-                    hint="JPG, PNG, WebP (max 5MB)"
+                    label={t.selectImage}
+                    hint={t.imageHint}
                   />
                   {formData.mobileImage && (
                     <div className="mt-2">
@@ -377,7 +432,7 @@ export default function AdminBanners() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="link">Link khi click banner</Label>
+                  <Label htmlFor="link">{t.bannerLink}</Label>
                   <Input
                     id="link"
                     value={formData.link}
@@ -386,7 +441,7 @@ export default function AdminBanners() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="sortOrder">Thứ tự hiển thị</Label>
+                  <Label htmlFor="sortOrder">{t.displayOrder}</Label>
                   <Input
                     id="sortOrder"
                     type="number"
@@ -399,7 +454,7 @@ export default function AdminBanners() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="buttonText">Text nút CTA</Label>
+                  <Label htmlFor="buttonText">{t.ctaButtonText}</Label>
                   <Input
                     id="buttonText"
                     value={formData.buttonText}
@@ -408,7 +463,7 @@ export default function AdminBanners() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="buttonLink">Link nút CTA</Label>
+                  <Label htmlFor="buttonLink">{t.ctaButtonLink}</Label>
                   <Input
                     id="buttonLink"
                     value={formData.buttonLink}
@@ -419,7 +474,7 @@ export default function AdminBanners() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="slideEffect">Hiệu ứng chuyển slide</Label>
+                <Label htmlFor="slideEffect">{t.slideEffect}</Label>
                 <Select
                   value={formData.slideEffect || "fade"}
                   onValueChange={(value) => setFormData({ ...formData, slideEffect: value as any })}
@@ -428,9 +483,9 @@ export default function AdminBanners() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="fade">Mờ dần (Fade)</SelectItem>
-                    <SelectItem value="slide">Trượt (Slide)</SelectItem>
-                    <SelectItem value="zoom">Phóng to (Zoom)</SelectItem>
+                    <SelectItem value="fade">{t.fade}</SelectItem>
+                    <SelectItem value="slide">{t.slide}</SelectItem>
+                    <SelectItem value="zoom">{t.zoom}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -441,19 +496,19 @@ export default function AdminBanners() {
                   checked={formData.isActive === "true"}
                   onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked ? "true" : "false" })}
                 />
-                <Label htmlFor="isActive">Hiển thị banner</Label>
+                <Label htmlFor="isActive">{t.showBanner}</Label>
               </div>
             </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Hủy
+                {t.cancel}
               </Button>
               <Button onClick={handleSubmit} disabled={isSubmitting}>
                 {isSubmitting ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : null}
-                {editingId ? "Cập nhật" : "Tạo mới"}
+                {editingId ? t.update : t.create}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -463,20 +518,18 @@ export default function AdminBanners() {
         <Dialog open={deleteConfirmId !== null} onOpenChange={() => setDeleteConfirmId(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Xác nhận xóa</DialogTitle>
-              <DialogDescription>
-                Bạn có chắc chắn muốn xóa banner này? Hành động này không thể hoàn tác.
-              </DialogDescription>
+              <DialogTitle>{t.confirmDelete}</DialogTitle>
+              <DialogDescription>{t.confirmDeleteDesc}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
-                Hủy
+                {t.cancel}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
               >
-                Xóa
+                {t.delete}
               </Button>
             </DialogFooter>
           </DialogContent>

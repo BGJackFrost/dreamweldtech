@@ -99,6 +99,13 @@
       "when": 1767449375966,
       "tag": "0013_tiresome_wendigo",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1767450948726,
+      "tag": "0014_parched_nightshade",
+      "breakpoints": true
     }
   ]
 }
