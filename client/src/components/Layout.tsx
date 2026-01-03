@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Phone, Mail, MapPin, Facebook, Linkedin, Youtube, Search, Twitter, Instagram } from "lucide-react";
 import { useState, useMemo } from "react";
 import { SearchDialog } from "./SearchDialog";
+import { TranslationSearch } from "./TranslationSearch";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LiveChat } from "./LiveChat";
 import { Chatbot } from "./Chatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePublicCustomTranslation } from "@/hooks/useCustomTranslation";
 import NewsletterForm from "./NewsletterForm";
 import { trpc } from "@/lib/trpc";
 
@@ -71,6 +73,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
+  const { t: customT, hasTranslation } = usePublicCustomTranslation();
+  
+  // Helper để lấy translation với fallback từ static
+  const getT = (key: string, staticValue: string) => {
+    return hasTranslation(key) ? customT(key) : staticValue;
+  };
 
   // Fetch menu config from database
   const { data: menuConfigStr } = trpc.settings.get.useQuery({ key: "menu_config" });
@@ -98,17 +106,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return defaultFooterConfig;
   }, [footerConfigStr]);
 
-  // All possible nav items
+  // All possible nav items - sử dụng getT để cho phép override từ database
   const allNavItems = [
-    { key: "home", label: t.nav.home, href: "/" },
-    { key: "about", label: t.nav.about, href: "/about" },
-    { key: "products", label: t.nav.products, href: "/products" },
-    { key: "solutions", label: t.nav.solutions, href: "/solutions" },
-    { key: "portfolio", label: t.nav.portfolio, href: "/portfolio" },
-    { key: "partners", label: t.nav.partners, href: "/partners" },
-    { key: "news", label: t.nav.news, href: "/news" },
-    { key: "careers", label: t.nav.careers, href: "/careers" },
-    { key: "contact", label: t.nav.contact, href: "/contact" },
+    { key: "home", label: getT("nav.home", t.nav.home), href: "/" },
+    { key: "about", label: getT("nav.about", t.nav.about), href: "/about" },
+    { key: "products", label: getT("nav.products", t.nav.products), href: "/products" },
+    { key: "solutions", label: getT("nav.solutions", t.nav.solutions), href: "/solutions" },
+    { key: "portfolio", label: getT("nav.portfolio", t.nav.portfolio), href: "/portfolio" },
+    { key: "partners", label: getT("nav.partners", t.nav.partners), href: "/partners" },
+    { key: "news", label: getT("nav.news", t.nav.news), href: "/news" },
+    { key: "careers", label: getT("nav.careers", t.nav.careers), href: "/careers" },
+    { key: "contact", label: getT("nav.contact", t.nav.contact), href: "/contact" },
   ];
 
   // Filter nav items based on menu config
@@ -176,7 +184,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
-            <SearchDialog />
+            <TranslationSearch variant="inline" className="hidden lg:block w-48" />
             {menuConfig.contact && (
               <Link href="/contact" className="hidden md:block">
                 <Button className="bg-chart-1 hover:bg-chart-1/90 text-primary-foreground font-bold uppercase tracking-wider">

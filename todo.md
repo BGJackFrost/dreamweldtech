@@ -402,3 +402,13 @@
 - [x] Cho phép admin thêm/sửa/xóa translations trong UI
 - [x] Import translations từ file JSON/CSV vào database
 - [x] 262 tests passed
+
+
+## PHASE 40: Custom Translations & Translation Search - COMPLETED
+- [x] Tạo useCustomTranslation hook với database merge
+- [x] Merge translations từ database với static translations (database ưu tiên cao hơn)
+- [x] Cho phép override bất kỳ text nào mà không cần sửa code
+- [x] Tích hợp useCustomTranslation vào Layout.tsx (navigation)
+- [x] Tạo TranslationSearch component cho Public pages
+- [x] Tìm kiếm nội dung theo ngôn ngữ đã chọn (products, news, jobs, faq, partners)
+- [x] 262 tests passed
