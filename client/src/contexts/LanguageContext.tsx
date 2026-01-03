@@ -1,10 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { translations, Language, TranslationKeys } from "@/lib/i18n/translations";
+import { trpc } from "@/lib/trpc";
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: TranslationKeys;
+  isSyncing: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -34,11 +36,52 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
     return "vi";
   });
+  
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [hasSyncedFromDb, setHasSyncedFromDb] = useState(false);
 
-  const setLanguage = (lang: Language) => {
+  // Get current user
+  const { data: user } = trpc.auth.me.useQuery();
+  
+  // Get user preferences from database
+  const { data: preferences, isLoading: prefsLoading } = trpc.userPreferences.get.useQuery(
+    { userId: user?.id || 0 },
+    { enabled: !!user?.id && !hasSyncedFromDb }
+  );
+  
+  // Mutation to update language in database
+  const updateLanguageMutation = trpc.userPreferences.updateLanguage.useMutation();
+
+  // Sync language from database on login
+  useEffect(() => {
+    if (preferences && !hasSyncedFromDb && !prefsLoading) {
+      if (preferences.language && SUPPORTED_LANGUAGES.includes(preferences.language as Language)) {
+        setLanguageState(preferences.language as Language);
+        localStorage.setItem(LANGUAGE_KEY, preferences.language);
+      }
+      setHasSyncedFromDb(true);
+    }
+  }, [preferences, hasSyncedFromDb, prefsLoading]);
+
+  const setLanguage = async (lang: Language) => {
     setLanguageState(lang);
     if (typeof window !== "undefined") {
       localStorage.setItem(LANGUAGE_KEY, lang);
+    }
+    
+    // Sync to database if user is logged in
+    if (user?.id) {
+      setIsSyncing(true);
+      try {
+        await updateLanguageMutation.mutateAsync({
+          userId: user.id,
+          language: lang,
+        });
+      } catch (error) {
+        console.error("Failed to sync language to database:", error);
+      } finally {
+        setIsSyncing(false);
+      }
     }
   };
 
@@ -50,7 +93,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = translations[language];
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, isSyncing }}>
       {children}
     </LanguageContext.Provider>
   );

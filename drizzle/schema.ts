@@ -537,3 +537,21 @@ export const emailDigestLog = mysqlTable("email_digest_log", {
 
 export type EmailDigestLogEntry = typeof emailDigestLog.$inferSelect;
 export type InsertEmailDigestLogEntry = typeof emailDigestLog.$inferInsert;
+
+
+// ============================================
+// USER PREFERENCES (Language, Theme, etc.)
+// ============================================
+export const userPreferences = mysqlTable("user_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  language: mysqlEnum("language", ["vi", "en", "ja", "zh"]).default("vi").notNull(),
+  theme: mysqlEnum("theme", ["light", "dark", "system"]).default("system").notNull(),
+  timezone: varchar("timezone", { length: 100 }).default("Asia/Ho_Chi_Minh"),
+  dateFormat: varchar("dateFormat", { length: 50 }).default("DD/MM/YYYY"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserPreference = typeof userPreferences.$inferSelect;
+export type InsertUserPreference = typeof userPreferences.$inferInsert;

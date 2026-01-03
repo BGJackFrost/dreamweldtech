@@ -354,3 +354,14 @@
 - [ ] Tích hợp Language Switcher vào Header và Admin Layout
 - [ ] Lưu language preference vào localStorage
 - [ ] Viết unit tests cho i18n system
+
+
+## PHASE 37: i18n Expansion & Language Persistence
+- [x] Mở rộng translations cho Products page (4 ngôn ngữ)
+- [x] Mở rộng translations cho Contacts page (4 ngôn ngữ)
+- [x] Mở rộng translations cho Settings page (đã có sẵn)
+- [x] Tạo bảng user_preferences trong database
+- [x] Tạo API userPreferencesRouter (get, upsert, updateLanguage)
+- [x] Cập nhật LanguageContext để sync với database
+- [x] Hướng dẫn Deploy Production đã sẵn sàng
+- [x] 262 tests passed
