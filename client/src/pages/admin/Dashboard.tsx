@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useAdminTranslation } from "@/hooks/useAdminTranslation";
 import { 
   Package, FileText, MessageSquare, Users, TrendingUp, 
   Mail, ArrowUpRight, ArrowDownRight, Calendar, Clock,
@@ -34,6 +35,7 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const { adminT, language } = useAdminTranslation();
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y">("30d");
   
   // Fetch real analytics data
@@ -83,58 +85,58 @@ export default function AdminDashboard() {
 
   const stats = [
     {
-      title: "Sản Phẩm",
+      title: adminT.menu?.products || "Sản Phẩm",
       value: dashboardStats?.products || 0,
-      subValue: `${products?.filter(p => p.isActive === "true").length || 0} đang hiển thị`,
+      subValue: `${products?.filter(p => p.isActive === "true").length || 0} ${adminT.common?.active || "đang hiển thị"}`,
       icon: Package,
       href: "/admin/products",
       color: "bg-blue-500",
     },
     {
-      title: "Bài Viết",
+      title: adminT.menu?.news || "Bài Viết",
       value: dashboardStats?.news || 0,
-      subValue: "Tin tức & Sự kiện",
+      subValue: adminT.common?.newsEvents || "Tin tức & Sự kiện",
       icon: FileText,
       href: "/admin/news",
       color: "bg-green-500",
     },
     {
-      title: "Liên Hệ",
+      title: adminT.menu?.contacts || "Liên Hệ",
       value: dashboardStats?.contacts || 0,
-      subValue: `${dashboardStats?.newContacts || 0} mới trong 7 ngày`,
+      subValue: `${dashboardStats?.newContacts || 0} ${adminT.common?.newIn7Days || "mới trong 7 ngày"}`,
       icon: MessageSquare,
       href: "/admin/contacts",
       color: "bg-orange-500",
       highlight: (dashboardStats?.newContacts || 0) > 0,
     },
     {
-      title: "Đơn Ứng Tuyển",
+      title: adminT.menu?.applications || "Đơn Ứng Tuyển",
       value: dashboardStats?.applications || 0,
-      subValue: `${dashboardStats?.newApplications || 0} mới trong 7 ngày`,
+      subValue: `${dashboardStats?.newApplications || 0} ${adminT.common?.newIn7Days || "mới trong 7 ngày"}`,
       icon: Briefcase,
       href: "/admin/applications",
       color: "bg-purple-500",
       highlight: (dashboardStats?.newApplications || 0) > 0,
     },
     {
-      title: "Newsletter",
+      title: adminT.menu?.newsletter || "Newsletter",
       value: dashboardStats?.subscribers || 0,
-      subValue: "Người đăng ký",
+      subValue: adminT.common?.subscribers || "Người đăng ký",
       icon: Mail,
       href: "/admin/newsletter",
       color: "bg-pink-500",
     },
     {
-      title: "Đối Tác",
+      title: adminT.menu?.partners || "Đối Tác",
       value: dashboardStats?.partners || 0,
-      subValue: "Khách hàng & Đối tác",
+      subValue: adminT.common?.customersPartners || "Khách hàng & Đối tác",
       icon: Building2,
       href: "/admin/partners",
       color: "bg-teal-500",
     },
   ];
 
-  const currentDate = new Date().toLocaleDateString("vi-VN", {
+  const currentDate = new Date().toLocaleDateString(language === "en" ? "en-US" : language === "ja" ? "ja-JP" : language === "zh" ? "zh-CN" : "vi-VN", {
     weekday: "long",
     year: "numeric",
     month: "long",

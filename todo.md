@@ -336,3 +336,21 @@
 - [x] Push Notifications - Browser push notifications (cần cấu hình VAPID keys)
 - [x] Database Cleanup - Thay thế mock data bằng dữ liệu thực trong BulkImportExport
 - [x] All 262 tests passed
+
+
+## PHASE 36: Internationalization (i18n) - Multi-language Support
+- [x] Tạo i18n Context và useTranslation hook (đã có sẵn trong LanguageContext)
+- [x] Tạo admin-translations.ts với 4 ngôn ngữ (Vi, En, Ja, Zh)
+- [x] Tạo useAdminTranslation hook cho Admin Panel
+- [x] Cập nhật AdminLayout với Language Switcher và translations
+- [x] Cập nhật Dashboard.tsx với translations
+- [x] Thêm common translations cho tất cả 4 ngôn ngữ
+- [x] Language Switcher hoạt động trên cả Public và Admin pages
+- [ ] Tạo file translations cho Tiếng Việt (vi.ts)
+- [ ] Tạo file translations cho Tiếng Anh (en.ts)
+- [ ] Cập nhật Public Pages (Home, Products, News, Contact, Careers, About, Partners)
+- [ ] Cập nhật Admin Pages (Dashboard, Settings, các trang quản lý)
+- [ ] Tạo Language Switcher component
+- [ ] Tích hợp Language Switcher vào Header và Admin Layout
+- [ ] Lưu language preference vào localStorage
+- [ ] Viết unit tests cho i18n system

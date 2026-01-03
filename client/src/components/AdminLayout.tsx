@@ -41,6 +41,8 @@ import { useState, useEffect, useMemo } from "react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { NotificationSettings } from "@/components/admin/NotificationSettings";
 import { useAdminTheme } from "@/components/AdminThemeProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useAdminTranslation } from "@/hooks/useAdminTranslation";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -55,67 +57,68 @@ interface MenuCategory {
   }>;
 }
 
-const menuCategories: MenuCategory[] = [
+// Menu categories will be generated inside component using translations
+const getMenuCategories = (t: any): MenuCategory[] => [
   {
-    label: "Tổng Quan",
+    label: t.dashboard?.overview || "Tổng Quan",
     items: [
-      { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+      { href: "/admin", icon: LayoutDashboard, label: t.menu?.dashboard || "Dashboard" },
     ],
   },
   {
-    label: "Quản Lý Nội Dung",
+    label: t.menu?.contentManagement || "Quản Lý Nội Dung",
     items: [
-      { href: "/admin/homepage", icon: Layout, label: "Trang Chủ" },
-      { href: "/admin/products", icon: Package, label: "Sản Phẩm" },
-      { href: "/admin/categories", icon: FolderTree, label: "Danh Mục" },
-      { href: "/admin/news", icon: Newspaper, label: "Tin Tức" },
-      { href: "/admin/faq", icon: HelpCircle, label: "FAQ" },
-      { href: "/admin/case-studies", icon: Award, label: "Case Studies" },
-      { href: "/admin/portfolio", icon: ImageIcon, label: "Portfolio" },
+      { href: "/admin/homepage", icon: Layout, label: t.menu?.homepage || "Trang Chủ" },
+      { href: "/admin/products", icon: Package, label: t.menu?.products || "Sản Phẩm" },
+      { href: "/admin/categories", icon: FolderTree, label: t.menu?.categories || "Danh Mục" },
+      { href: "/admin/news", icon: Newspaper, label: t.menu?.news || "Tin Tức" },
+      { href: "/admin/faq", icon: HelpCircle, label: t.menu?.faq || "FAQ" },
+      { href: "/admin/case-studies", icon: Award, label: t.menu?.caseStudies || "Case Studies" },
+      { href: "/admin/portfolio", icon: ImageIcon, label: t.menu?.portfolio || "Portfolio" },
     ],
   },
   {
-    label: "Quan Hệ Khách Hàng",
+    label: t.menu?.customerRelations || "Quan Hệ Khách Hàng",
     items: [
-      { href: "/admin/partners", icon: Handshake, label: "Đối Tác" },
-      { href: "/admin/newsletter", icon: Send, label: "Newsletter" },
-      { href: "/admin/email-campaign", icon: Mail, label: "Email Marketing" },
-      { href: "/admin/contacts", icon: MessageSquare, label: "Liên Hệ" },
+      { href: "/admin/partners", icon: Handshake, label: t.menu?.partners || "Đối Tác" },
+      { href: "/admin/newsletter", icon: Send, label: t.menu?.newsletter || "Newsletter" },
+      { href: "/admin/email-campaign", icon: Mail, label: t.menu?.emailMarketing || "Email Marketing" },
+      { href: "/admin/contacts", icon: MessageSquare, label: t.menu?.contacts || "Liên Hệ" },
     ],
   },
   {
-    label: "Nhân Sự",
+    label: t.menu?.humanResources || "Nhân Sự",
     items: [
-      { href: "/admin/jobs", icon: Briefcase, label: "Tuyển Dụng" },
-      { href: "/admin/applications", icon: FileText, label: "Đơn Ứng Tuyển" },
-      { href: "/admin/users", icon: Users, label: "Người Dùng" },
+      { href: "/admin/jobs", icon: Briefcase, label: t.menu?.careers || "Tuyển Dụng" },
+      { href: "/admin/applications", icon: FileText, label: t.menu?.applications || "Đơn Ứng Tuyển" },
+      { href: "/admin/users", icon: Users, label: t.menu?.users || "Người Dùng" },
     ],
   },
   {
-    label: "Báo Cáo & Cấu Hình",
+    label: t.menu?.reportsConfig || "Báo Cáo & Cấu Hình",
     items: [
-      { href: "/admin/reports", icon: FileBarChart, label: "Báo Cáo" },
-      { href: "/admin/backup", icon: Database, label: "Sao Lưu" },
-      { href: "/admin/site-settings", icon: Sliders, label: "Cấu Hình Website" },
-      { href: "/admin/banners", icon: Images, label: "Banner/Slider" },
-      { href: "/admin/multi-language-settings", icon: Globe, label: "Đa Ngôn Ngữ" },
-      { href: "/admin/bulk-import-export", icon: Database, label: "Import/Export" },
-      { href: "/admin/activity-log", icon: FileBarChart, label: "Activity Log" },
-      { href: "/admin/notification-center", icon: Send, label: "Notification Center" },
-      { href: "/admin/permission-matrix", icon: Users, label: "Permission Matrix" },
-      { href: "/admin/settings", icon: Settings, label: "Cài Đặt" },
+      { href: "/admin/reports", icon: FileBarChart, label: t.menu?.reports || "Báo Cáo" },
+      { href: "/admin/backup", icon: Database, label: t.menu?.backup || "Sao Lưu" },
+      { href: "/admin/site-settings", icon: Sliders, label: t.menu?.siteSettings || "Cấu Hình Website" },
+      { href: "/admin/banners", icon: Images, label: t.menu?.banners || "Banner/Slider" },
+      { href: "/admin/multi-language-settings", icon: Globe, label: t.menu?.multiLanguage || "Đa Ngôn Ngữ" },
+      { href: "/admin/bulk-import-export", icon: Database, label: t.menu?.importExport || "Import/Export" },
+      { href: "/admin/activity-log", icon: FileBarChart, label: t.menu?.activityLog || "Activity Log" },
+      { href: "/admin/notification-center", icon: Send, label: t.menu?.notifications || "Notification Center" },
+      { href: "/admin/permission-matrix", icon: Users, label: t.menu?.permissions || "Permission Matrix" },
+      { href: "/admin/settings", icon: Settings, label: t.menu?.settings || "Cài Đặt" },
     ],
   },
 ];
 
-const quickActions = [
-  { label: "Tạo Sản Phẩm", href: "/admin/products/new", icon: Plus },
-  { label: "Xem Báo Cáo", href: "/admin/reports", icon: BarChart3 },
-  { label: "Gửi Newsletter", href: "/admin/newsletter", icon: Send },
+const getQuickActions = (t: any) => [
+  { label: t.actions?.createProduct || "Tạo Sản Phẩm", href: "/admin/products/new", icon: Plus },
+  { label: t.actions?.viewReports || "Xem Báo Cáo", href: "/admin/reports", icon: BarChart3 },
+  { label: t.actions?.sendNewsletter || "Gửi Newsletter", href: "/admin/newsletter", icon: Send },
 ];
 
 // Get breadcrumb from current path
-function getBreadcrumb(pathname: string) {
+function getBreadcrumb(pathname: string, menuCats: MenuCategory[]) {
   const pathParts = pathname.split("/").filter(Boolean);
   const breadcrumbs = [];
 
@@ -124,8 +127,8 @@ function getBreadcrumb(pathname: string) {
     let label = pathParts[i];
 
     // Find label from menu
-    for (const category of menuCategories) {
-      const item = category.items.find((item) => item.href === path);
+    for (const category of menuCats) {
+      const item = category.items.find((menuItem) => menuItem.href === path);
       if (item) {
         label = item.label;
         break;
@@ -143,20 +146,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { theme, toggleTheme } = useAdminTheme();
+  const { adminT } = useAdminTranslation();
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Generate menu categories with translations
+  const menuCategories = useMemo(() => getMenuCategories(adminT), [adminT]);
+  const quickActions = useMemo(() => getQuickActions(adminT), [adminT]);
 
   // Initialize expanded categories based on current location
   useEffect(() => {
     const expanded: Record<string, boolean> = {};
-    menuCategories.forEach((category) => {
+    menuCategories.forEach((category: MenuCategory) => {
       const isActive = category.items.some(
         (item) => location === item.href || (item.href !== "/admin" && location.startsWith(item.href))
       );
       expanded[category.label] = isActive;
     });
     setExpandedCategories(expanded);
-  }, [location]);
+  }, [location, menuCategories]);
 
   const toggleCategory = (categoryLabel: string) => {
     setExpandedCategories((prev) => ({
@@ -191,7 +199,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       .filter((category) => category.items.length > 0);
   }, [searchQuery]);
 
-  const breadcrumbs = getBreadcrumb(location);
+  const breadcrumbs = getBreadcrumb(location, menuCategories);
 
   if (loading) {
     return (
@@ -445,6 +453,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   <Sun className="h-5 w-5" />
                 )}
               </Button>
+              <LanguageSwitcher />
               <NotificationSettings />
               <NotificationBell />
             </div>
