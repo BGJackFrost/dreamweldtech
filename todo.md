@@ -365,3 +365,15 @@
 - [x] Cập nhật LanguageContext để sync với database
 - [x] Hướng dẫn Deploy Production đã sẵn sàng
 - [x] 262 tests passed
+
+
+## PHASE 38: Admin i18n Completion & Theme Persistence
+- [x] Thêm translations cho News page (4 ngôn ngữ)
+- [x] Thêm translations cho Jobs page (4 ngôn ngữ)
+- [x] Thêm translations cho Partners page (4 ngôn ngữ)
+- [x] Thêm translations cho Banners page (4 ngôn ngữ)
+- [x] Thêm Theme Persistence vào database (updateTheme API)
+- [x] Cập nhật AdminThemeProvider để sync với database
+- [x] Tạo TranslationManager page với Export JSON/CSV
+- [x] Tạo Import Translations feature (JSON/CSV)
+- [x] 262 tests passed

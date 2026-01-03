@@ -103,4 +103,38 @@ export const userPreferencesRouter = router({
       
       return { success: true, language };
     }),
+
+  // Update theme only
+  updateTheme: publicProcedure
+    .input(z.object({
+      userId: z.number(),
+      theme: z.enum(["light", "dark", "system"]),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const { userId, theme } = input;
+      
+      // Check if preferences exist
+      const [existing] = await db
+        .select()
+        .from(userPreferences)
+        .where(eq(userPreferences.userId, userId))
+        .limit(1);
+      
+      if (existing) {
+        await db
+          .update(userPreferences)
+          .set({ theme })
+          .where(eq(userPreferences.userId, userId));
+      } else {
+        await db.insert(userPreferences).values({
+          userId,
+          theme,
+        });
+      }
+      
+      return { success: true, theme };
+    }),
 });

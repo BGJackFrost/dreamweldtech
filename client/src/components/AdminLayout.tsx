@@ -102,6 +102,7 @@ const getMenuCategories = (t: any): MenuCategory[] => [
       { href: "/admin/site-settings", icon: Sliders, label: t.menu?.siteSettings || "Cấu Hình Website" },
       { href: "/admin/banners", icon: Images, label: t.menu?.banners || "Banner/Slider" },
       { href: "/admin/multi-language-settings", icon: Globe, label: t.menu?.multiLanguage || "Đa Ngôn Ngữ" },
+      { href: "/admin/translations", icon: Globe, label: t.menu?.translations || "Quản Lý Bản Dịch" },
       { href: "/admin/bulk-import-export", icon: Database, label: t.menu?.importExport || "Import/Export" },
       { href: "/admin/activity-log", icon: FileBarChart, label: t.menu?.activityLog || "Activity Log" },
       { href: "/admin/notification-center", icon: Send, label: t.menu?.notifications || "Notification Center" },
