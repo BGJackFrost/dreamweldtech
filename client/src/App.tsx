@@ -40,6 +40,7 @@ import ActivityLog from "./pages/admin/ActivityLog";
 import NotificationCenter from "./pages/admin/NotificationCenter";
 import PermissionMatrix from "./pages/admin/PermissionMatrix";
 import TranslationManager from "./pages/admin/TranslationManager";
+import ServerMonitoring from "./pages/admin/ServerMonitoring";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -129,6 +130,7 @@ function AdminRouter() {
           <Route path="/admin/notification-center" component={NotificationCenter} />
           <Route path="/admin/permission-matrix" component={PermissionMatrix} />
           <Route path="/admin/translations" component={TranslationManager} />
+          <Route path="/admin/monitoring" component={ServerMonitoring} />
           <Route component={NotFound} />
       </Switch>
       </AdminLayout>
