@@ -1,0 +1,21 @@
+CREATE TABLE `metrics_history` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`timestamp` timestamp NOT NULL DEFAULT (now()),
+	`cpuUsage` int NOT NULL,
+	`memoryUsage` int NOT NULL,
+	`memoryTotal` bigint NOT NULL,
+	`memoryUsed` bigint NOT NULL,
+	`diskUsage` int,
+	`loadAvg1m` decimal(5,2),
+	`loadAvg5m` decimal(5,2),
+	`loadAvg15m` decimal(5,2),
+	`totalRequests` int DEFAULT 0,
+	`errorCount` int DEFAULT 0,
+	`errorRate` decimal(5,2) DEFAULT '0',
+	`avgResponseTime` int DEFAULT 0,
+	`requestsPerMinute` int DEFAULT 0,
+	`hostname` varchar(255),
+	`uptime` bigint,
+	`aggregationType` enum('raw','hourly','daily','weekly','monthly') NOT NULL DEFAULT 'raw',
+	CONSTRAINT `metrics_history_id` PRIMARY KEY(`id`)
+);

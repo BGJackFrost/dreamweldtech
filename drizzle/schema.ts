@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, uniqueIndex } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, uniqueIndex, bigint, decimal } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -582,3 +582,41 @@ export const customTranslations = mysqlTable("custom_translations", {
 
 export type CustomTranslation = typeof customTranslations.$inferSelect;
 export type InsertCustomTranslation = typeof customTranslations.$inferInsert;
+
+
+// ============================================
+// METRICS HISTORY - Server monitoring metrics
+// ============================================
+export const metricsHistory = mysqlTable("metrics_history", {
+  id: int("id").autoincrement().primaryKey(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  
+  // System metrics
+  cpuUsage: int("cpuUsage").notNull(), // percentage
+  memoryUsage: int("memoryUsage").notNull(), // percentage
+  memoryTotal: bigint("memoryTotal", { mode: "number" }).notNull(), // bytes
+  memoryUsed: bigint("memoryUsed", { mode: "number" }).notNull(), // bytes
+  diskUsage: int("diskUsage"), // percentage (optional)
+  
+  // Load average
+  loadAvg1m: decimal("loadAvg1m", { precision: 5, scale: 2 }),
+  loadAvg5m: decimal("loadAvg5m", { precision: 5, scale: 2 }),
+  loadAvg15m: decimal("loadAvg15m", { precision: 5, scale: 2 }),
+  
+  // Application metrics
+  totalRequests: int("totalRequests").default(0),
+  errorCount: int("errorCount").default(0),
+  errorRate: decimal("errorRate", { precision: 5, scale: 2 }).default("0"),
+  avgResponseTime: int("avgResponseTime").default(0), // ms
+  requestsPerMinute: int("requestsPerMinute").default(0),
+  
+  // Server info
+  hostname: varchar("hostname", { length: 255 }),
+  uptime: bigint("uptime", { mode: "number" }), // seconds
+  
+  // Aggregation type
+  aggregationType: mysqlEnum("aggregationType", ["raw", "hourly", "daily", "weekly", "monthly"]).default("raw").notNull(),
+});
+
+export type MetricsHistory = typeof metricsHistory.$inferSelect;
+export type InsertMetricsHistory = typeof metricsHistory.$inferInsert;

@@ -429,3 +429,14 @@
 - [x] Tích hợp vào Monitoring System (monitoring.ts)
 - [x] Tạo Admin UI với tab Cảnh báo Email và nút Test
 - [x] Thêm route /admin/monitoring và menu item
+
+
+## PHASE 44: Advanced Alerts & Historical Metrics - COMPLETED
+- [x] Yêu cầu cấu hình ADMIN_ALERT_EMAIL, SLACK_WEBHOOK_URL, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+- [x] Tích hợp Slack webhook alerts (slackTelegramAlerts.ts)
+- [x] Tích hợp Telegram bot alerts (slackTelegramAlerts.ts)
+- [x] Tạo bảng metrics_history trong database
+- [x] Lưu metrics định kỳ vào database (mỗi 5 phút)
+- [x] Tạo API báo cáo performance theo ngày/tuần/tháng (metricsHistoryRouter)
+- [x] Tạo UI xem historical metrics (HistoryTab trong ServerMonitoring)
+- [x] 266 tests passed

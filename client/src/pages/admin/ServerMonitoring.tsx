@@ -17,8 +17,14 @@ import {
   Pause,
   Play,
   Mail,
-  Bell
+  Bell,
+  History,
+  Download,
+  Trash2,
+  BarChart3,
+  MessageSquare
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { useAdminTranslation } from "@/hooks/useAdminTranslation";
 import { toast } from "sonner";
@@ -63,6 +69,248 @@ function formatUptime(ms: number): string {
   if (hours > 0) return `${hours}h ${minutes % 60}m`;
   if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
   return `${seconds}s`;
+}
+
+// History Tab Component
+function HistoryTab() {
+  const [period, setPeriod] = useState<"day" | "week" | "month">("day");
+  
+  // Fetch report
+  const { data: report, isLoading, refetch } = trpc.metricsHistory.getReport.useQuery({ period });
+  
+  // Fetch alert channels
+  const { data: channels } = trpc.monitoring.getAlertChannels.useQuery();
+  
+  // Test Slack
+  const testSlackMutation = trpc.monitoring.testSlack.useMutation({
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Slack test message sent!");
+      } else {
+        toast.error(data.message);
+      }
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  
+  // Test Telegram
+  const testTelegramMutation = trpc.monitoring.testTelegram.useMutation({
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Telegram test message sent!");
+      } else {
+        toast.error(data.message);
+      }
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  
+  // Save snapshot
+  const saveSnapshotMutation = trpc.metricsHistory.saveSnapshot.useMutation({
+    onSuccess: () => {
+      toast.success("Snapshot saved!");
+      refetch();
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  
+  // Cleanup old metrics
+  const cleanupMutation = trpc.metricsHistory.cleanup.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Deleted ${data.deleted} old records`);
+      refetch();
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  
+  return (
+    <div className="space-y-4">
+      {/* Period selector and actions */}
+      <div className="flex flex-wrap items-center gap-4">
+        <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Chọn kỳ" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="day">24 giờ qua</SelectItem>
+            <SelectItem value="week">7 ngày qua</SelectItem>
+            <SelectItem value="month">30 ngày qua</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Button variant="outline" size="sm" onClick={() => saveSnapshotMutation.mutate()}>
+          <Download className="h-4 w-4 mr-2" />
+          Lưu snapshot
+        </Button>
+        
+        <Button variant="outline" size="sm" onClick={() => cleanupMutation.mutate({ olderThanDays: 30 })}>
+          <Trash2 className="h-4 w-4 mr-2" />
+          Xóa dữ liệu cũ (&gt;30 ngày)
+        </Button>
+      </div>
+      
+      {/* Alert Channels */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Kênh thông báo
+          </CardTitle>
+          <CardDescription>Cấu hình các kênh nhận cảnh báo</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                <span>Email</span>
+              </div>
+              <Badge variant={channels?.email ? "default" : "secondary"}>
+                {channels?.email ? "Đã cấu hình" : "Chưa cấu hình"}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                <span>Slack</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={channels?.slack ? "default" : "secondary"}>
+                  {channels?.slack ? "Đã cấu hình" : "Chưa cấu hình"}
+                </Badge>
+                {channels?.slack && (
+                  <Button size="sm" variant="ghost" onClick={() => testSlackMutation.mutate()}>
+                    Test
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                <span>Telegram</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={channels?.telegram ? "default" : "secondary"}>
+                  {channels?.telegram ? "Đã cấu hình" : "Chưa cấu hình"}
+                </Badge>
+                {channels?.telegram && (
+                  <Button size="sm" variant="ghost" onClick={() => testTelegramMutation.mutate()}>
+                    Test
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Summary Stats */}
+      {report?.summary && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">CPU (Trung bình)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{report.summary.cpu.avg}%</div>
+              <p className="text-xs text-muted-foreground">
+                Min: {report.summary.cpu.min}% / Max: {report.summary.cpu.max}%
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Memory (Trung bình)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{report.summary.memory.avg}%</div>
+              <p className="text-xs text-muted-foreground">
+                Min: {report.summary.memory.min}% / Max: {report.summary.memory.max}%
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Response Time (Trung bình)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{report.summary.responseTime.avg}ms</div>
+              <p className="text-xs text-muted-foreground">
+                Min: {report.summary.responseTime.min}ms / Max: {report.summary.responseTime.max}ms
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Tổng Requests</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{report.summary.totalRequests.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                Lỗi: {report.summary.totalErrors.toLocaleString()} ({report.summary.errorRate.avg}%)
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
+      {/* Chart Data Table */}
+      {report?.chartData && report.chartData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Dữ liệu lịch sử ({report.dataPoints} điểm dữ liệu)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2">Thời gian</th>
+                    <th className="text-right py-2">CPU</th>
+                    <th className="text-right py-2">Memory</th>
+                    <th className="text-right py-2">Response</th>
+                    <th className="text-right py-2">Error Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.chartData.slice(0, 20).map((row, i) => (
+                    <tr key={i} className="border-b">
+                      <td className="py-2">{new Date(row.timestamp).toLocaleString("vi-VN")}</td>
+                      <td className="text-right">{row.cpu}%</td>
+                      <td className="text-right">{row.memory}%</td>
+                      <td className="text-right">{row.responseTime}ms</td>
+                      <td className="text-right">{row.errorRate}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {isLoading && (
+        <div className="text-center py-8 text-muted-foreground">
+          Đang tải dữ liệu...
+        </div>
+      )}
+      
+      {!isLoading && (!report?.chartData || report.chartData.length === 0) && (
+        <div className="text-center py-8 text-muted-foreground">
+          Chưa có dữ liệu lịch sử. Hệ thống sẽ tự động lưu mỗi 5 phút.
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function ServerMonitoring() {
@@ -260,10 +508,16 @@ export default function ServerMonitoring() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Tổng quan</TabsTrigger>
-          <TabsTrigger value="alerts">Cảnh báo Email</TabsTrigger>
+          <TabsTrigger value="history">Lịch sử</TabsTrigger>
+          <TabsTrigger value="alerts">Cảnh báo</TabsTrigger>
           <TabsTrigger value="errors">Lỗi gần đây</TabsTrigger>
-          <TabsTrigger value="system">Thông tin hệ thống</TabsTrigger>
+          <TabsTrigger value="system">Hệ thống</TabsTrigger>
         </TabsList>
+        
+        {/* History Tab */}
+        <TabsContent value="history" className="space-y-4">
+          <HistoryTab />
+        </TabsContent>
         
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4">

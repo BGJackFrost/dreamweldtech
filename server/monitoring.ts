@@ -2,6 +2,7 @@ import { router, publicProcedure, protectedProcedure } from "./_core/trpc";
 import { z } from "zod";
 import os from "os";
 import { checkAndSendAlerts, getCooldownStatus, clearCooldown, DEFAULT_THRESHOLDS } from "./alertEmail";
+import { testSlackConnection, testTelegramConnection, getConfiguredChannels } from "./slackTelegramAlerts";
 
 // In-memory metrics storage
 let appMetrics = {
@@ -186,6 +187,21 @@ export const monitoringRouter = router({
     ], system.hostname);
     
     return { success: result, message: result ? "Test alert sent" : "Failed to send test alert (check admin email config)" };
+  }),
+  
+  // Get configured alert channels
+  getAlertChannels: protectedProcedure.query(() => {
+    return getConfiguredChannels();
+  }),
+  
+  // Test Slack connection
+  testSlack: protectedProcedure.mutation(async () => {
+    return await testSlackConnection();
+  }),
+  
+  // Test Telegram connection
+  testTelegram: protectedProcedure.mutation(async () => {
+    return await testTelegramConnection();
   }),
   
   // Health check (public)

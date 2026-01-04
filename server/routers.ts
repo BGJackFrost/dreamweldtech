@@ -51,6 +51,7 @@ import { eq, desc, asc, and, sql, gte } from "drizzle-orm";
 import { userPreferencesRouter } from "./userPreferences";
 import { customTranslationsRouter } from "./customTranslations";
 import { monitoringRouter } from "./monitoring";
+import { metricsHistoryRouter, startMetricsCollection } from "./metricsHistory";
 import { emailDigestSettings, emailDigestLog, dndSchedule, pushSubscriptions } from "../drizzle/schema";
 import { getDigestSettings, updateDigestSettings, getDigestLog, sendEmailDigest } from "./emailDigest";
 import { getDndSchedule, getAllDndSchedules, upsertDndSchedule, deleteDndSchedule, toggleDndSchedule as toggleDndScheduleDb } from "./dndSchedule";
@@ -1973,7 +1974,11 @@ export const appRouter = router({
   userPreferences: userPreferencesRouter,
   customTranslations: customTranslationsRouter,
   monitoring: monitoringRouter,
+  metricsHistory: metricsHistoryRouter,
 });
+
+// Start metrics collection on server start (every 5 minutes)
+startMetricsCollection(5 * 60 * 1000);
 
 // Export createNotification for use in other parts of the app
 export { createNotification };

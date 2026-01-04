@@ -1,6 +1,7 @@
 import { sendEmailNotification } from "./email";
 import { getDb } from "./db";
 import { activityLogs, notificationCenter } from "../drizzle/schema";
+import { sendMultiChannelAlert, getConfiguredChannels } from "./slackTelegramAlerts";
 
 // Alert types
 export type AlertType = "cpu" | "memory" | "disk" | "responseTime" | "errorRate" | "serverDown";
@@ -224,6 +225,24 @@ export async function sendAlertEmail(alerts: AlertConfig[], hostname: string): P
     }
     
     console.log(`[Alert Email] Sent ${alertsToSend.length} alerts to ${adminEmails.length} admin(s)`);
+    
+    // Also send to Slack and Telegram
+    const slackTelegramResult = await sendMultiChannelAlert({
+      title: hasCritical ? "CẢNH BÁO NGHIÊM TRỌNG" : "Cảnh báo hệ thống",
+      message: alertsToSend.map(a => `${ALERT_LABELS[a.type]}: ${a.currentValue}${a.unit} (ngưỡng: ${a.threshold}${a.unit})`).join("\n"),
+      severity: hasCritical ? "critical" : "warning",
+      metrics: {
+        cpu: alertsToSend.find(a => a.type === "cpu")?.currentValue,
+        memory: alertsToSend.find(a => a.type === "memory")?.currentValue,
+        disk: alertsToSend.find(a => a.type === "disk")?.currentValue,
+        responseTime: alertsToSend.find(a => a.type === "responseTime")?.currentValue,
+        errorRate: alertsToSend.find(a => a.type === "errorRate")?.currentValue,
+      },
+      hostname,
+      timestamp: new Date().toLocaleString("vi-VN"),
+    });
+    
+    console.log(`[Alert] Slack: ${slackTelegramResult.slack}, Telegram: ${slackTelegramResult.telegram}`);
     
     // Log to activity log
     try {
