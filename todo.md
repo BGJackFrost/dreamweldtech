@@ -414,7 +414,10 @@
 - [x] 262 tests passed
 
 
-## PHASE 41: Hướng dẫn triển khai lên Mắt Bão - COMPLETED
-- [x] Nghiên cứu yêu cầu hosting của Mắt Bão (VPS Linux)
-- [x] Viết hướng dẫn chi tiết triển khai (DEPLOYMENT_MATBAO.md)
-- [x] Bao gồm cấu hình database PostgreSQL, SSL Let's Encrypt, domain, Nginx, PM2
+## PHASE 42: Real-time Server Monitoring - COMPLETED
+- [x] Tạo Server Monitoring API (CPU, RAM, Disk, Network)
+- [x] Tạo Application Metrics API (Response time, Request count, Error rate)
+- [x] Tạo Admin Monitoring Dashboard UI (/admin/monitoring)
+- [x] Tích hợp Real-time Alerts với thresholds
+- [x] Tạo Logs Viewer với error tracking
+- [x] Thêm translations cho monitoring (Vietnamese)
