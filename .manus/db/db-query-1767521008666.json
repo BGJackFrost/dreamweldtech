@@ -1,0 +1,100 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "activity_logs"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "admin_roles"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "alert_thresholds"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "banners"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "case_studies"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "contact_requests"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "custom_translations"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "dnd_schedule"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "email_digest_log"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "email_digest_settings"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "faqs"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "home_page_sections"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "job_applications"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "jobs"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "metrics_history"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "news"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "newsletter_subscribers"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "notification_center"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "notification_preferences"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "notifications"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "partners"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "portfolio_items"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "product_categories"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "products"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "push_subscriptions"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "site_settings"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "user_admin_roles"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "user_preferences"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs": "users"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs\n__drizzle_migrations\nactivity_logs\nadmin_roles\nalert_thresholds\nbanners\ncase_studies\ncontact_requests\ncustom_translations\ndnd_schedule\nemail_digest_log\nemail_digest_settings\nfaqs\nhome_page_sections\njob_applications\njobs\nmetrics_history\nnews\nnewsletter_subscribers\nnotification_center\nnotification_preferences\nnotifications\npartners\nportfolio_items\nproduct_categories\nproducts\npush_subscriptions\nsite_settings\nuser_admin_roles\nuser_preferences\nusers\n",
+  "stderr": "",
+  "execution_time_ms": 1521
+}

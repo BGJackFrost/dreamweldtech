@@ -661,3 +661,147 @@ export const alertThresholds = mysqlTable("alert_thresholds", {
 
 export type AlertThreshold = typeof alertThresholds.$inferSelect;
 export type InsertAlertThreshold = typeof alertThresholds.$inferInsert;
+
+
+// ============================================
+// SCHEDULED REPORTS - Automated performance reports
+// ============================================
+export const scheduledReports = mysqlTable("scheduled_reports", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Report name for identification */
+  name: varchar("name", { length: 255 }).notNull(),
+  
+  /** Report type: daily, weekly, monthly */
+  reportType: mysqlEnum("reportType", ["daily", "weekly", "monthly"]).default("weekly").notNull(),
+  
+  /** Day of week for weekly reports (0=Sunday, 1=Monday, etc.) */
+  dayOfWeek: int("dayOfWeek").default(1), // Monday
+  
+  /** Day of month for monthly reports (1-28) */
+  dayOfMonth: int("dayOfMonth").default(1),
+  
+  /** Hour to send report (0-23) */
+  sendHour: int("sendHour").default(9), // 9 AM
+  
+  /** Timezone for scheduling */
+  timezone: varchar("timezone", { length: 50 }).default("Asia/Ho_Chi_Minh"),
+  
+  /** Recipients (comma-separated emails) */
+  recipients: text("recipients").notNull(),
+  
+  /** Include metrics: cpu, memory, responseTime, errorRate, uptime */
+  includeMetrics: varchar("includeMetrics", { length: 500 }),
+  
+  /** Include period comparison (vs previous period) */
+  includePeriodComparison: mysqlEnum("includePeriodComparison", ["true", "false"]).default("true"),
+  
+  /** Include charts as images */
+  includeCharts: mysqlEnum("includeCharts", ["true", "false"]).default("true"),
+  
+  /** Whether this report is enabled */
+  isEnabled: mysqlEnum("isEnabled", ["true", "false"]).default("true").notNull(),
+  
+  /** Last time report was sent */
+  lastSentAt: timestamp("lastSentAt"),
+  
+  /** Next scheduled send time */
+  nextSendAt: timestamp("nextSendAt"),
+  
+  /** Created by user */
+  createdBy: int("createdBy"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ScheduledReport = typeof scheduledReports.$inferSelect;
+export type InsertScheduledReport = typeof scheduledReports.$inferInsert;
+
+
+// ============================================
+// UPTIME HISTORY - Track uptime/downtime events
+// ============================================
+export const uptimeHistory = mysqlTable("uptime_history", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Timestamp of the check */
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  
+  /** Status: up, down, degraded */
+  status: mysqlEnum("status", ["up", "down", "degraded"]).default("up").notNull(),
+  
+  /** Response time in ms (null if down) */
+  responseTime: int("responseTime"),
+  
+  /** HTTP status code (null if connection failed) */
+  statusCode: int("statusCode"),
+  
+  /** Error message if any */
+  errorMessage: text("errorMessage"),
+  
+  /** Check type: http, database, custom */
+  checkType: varchar("checkType", { length: 50 }).default("http"),
+  
+  /** Endpoint or service name being checked */
+  endpoint: varchar("endpoint", { length: 255 }).default("/api/health"),
+  
+  /** Duration of downtime in seconds (calculated when status changes from down to up) */
+  downtimeDuration: int("downtimeDuration"),
+  
+  /** Year-month for aggregation (YYYY-MM format) */
+  yearMonth: varchar("yearMonth", { length: 7 }),
+});
+
+export type UptimeHistory = typeof uptimeHistory.$inferSelect;
+export type InsertUptimeHistory = typeof uptimeHistory.$inferInsert;
+
+
+// ============================================
+// UPTIME MONTHLY STATS - Aggregated monthly statistics
+// ============================================
+export const uptimeMonthlyStats = mysqlTable("uptime_monthly_stats", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Year-month (YYYY-MM format) */
+  yearMonth: varchar("yearMonth", { length: 7 }).notNull().unique(),
+  
+  /** Total number of checks */
+  totalChecks: int("totalChecks").default(0),
+  
+  /** Number of successful checks (up) */
+  successfulChecks: int("successfulChecks").default(0),
+  
+  /** Number of failed checks (down) */
+  failedChecks: int("failedChecks").default(0),
+  
+  /** Number of degraded checks */
+  degradedChecks: int("degradedChecks").default(0),
+  
+  /** Availability percentage (0-100) */
+  availabilityPercentage: decimal("availabilityPercentage", { precision: 5, scale: 2 }).default("100.00"),
+  
+  /** Average response time in ms */
+  avgResponseTime: int("avgResponseTime").default(0),
+  
+  /** Max response time in ms */
+  maxResponseTime: int("maxResponseTime").default(0),
+  
+  /** Min response time in ms */
+  minResponseTime: int("minResponseTime").default(0),
+  
+  /** Total downtime in seconds */
+  totalDowntimeSeconds: int("totalDowntimeSeconds").default(0),
+  
+  /** Number of incidents (status changed to down) */
+  incidentCount: int("incidentCount").default(0),
+  
+  /** Mean Time To Recovery in seconds */
+  mttr: int("mttr").default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UptimeMonthlyStats = typeof uptimeMonthlyStats.$inferSelect;
+export type InsertUptimeMonthlyStats = typeof uptimeMonthlyStats.$inferInsert;

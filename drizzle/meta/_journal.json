@@ -120,6 +120,27 @@
       "when": 1767511669839,
       "tag": "0016_complete_gamma_corps",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1767523000000,
+      "tag": "0017_scheduled_reports",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1767523100000,
+      "tag": "0018_uptime_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1767523200000,
+      "tag": "0019_uptime_monthly_stats",
+      "breakpoints": true
     }
   ]
 }

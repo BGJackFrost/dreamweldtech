@@ -449,3 +449,14 @@
 - [x] Tạo bảng alert_thresholds trong database
 - [x] Tạo UI cho admin điều chỉnh ngưỡng cảnh báo
 - [x] Viết unit tests cho các tính năng mới
+
+
+## PHASE 46: Scheduled Reports & Uptime History Dashboard
+- [ ] Tạo bảng scheduled_reports trong database
+- [ ] Tạo bảng uptime_history để lưu lịch sử uptime
+- [ ] Tạo Scheduled Reports service với cron job
+- [ ] Tạo email template cho báo cáo hiệu suất
+- [ ] Tạo Uptime History Dashboard component
+- [ ] Hiển thị availability percentage theo tháng
+- [ ] Tạo UI quản lý scheduled reports trong admin
+- [ ] Viết unit tests cho các tính năng mới

@@ -30,6 +30,8 @@ import { useAdminTranslation } from "@/hooks/useAdminTranslation";
 import { toast } from "sonner";
 import PerformanceCharts from "@/components/PerformanceCharts";
 import AlertThresholdsSettings from "@/components/AlertThresholdsSettings";
+import UptimeHistoryDashboard from "@/components/UptimeHistoryDashboard";
+import ScheduledReportsManager from "@/components/ScheduledReportsManager";
 
 // Progress bar with color based on value
 function MetricProgress({ value, warning = 70, critical = 90 }: { value: number; warning?: number; critical?: number }) {
@@ -516,6 +518,8 @@ export default function ServerMonitoring() {
           <TabsTrigger value="errors">Lỗi gần đây</TabsTrigger>
           <TabsTrigger value="system">Hệ thống</TabsTrigger>
           <TabsTrigger value="thresholds">Ngưỡng cảnh báo</TabsTrigger>
+          <TabsTrigger value="uptime">Uptime History</TabsTrigger>
+          <TabsTrigger value="reports">Báo cáo định kỳ</TabsTrigger>
         </TabsList>
         
         {/* Charts Tab */}
@@ -746,6 +750,16 @@ export default function ServerMonitoring() {
         {/* Thresholds Tab */}
         <TabsContent value="thresholds" className="space-y-4">
           <AlertThresholdsSettings />
+        </TabsContent>
+        
+        {/* Uptime History Tab */}
+        <TabsContent value="uptime" className="space-y-4">
+          <UptimeHistoryDashboard />
+        </TabsContent>
+        
+        {/* Scheduled Reports Tab */}
+        <TabsContent value="reports" className="space-y-4">
+          <ScheduledReportsManager />
         </TabsContent>
       </Tabs>
       

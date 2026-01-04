@@ -1,0 +1,20 @@
+CREATE TABLE `scheduled_reports` (
+`id` int AUTO_INCREMENT NOT NULL,
+`name` varchar(255) NOT NULL,
+`reportType` enum('daily','weekly','monthly') NOT NULL DEFAULT 'weekly',
+`dayOfWeek` int DEFAULT 1,
+`dayOfMonth` int DEFAULT 1,
+`sendHour` int DEFAULT 9,
+`timezone` varchar(50) DEFAULT 'Asia/Ho_Chi_Minh',
+`recipients` text NOT NULL,
+`includeMetrics` varchar(500),
+`includePeriodComparison` enum('true','false') DEFAULT 'true',
+`includeCharts` enum('true','false') DEFAULT 'true',
+`isEnabled` enum('true','false') NOT NULL DEFAULT 'true',
+`lastSentAt` timestamp,
+`nextSendAt` timestamp,
+`createdBy` int,
+`createdAt` timestamp NOT NULL DEFAULT (now()),
+`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+CONSTRAINT `scheduled_reports_id` PRIMARY KEY(`id`)
+);
