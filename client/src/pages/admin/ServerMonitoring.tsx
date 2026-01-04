@@ -28,6 +28,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { trpc } from "@/lib/trpc";
 import { useAdminTranslation } from "@/hooks/useAdminTranslation";
 import { toast } from "sonner";
+import PerformanceCharts from "@/components/PerformanceCharts";
+import AlertThresholdsSettings from "@/components/AlertThresholdsSettings";
 
 // Progress bar with color based on value
 function MetricProgress({ value, warning = 70, critical = 90 }: { value: number; warning?: number; critical?: number }) {
@@ -508,11 +510,18 @@ export default function ServerMonitoring() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Tổng quan</TabsTrigger>
+          <TabsTrigger value="charts">Biểu đồ</TabsTrigger>
           <TabsTrigger value="history">Lịch sử</TabsTrigger>
           <TabsTrigger value="alerts">Cảnh báo</TabsTrigger>
           <TabsTrigger value="errors">Lỗi gần đây</TabsTrigger>
           <TabsTrigger value="system">Hệ thống</TabsTrigger>
+          <TabsTrigger value="thresholds">Ngưỡng cảnh báo</TabsTrigger>
         </TabsList>
+        
+        {/* Charts Tab */}
+        <TabsContent value="charts" className="space-y-4">
+          <PerformanceCharts />
+        </TabsContent>
         
         {/* History Tab */}
         <TabsContent value="history" className="space-y-4">
@@ -732,6 +741,11 @@ export default function ServerMonitoring() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        {/* Thresholds Tab */}
+        <TabsContent value="thresholds" className="space-y-4">
+          <AlertThresholdsSettings />
         </TabsContent>
       </Tabs>
       

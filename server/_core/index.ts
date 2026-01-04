@@ -13,6 +13,7 @@ import type { Request, Response } from "express";
 import { securityHeaders, apiRateLimit, sanitizeMiddleware, securityLogger, checkBlockedIP, strictRateLimit, validateFileUpload, honeypotMiddleware } from "../security";
 import { generateSitemap, generateRobotsTxt } from "../sitemap";
 import { setupWebSocket } from "../websocket";
+import { performHealthCheck, performSimpleHealthCheck, getServerMetrics } from "../healthCheck";
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -124,6 +125,44 @@ async function startServer() {
       res.status(500).json({ error: "Upload failed" });
     }
   });
+  // Public Health Check Endpoint (for UptimeRobot, Pingdom, etc.)
+  app.get("/api/health", async (_req: Request, res: Response) => {
+    try {
+      const health = await performHealthCheck();
+      const statusCode = health.status === 'healthy' ? 200 : 
+                         health.status === 'degraded' ? 200 : 503;
+      res.status(statusCode).json(health);
+    } catch (error) {
+      console.error("Health check error:", error);
+      res.status(503).json({
+        status: 'unhealthy',
+        error: 'Health check failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // Simple health check for load balancers (minimal response)
+  app.get("/api/health/simple", async (_req: Request, res: Response) => {
+    try {
+      const health = await performSimpleHealthCheck();
+      const statusCode = health.status === 'ok' ? 200 : 503;
+      res.status(statusCode).json(health);
+    } catch (error) {
+      res.status(503).json({ status: 'error', timestamp: new Date().toISOString() });
+    }
+  });
+
+  // Server metrics endpoint
+  app.get("/api/health/metrics", (_req: Request, res: Response) => {
+    try {
+      const metrics = getServerMetrics();
+      res.json(metrics);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get metrics' });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

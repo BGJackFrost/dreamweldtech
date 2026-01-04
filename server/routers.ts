@@ -52,6 +52,8 @@ import { userPreferencesRouter } from "./userPreferences";
 import { customTranslationsRouter } from "./customTranslations";
 import { monitoringRouter } from "./monitoring";
 import { metricsHistoryRouter, startMetricsCollection } from "./metricsHistory";
+import { performHealthCheck, performSimpleHealthCheck, getServerMetrics } from "./healthCheck";
+import { alertThresholdsRouter, initializeDefaultThresholds } from "./alertThresholds";
 import { emailDigestSettings, emailDigestLog, dndSchedule, pushSubscriptions } from "../drizzle/schema";
 import { getDigestSettings, updateDigestSettings, getDigestLog, sendEmailDigest } from "./emailDigest";
 import { getDndSchedule, getAllDndSchedules, upsertDndSchedule, deleteDndSchedule, toggleDndSchedule as toggleDndScheduleDb } from "./dndSchedule";
@@ -1934,6 +1936,26 @@ const pushNotificationsRouter = router({
 });
 
 // ============================================
+// HEALTH CHECK ROUTER (Public API)
+// ============================================
+const healthRouter = router({
+  // Full health check with detailed info
+  check: publicProcedure.query(async () => {
+    return await performHealthCheck();
+  }),
+
+  // Simple health check for load balancers
+  simple: publicProcedure.query(async () => {
+    return await performSimpleHealthCheck();
+  }),
+
+  // Server metrics for monitoring
+  metrics: publicProcedure.query(() => {
+    return getServerMetrics();
+  }),
+});
+
+// ============================================
 // MAIN APP ROUTER
 // ============================================
 export const appRouter = router({
@@ -1975,10 +1997,15 @@ export const appRouter = router({
   customTranslations: customTranslationsRouter,
   monitoring: monitoringRouter,
   metricsHistory: metricsHistoryRouter,
+  health: healthRouter,
+  alertThresholds: alertThresholdsRouter,
 });
 
 // Start metrics collection on server start (every 5 minutes)
 startMetricsCollection(5 * 60 * 1000);
+
+// Initialize default alert thresholds
+initializeDefaultThresholds().catch(console.error);
 
 // Export createNotification for use in other parts of the app
 export { createNotification };

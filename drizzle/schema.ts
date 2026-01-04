@@ -620,3 +620,44 @@ export const metricsHistory = mysqlTable("metrics_history", {
 
 export type MetricsHistory = typeof metricsHistory.$inferSelect;
 export type InsertMetricsHistory = typeof metricsHistory.$inferInsert;
+
+
+// ============================================
+// ALERT THRESHOLDS - Customizable alert thresholds
+// ============================================
+export const alertThresholds = mysqlTable("alert_thresholds", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Metric name: cpu, memory, disk, responseTime, errorRate */
+  metricName: varchar("metricName", { length: 50 }).notNull().unique(),
+  
+  /** Warning threshold (yellow alert) */
+  warningThreshold: int("warningThreshold").notNull(),
+  
+  /** Critical threshold (red alert, triggers notifications) */
+  criticalThreshold: int("criticalThreshold").notNull(),
+  
+  /** Unit for display: %, ms, etc. */
+  unit: varchar("unit", { length: 10 }).default("%"),
+  
+  /** Description of what this metric measures */
+  description: text("description"),
+  
+  /** Whether this alert is enabled */
+  isEnabled: mysqlEnum("isEnabled", ["true", "false"]).default("true").notNull(),
+  
+  /** Cooldown period in minutes before sending another alert */
+  cooldownMinutes: int("cooldownMinutes").default(15),
+  
+  /** Last time an alert was sent for this metric */
+  lastAlertAt: timestamp("lastAlertAt"),
+  
+  /** Who last modified this threshold */
+  updatedBy: int("updatedBy"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AlertThreshold = typeof alertThresholds.$inferSelect;
+export type InsertAlertThreshold = typeof alertThresholds.$inferInsert;

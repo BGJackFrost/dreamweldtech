@@ -388,7 +388,7 @@
 - [ ] Tạo API endpoints cho CRUD custom translations
 - [ ] Cập nhật TranslationManager với database editing UI
 - [ ] Tích hợp custom translations vào useAdminTranslation hook
-- [ ] Viết unit tests cho các tính năng mới
+- [x] Viết unit tests cho các tính năng mới
 
 
 ## PHASE 39: Apply Translations & Database-backed i18n - COMPLETED
@@ -440,3 +440,12 @@
 - [x] Tạo API báo cáo performance theo ngày/tuần/tháng (metricsHistoryRouter)
 - [x] Tạo UI xem historical metrics (HistoryTab trong ServerMonitoring)
 - [x] 266 tests passed
+
+## PHASE 45: Uptime Monitoring, Performance Charts & Custom Thresholds
+- [x] Tạo public health check endpoint /api/health
+- [x] Trả về status, uptime, database connection, memory usage
+- [x] Tạo Performance Dashboard Charts với biểu đồ line charts
+- [x] Hiển thị CPU, Memory, Response Time theo thời gian
+- [x] Tạo bảng alert_thresholds trong database
+- [x] Tạo UI cho admin điều chỉnh ngưỡng cảnh báo
+- [x] Viết unit tests cho các tính năng mới
