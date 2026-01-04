@@ -141,6 +141,13 @@
       "when": 1767523200000,
       "tag": "0019_uptime_monthly_stats",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1767526480196,
+      "tag": "0020_thin_baron_strucker",
+      "breakpoints": true
     }
   ]
 }

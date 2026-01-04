@@ -32,6 +32,7 @@ import PerformanceCharts from "@/components/PerformanceCharts";
 import AlertThresholdsSettings from "@/components/AlertThresholdsSettings";
 import UptimeHistoryDashboard from "@/components/UptimeHistoryDashboard";
 import ScheduledReportsManager from "@/components/ScheduledReportsManager";
+import EndpointAnalyticsDashboard from "@/components/EndpointAnalyticsDashboard";
 
 // Progress bar with color based on value
 function MetricProgress({ value, warning = 70, critical = 90 }: { value: number; warning?: number; critical?: number }) {
@@ -520,6 +521,7 @@ export default function ServerMonitoring() {
           <TabsTrigger value="thresholds">Ngưỡng cảnh báo</TabsTrigger>
           <TabsTrigger value="uptime">Uptime History</TabsTrigger>
           <TabsTrigger value="reports">Báo cáo định kỳ</TabsTrigger>
+          <TabsTrigger value="endpoints">API Endpoints</TabsTrigger>
         </TabsList>
         
         {/* Charts Tab */}
@@ -760,6 +762,11 @@ export default function ServerMonitoring() {
         {/* Scheduled Reports Tab */}
         <TabsContent value="reports" className="space-y-4">
           <ScheduledReportsManager />
+        </TabsContent>
+        
+        {/* API Endpoints Tab */}
+        <TabsContent value="endpoints" className="space-y-4">
+          <EndpointAnalyticsDashboard />
         </TabsContent>
       </Tabs>
       

@@ -14,6 +14,7 @@ import { securityHeaders, apiRateLimit, sanitizeMiddleware, securityLogger, chec
 import { generateSitemap, generateRobotsTxt } from "../sitemap";
 import { setupWebSocket } from "../websocket";
 import { performHealthCheck, performSimpleHealthCheck, getServerMetrics } from "../healthCheck";
+import { endpointMetricsMiddleware } from "../endpointMetrics";
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -58,6 +59,9 @@ async function startServer() {
   
   // Rate limiting for API routes
   app.use("/api", apiRateLimit);
+  
+  // Endpoint metrics tracking
+  app.use("/api", endpointMetricsMiddleware);
   
   // Stricter rate limit for sensitive endpoints
   app.use("/api/oauth", strictRateLimit);

@@ -460,3 +460,14 @@
 - [ ] Hiển thị availability percentage theo tháng
 - [ ] Tạo UI quản lý scheduled reports trong admin
 - [ ] Viết unit tests cho các tính năng mới
+
+
+## PHASE 47: API Endpoint Response Time Analytics
+
+- [x] Database schema cho endpoint_metrics
+- [x] Middleware thu thập response time
+- [x] Service xử lý và tính toán percentiles
+- [x] API Endpoint Analytics Dashboard
+- [x] Biểu đồ so sánh endpoints
+- [x] Biểu đồ xu hướng theo thời gian
+- [ ] Unit tests

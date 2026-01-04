@@ -805,3 +805,112 @@ export const uptimeMonthlyStats = mysqlTable("uptime_monthly_stats", {
 
 export type UptimeMonthlyStats = typeof uptimeMonthlyStats.$inferSelect;
 export type InsertUptimeMonthlyStats = typeof uptimeMonthlyStats.$inferInsert;
+
+
+// ============================================
+// ENDPOINT METRICS - Track API endpoint response times
+// ============================================
+export const endpointMetrics = mysqlTable("endpoint_metrics", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Timestamp of the request */
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  
+  /** API endpoint path (e.g., /api/trpc/products.list) */
+  endpoint: varchar("endpoint", { length: 255 }).notNull(),
+  
+  /** HTTP method (GET, POST, PUT, DELETE) */
+  method: varchar("method", { length: 10 }).notNull(),
+  
+  /** Response time in milliseconds */
+  responseTime: int("responseTime").notNull(),
+  
+  /** HTTP status code */
+  statusCode: int("statusCode").notNull(),
+  
+  /** Whether the request was successful (2xx) */
+  isSuccess: mysqlEnum("isSuccess", ["true", "false"]).default("true").notNull(),
+  
+  /** Error message if any */
+  errorMessage: text("errorMessage"),
+  
+  /** Request size in bytes */
+  requestSize: int("requestSize"),
+  
+  /** Response size in bytes */
+  responseSize: int("responseSize"),
+  
+  /** User agent */
+  userAgent: varchar("userAgent", { length: 500 }),
+  
+  /** IP address (anonymized) */
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  
+  /** Year-month-day for aggregation (YYYY-MM-DD format) */
+  dateKey: varchar("dateKey", { length: 10 }),
+  
+  /** Hour of day (0-23) for hourly analysis */
+  hourOfDay: int("hourOfDay"),
+});
+
+export type EndpointMetric = typeof endpointMetrics.$inferSelect;
+export type InsertEndpointMetric = typeof endpointMetrics.$inferInsert;
+
+
+// ============================================
+// ENDPOINT DAILY STATS - Aggregated daily statistics per endpoint
+// ============================================
+export const endpointDailyStats = mysqlTable("endpoint_daily_stats", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Date (YYYY-MM-DD format) */
+  dateKey: varchar("dateKey", { length: 10 }).notNull(),
+  
+  /** API endpoint path */
+  endpoint: varchar("endpoint", { length: 255 }).notNull(),
+  
+  /** HTTP method */
+  method: varchar("method", { length: 10 }).notNull(),
+  
+  /** Total number of requests */
+  totalRequests: int("totalRequests").default(0),
+  
+  /** Number of successful requests */
+  successfulRequests: int("successfulRequests").default(0),
+  
+  /** Number of failed requests */
+  failedRequests: int("failedRequests").default(0),
+  
+  /** Average response time in ms */
+  avgResponseTime: int("avgResponseTime").default(0),
+  
+  /** Min response time in ms */
+  minResponseTime: int("minResponseTime").default(0),
+  
+  /** Max response time in ms */
+  maxResponseTime: int("maxResponseTime").default(0),
+  
+  /** P50 (median) response time in ms */
+  p50ResponseTime: int("p50ResponseTime").default(0),
+  
+  /** P95 response time in ms */
+  p95ResponseTime: int("p95ResponseTime").default(0),
+  
+  /** P99 response time in ms */
+  p99ResponseTime: int("p99ResponseTime").default(0),
+  
+  /** Error rate percentage */
+  errorRate: decimal("errorRate", { precision: 5, scale: 2 }).default("0.00"),
+  
+  /** Total request size in bytes */
+  totalRequestSize: bigint("totalRequestSize", { mode: "number" }).default(0),
+  
+  /** Total response size in bytes */
+  totalResponseSize: bigint("totalResponseSize", { mode: "number" }).default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EndpointDailyStat = typeof endpointDailyStats.$inferSelect;
+export type InsertEndpointDailyStat = typeof endpointDailyStats.$inferInsert;

@@ -56,6 +56,7 @@ import { performHealthCheck, performSimpleHealthCheck, getServerMetrics } from "
 import { alertThresholdsRouter, initializeDefaultThresholds } from "./alertThresholds";
 import { scheduledReportsRouter, startReportScheduler } from "./scheduledReports";
 import { uptimeHistoryRouter, startUptimeMonitoring } from "./uptimeHistory";
+import { endpointMetricsRouter, startEndpointMetricsCollection, endpointMetricsMiddleware } from "./endpointMetrics";
 import { emailDigestSettings, emailDigestLog, dndSchedule, pushSubscriptions } from "../drizzle/schema";
 import { getDigestSettings, updateDigestSettings, getDigestLog, sendEmailDigest } from "./emailDigest";
 import { getDndSchedule, getAllDndSchedules, upsertDndSchedule, deleteDndSchedule, toggleDndSchedule as toggleDndScheduleDb } from "./dndSchedule";
@@ -2003,6 +2004,7 @@ export const appRouter = router({
   alertThresholds: alertThresholdsRouter,
   scheduledReports: scheduledReportsRouter,
   uptimeHistory: uptimeHistoryRouter,
+  endpointMetrics: endpointMetricsRouter,
 });
 
 // Start metrics collection on server start (every 5 minutes)
@@ -2016,6 +2018,9 @@ startReportScheduler();
 
 // Start uptime monitoring
 startUptimeMonitoring();
+
+// Start endpoint metrics collection
+startEndpointMetricsCollection();
 
 // Export createNotification for use in other parts of the app
 export { createNotification };
