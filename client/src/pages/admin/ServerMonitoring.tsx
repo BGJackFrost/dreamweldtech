@@ -33,6 +33,9 @@ import AlertThresholdsSettings from "@/components/AlertThresholdsSettings";
 import UptimeHistoryDashboard from "@/components/UptimeHistoryDashboard";
 import ScheduledReportsManager from "@/components/ScheduledReportsManager";
 import EndpointAnalyticsDashboard from "@/components/EndpointAnalyticsDashboard";
+import RateLimitingDashboard from "@/components/RateLimitingDashboard";
+import QueryAnalyticsDashboard from "@/components/QueryAnalyticsDashboard";
+import PerformanceAlertsDashboard from "@/components/PerformanceAlertsDashboard";
 
 // Progress bar with color based on value
 function MetricProgress({ value, warning = 70, critical = 90 }: { value: number; warning?: number; critical?: number }) {
@@ -522,6 +525,9 @@ export default function ServerMonitoring() {
           <TabsTrigger value="uptime">Uptime History</TabsTrigger>
           <TabsTrigger value="reports">Báo cáo định kỳ</TabsTrigger>
           <TabsTrigger value="endpoints">API Endpoints</TabsTrigger>
+          <TabsTrigger value="ratelimit">Rate Limiting</TabsTrigger>
+          <TabsTrigger value="queries">DB Queries</TabsTrigger>
+          <TabsTrigger value="alerts">Real-time Alerts</TabsTrigger>
         </TabsList>
         
         {/* Charts Tab */}
@@ -767,6 +773,21 @@ export default function ServerMonitoring() {
         {/* API Endpoints Tab */}
         <TabsContent value="endpoints" className="space-y-4">
           <EndpointAnalyticsDashboard />
+        </TabsContent>
+        
+        {/* Rate Limiting Tab */}
+        <TabsContent value="ratelimit" className="space-y-4">
+          <RateLimitingDashboard />
+        </TabsContent>
+        
+        {/* DB Queries Tab */}
+        <TabsContent value="queries" className="space-y-4">
+          <QueryAnalyticsDashboard />
+        </TabsContent>
+        
+        {/* Real-time Alerts Tab */}
+        <TabsContent value="alerts" className="space-y-4">
+          <PerformanceAlertsDashboard />
         </TabsContent>
       </Tabs>
       

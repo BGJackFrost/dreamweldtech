@@ -57,6 +57,9 @@ import { alertThresholdsRouter, initializeDefaultThresholds } from "./alertThres
 import { scheduledReportsRouter, startReportScheduler } from "./scheduledReports";
 import { uptimeHistoryRouter, startUptimeMonitoring } from "./uptimeHistory";
 import { endpointMetricsRouter, startEndpointMetricsCollection, endpointMetricsMiddleware } from "./endpointMetrics";
+import { rateLimitingRouter, initializeRateLimitConfigs } from "./rateLimiting";
+import { queryAnalyticsRouter, startQueryAnalytics } from "./queryAnalytics";
+import { performanceAlertsRouter } from "./performanceAlerts";
 import { emailDigestSettings, emailDigestLog, dndSchedule, pushSubscriptions } from "../drizzle/schema";
 import { getDigestSettings, updateDigestSettings, getDigestLog, sendEmailDigest } from "./emailDigest";
 import { getDndSchedule, getAllDndSchedules, upsertDndSchedule, deleteDndSchedule, toggleDndSchedule as toggleDndScheduleDb } from "./dndSchedule";
@@ -2005,6 +2008,9 @@ export const appRouter = router({
   scheduledReports: scheduledReportsRouter,
   uptimeHistory: uptimeHistoryRouter,
   endpointMetrics: endpointMetricsRouter,
+  rateLimiting: rateLimitingRouter,
+  queryAnalytics: queryAnalyticsRouter,
+  performanceAlerts: performanceAlertsRouter,
 });
 
 // Start metrics collection on server start (every 5 minutes)
@@ -2021,6 +2027,12 @@ startUptimeMonitoring();
 
 // Start endpoint metrics collection
 startEndpointMetricsCollection();
+
+// Initialize rate limit configs
+initializeRateLimitConfigs();
+
+// Start query analytics
+startQueryAnalytics();
 
 // Export createNotification for use in other parts of the app
 export { createNotification };

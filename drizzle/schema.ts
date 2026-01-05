@@ -914,3 +914,267 @@ export const endpointDailyStats = mysqlTable("endpoint_daily_stats", {
 
 export type EndpointDailyStat = typeof endpointDailyStats.$inferSelect;
 export type InsertEndpointDailyStat = typeof endpointDailyStats.$inferInsert;
+
+
+// ============================================
+// RATE LIMIT CONFIG - Per-endpoint rate limiting configuration
+// ============================================
+export const rateLimitConfig = mysqlTable("rate_limit_config", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** API endpoint pattern (e.g., /api/trpc/products.*, /api/upload) */
+  endpointPattern: varchar("endpointPattern", { length: 255 }).notNull().unique(),
+  
+  /** Maximum requests per window */
+  maxRequests: int("maxRequests").default(100).notNull(),
+  
+  /** Time window in seconds */
+  windowSeconds: int("windowSeconds").default(60).notNull(),
+  
+  /** Whether this config is enabled */
+  isEnabled: mysqlEnum("isEnabled", ["true", "false"]).default("true").notNull(),
+  
+  /** Block duration in seconds when limit exceeded */
+  blockDurationSeconds: int("blockDurationSeconds").default(60),
+  
+  /** Custom error message */
+  errorMessage: varchar("errorMessage", { length: 500 }),
+  
+  /** Priority (lower = higher priority, for pattern matching) */
+  priority: int("priority").default(100),
+  
+  /** Description of this rule */
+  description: text("description"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type RateLimitConfig = typeof rateLimitConfig.$inferSelect;
+export type InsertRateLimitConfig = typeof rateLimitConfig.$inferInsert;
+
+
+// ============================================
+// RATE LIMIT USAGE - Track rate limit hits and blocks
+// ============================================
+export const rateLimitUsage = mysqlTable("rate_limit_usage", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Timestamp of the event */
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  
+  /** Endpoint that was accessed */
+  endpoint: varchar("endpoint", { length: 255 }).notNull(),
+  
+  /** IP address (anonymized) */
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  
+  /** Whether request was blocked */
+  wasBlocked: mysqlEnum("wasBlocked", ["true", "false"]).default("false").notNull(),
+  
+  /** Current request count in window */
+  requestCount: int("requestCount").default(1),
+  
+  /** Rate limit config ID that was applied */
+  configId: int("configId"),
+  
+  /** Date key for aggregation (YYYY-MM-DD) */
+  dateKey: varchar("dateKey", { length: 10 }),
+  
+  /** Hour of day (0-23) */
+  hourOfDay: int("hourOfDay"),
+});
+
+export type RateLimitUsage = typeof rateLimitUsage.$inferSelect;
+export type InsertRateLimitUsage = typeof rateLimitUsage.$inferInsert;
+
+
+// ============================================
+// QUERY METRICS - Track database query performance
+// ============================================
+export const queryMetrics = mysqlTable("query_metrics", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Timestamp of the query */
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  
+  /** Query type (SELECT, INSERT, UPDATE, DELETE) */
+  queryType: varchar("queryType", { length: 20 }).notNull(),
+  
+  /** Table name being queried */
+  tableName: varchar("tableName", { length: 100 }),
+  
+  /** Query execution time in milliseconds */
+  executionTime: int("executionTime").notNull(),
+  
+  /** Number of rows affected/returned */
+  rowCount: int("rowCount"),
+  
+  /** Whether query was successful */
+  isSuccess: mysqlEnum("isSuccess", ["true", "false"]).default("true").notNull(),
+  
+  /** Error message if failed */
+  errorMessage: text("errorMessage"),
+  
+  /** Query hash for grouping similar queries */
+  queryHash: varchar("queryHash", { length: 64 }),
+  
+  /** Caller endpoint (which API triggered this query) */
+  callerEndpoint: varchar("callerEndpoint", { length: 255 }),
+  
+  /** Date key for aggregation (YYYY-MM-DD) */
+  dateKey: varchar("dateKey", { length: 10 }),
+});
+
+export type QueryMetric = typeof queryMetrics.$inferSelect;
+export type InsertQueryMetric = typeof queryMetrics.$inferInsert;
+
+
+// ============================================
+// QUERY DAILY STATS - Aggregated daily query statistics
+// ============================================
+export const queryDailyStats = mysqlTable("query_daily_stats", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Date (YYYY-MM-DD) */
+  dateKey: varchar("dateKey", { length: 10 }).notNull(),
+  
+  /** Query type */
+  queryType: varchar("queryType", { length: 20 }).notNull(),
+  
+  /** Table name */
+  tableName: varchar("tableName", { length: 100 }),
+  
+  /** Total number of queries */
+  totalQueries: int("totalQueries").default(0),
+  
+  /** Number of successful queries */
+  successfulQueries: int("successfulQueries").default(0),
+  
+  /** Number of failed queries */
+  failedQueries: int("failedQueries").default(0),
+  
+  /** Average execution time in ms */
+  avgExecutionTime: int("avgExecutionTime").default(0),
+  
+  /** Min execution time in ms */
+  minExecutionTime: int("minExecutionTime").default(0),
+  
+  /** Max execution time in ms */
+  maxExecutionTime: int("maxExecutionTime").default(0),
+  
+  /** P50 execution time in ms */
+  p50ExecutionTime: int("p50ExecutionTime").default(0),
+  
+  /** P95 execution time in ms */
+  p95ExecutionTime: int("p95ExecutionTime").default(0),
+  
+  /** P99 execution time in ms */
+  p99ExecutionTime: int("p99ExecutionTime").default(0),
+  
+  /** Total rows affected/returned */
+  totalRows: bigint("totalRows", { mode: "number" }).default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type QueryDailyStat = typeof queryDailyStats.$inferSelect;
+export type InsertQueryDailyStat = typeof queryDailyStats.$inferInsert;
+
+
+// ============================================
+// PERFORMANCE ALERTS - Real-time alert configuration and history
+// ============================================
+export const performanceAlerts = mysqlTable("performance_alerts", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Alert name */
+  name: varchar("name", { length: 255 }).notNull(),
+  
+  /** Alert type: endpoint_p95, query_slow, rate_limit, error_rate */
+  alertType: varchar("alertType", { length: 50 }).notNull(),
+  
+  /** Target (endpoint pattern, table name, or * for all) */
+  target: varchar("target", { length: 255 }).default("*"),
+  
+  /** Metric to monitor: p95, p99, avg, error_rate, execution_time */
+  metric: varchar("metric", { length: 50 }).notNull(),
+  
+  /** Threshold value (ms for time, percentage for rates) */
+  threshold: int("threshold").notNull(),
+  
+  /** Comparison operator: gt, gte, lt, lte, eq */
+  operator: varchar("operator", { length: 10 }).default("gt"),
+  
+  /** Evaluation window in minutes */
+  evaluationWindow: int("evaluationWindow").default(5),
+  
+  /** Cooldown period in minutes (prevent alert spam) */
+  cooldownMinutes: int("cooldownMinutes").default(15),
+  
+  /** Whether alert is enabled */
+  isEnabled: mysqlEnum("isEnabled", ["true", "false"]).default("true").notNull(),
+  
+  /** Notification channels: email, slack, telegram, webhook */
+  notificationChannels: varchar("notificationChannels", { length: 255 }).default("email"),
+  
+  /** Severity: info, warning, critical */
+  severity: mysqlEnum("severity", ["info", "warning", "critical"]).default("warning").notNull(),
+  
+  /** Last triggered timestamp */
+  lastTriggeredAt: timestamp("lastTriggeredAt"),
+  
+  /** Trigger count */
+  triggerCount: int("triggerCount").default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PerformanceAlert = typeof performanceAlerts.$inferSelect;
+export type InsertPerformanceAlert = typeof performanceAlerts.$inferInsert;
+
+
+// ============================================
+// ALERT HISTORY - Log of triggered alerts
+// ============================================
+export const alertHistory = mysqlTable("alert_history", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** Reference to performance_alerts */
+  alertId: int("alertId").notNull(),
+  
+  /** Timestamp when alert was triggered */
+  triggeredAt: timestamp("triggeredAt").defaultNow().notNull(),
+  
+  /** Current value that triggered the alert */
+  currentValue: int("currentValue").notNull(),
+  
+  /** Threshold value */
+  thresholdValue: int("thresholdValue").notNull(),
+  
+  /** Target that triggered (specific endpoint or table) */
+  triggeredTarget: varchar("triggeredTarget", { length: 255 }),
+  
+  /** Alert status: triggered, acknowledged, resolved */
+  status: mysqlEnum("status", ["triggered", "acknowledged", "resolved"]).default("triggered").notNull(),
+  
+  /** Acknowledged by user ID */
+  acknowledgedBy: int("acknowledgedBy"),
+  
+  /** Acknowledged timestamp */
+  acknowledgedAt: timestamp("acknowledgedAt"),
+  
+  /** Resolution notes */
+  resolutionNotes: text("resolutionNotes"),
+  
+  /** Resolved timestamp */
+  resolvedAt: timestamp("resolvedAt"),
+  
+  /** Notification sent status */
+  notificationSent: mysqlEnum("notificationSent", ["true", "false"]).default("false").notNull(),
+});
+
+export type AlertHistoryItem = typeof alertHistory.$inferSelect;
+export type InsertAlertHistoryItem = typeof alertHistory.$inferInsert;
