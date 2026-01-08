@@ -214,14 +214,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   if (!user) {
+    const loginUrl = getLoginUrl();
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <h1 className="text-2xl font-heading font-bold mb-4">Yêu Cầu Đăng Nhập</h1>
           <p className="text-muted-foreground mb-6">Bạn cần đăng nhập để truy cập trang quản trị.</p>
-          <Button onClick={() => window.location.href = getLoginUrl()}>
-            Đăng Nhập
-          </Button>
+          {loginUrl ? (
+            <Button onClick={() => window.location.href = loginUrl}>
+              Đăng Nhập
+            </Button>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-amber-600">OAuth chưa được cấu hình. Vui lòng cấu hình VITE_OAUTH_PORTAL_URL trong file .env</p>
+              <Button variant="outline" onClick={() => window.location.href = '/'}>
+                Về Trang Chủ
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     );

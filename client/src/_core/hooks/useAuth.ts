@@ -9,8 +9,7 @@ type UseAuthOptions = {
 };
 
 export function useAuth(options?: UseAuthOptions) {
-  const { redirectOnUnauthenticated = false, redirectPath = getLoginUrl() } =
-    options ?? {};
+  const { redirectOnUnauthenticated = false, redirectPath } = options ?? {};
   const utils = trpc.useUtils();
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
@@ -65,9 +64,17 @@ export function useAuth(options?: UseAuthOptions) {
     if (meQuery.isLoading || logoutMutation.isPending) return;
     if (state.user) return;
     if (typeof window === "undefined") return;
-    if (window.location.pathname === redirectPath) return;
+    
+    // Get login URL, fallback to provided redirectPath or skip redirect if OAuth not configured
+    const loginUrl = redirectPath || getLoginUrl();
+    if (!loginUrl) {
+      console.warn('[Auth] Cannot redirect: OAuth is not configured and no redirectPath provided');
+      return;
+    }
+    
+    if (window.location.pathname === loginUrl) return;
 
-    window.location.href = redirectPath
+    window.location.href = loginUrl;
   }, [
     redirectOnUnauthenticated,
     redirectPath,
