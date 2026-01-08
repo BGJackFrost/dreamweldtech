@@ -48,6 +48,8 @@ import TwoFactorSetup from "./pages/admin/TwoFactorSetup";
 import SessionManagement from "./pages/admin/SessionManagement";
 import SecuritySettings from "./pages/admin/SecuritySettings";
 import ChangePassword from "./pages/admin/ChangePassword";
+import IpAccessControl from "./pages/admin/IpAccessControl";
+import AuditLog from "./pages/admin/AuditLog";
 import AccessHistory from "./pages/admin/AccessHistory";
 
 // Frontend Pages
@@ -144,6 +146,8 @@ function AdminRouter() {
           <Route path="/admin/security/settings" component={SecuritySettings} />
           <Route path="/admin/security/change-password" component={ChangePassword} />
           <Route path="/admin/security/history" component={AccessHistory} />
+          <Route path="/admin/security/ip-control" component={IpAccessControl} />
+          <Route path="/admin/security/audit-log" component={AuditLog} />
           <Route component={NotFound} />
       </Switch>
       </AdminLayout>

@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS ip_lockouts (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  ipAddress VARCHAR(45) NOT NULL UNIQUE,\n  failedAttempts INT DEFAULT 0 NOT NULL,\n  lockedAt TIMESTAMP NULL,\n  lockedUntil TIMESTAMP NULL,\n  isLocked ENUM('true', 'false') DEFAULT 'false' NOT NULL,\n  lastAttemptAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute CREATE TABLE IF NOT EXISTS ip_lockouts (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  ipAddress VARCHAR(45) NOT NULL UNIQUE,\n  failedAttempts INT DEFAULT 0 NOT NULL,\n  lockedAt TIMESTAMP NULL,\n  lockedUntil TIMESTAMP NULL,\n  isLocked ENUM('true', 'false') DEFAULT 'false' NOT NULL,\n  lastAttemptAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1643
+}

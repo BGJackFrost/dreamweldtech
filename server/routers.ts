@@ -69,6 +69,7 @@ import { notifyNewJobApplication, notifyNewContactForm } from "./email";
 import { exportData, importData, exportSensitiveData, getDatabaseStats, BackupData } from "./backup";
 import { triggerNewContact, triggerNewJobApplication, triggerNewNewsletterSubscription } from "./integrations";
 import { securityRouter } from "./securityRouter";
+import { advancedSecurityRouter } from "./advancedSecurityRouter";
 
 // ============================================
 // PRODUCT CATEGORIES ROUTER
@@ -2015,6 +2016,7 @@ export const appRouter = router({
   queryAnalytics: queryAnalyticsRouter,
   performanceAlerts: performanceAlertsRouter,
   security: securityRouter,
+  advancedSecurity: advancedSecurityRouter,
 });
 
 // Start metrics collection on server start (every 5 minutes)

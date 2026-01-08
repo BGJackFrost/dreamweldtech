@@ -1454,3 +1454,155 @@ export const userSecurityPreferences = mysqlTable("user_security_preferences", {
 
 export type UserSecurityPreference = typeof userSecurityPreferences.$inferSelect;
 export type InsertUserSecurityPreference = typeof userSecurityPreferences.$inferInsert;
+
+
+// =====================================================
+// IP Access Control - Blacklist/Whitelist
+// =====================================================
+export const ipAccessControl = mysqlTable("ip_access_control", {
+  id: int("id").primaryKey().autoincrement(),
+  
+  /** IP address or CIDR range */
+  ipAddress: varchar("ipAddress", { length: 45 }).notNull(),
+  
+  /** Type: blacklist or whitelist */
+  type: mysqlEnum("type", ["blacklist", "whitelist"]).notNull(),
+  
+  /** Reason for adding */
+  reason: text("reason"),
+  
+  /** Added by user ID */
+  addedBy: int("addedBy"),
+  
+  /** Expiration date (null = permanent) */
+  expiresAt: timestamp("expiresAt"),
+  
+  /** Whether this rule is active */
+  isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
+  
+  /** Hit count - number of times this rule was triggered */
+  hitCount: int("hitCount").default(0).notNull(),
+  
+  /** Last hit timestamp */
+  lastHitAt: timestamp("lastHitAt"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type IpAccessControl = typeof ipAccessControl.$inferSelect;
+export type InsertIpAccessControl = typeof ipAccessControl.$inferInsert;
+
+// =====================================================
+// Login Attempts - For Rate Limiting
+// =====================================================
+export const loginAttempts = mysqlTable("login_attempts", {
+  id: int("id").primaryKey().autoincrement(),
+  
+  /** IP address */
+  ipAddress: varchar("ipAddress", { length: 45 }).notNull(),
+  
+  /** Username/email attempted */
+  username: varchar("username", { length: 255 }),
+  
+  /** Whether login was successful */
+  success: mysqlEnum("success", ["true", "false"]).default("false").notNull(),
+  
+  /** User agent */
+  userAgent: text("userAgent"),
+  
+  /** Failure reason if failed */
+  failureReason: varchar("failureReason", { length: 255 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type LoginAttempt = typeof loginAttempts.$inferSelect;
+export type InsertLoginAttempt = typeof loginAttempts.$inferInsert;
+
+// =====================================================
+// IP Lockouts - Temporary IP blocks from rate limiting
+// =====================================================
+export const ipLockouts = mysqlTable("ip_lockouts", {
+  id: int("id").primaryKey().autoincrement(),
+  
+  /** IP address */
+  ipAddress: varchar("ipAddress", { length: 45 }).notNull().unique(),
+  
+  /** Number of failed attempts */
+  failedAttempts: int("failedAttempts").default(0).notNull(),
+  
+  /** Lockout start time */
+  lockedAt: timestamp("lockedAt"),
+  
+  /** Lockout end time */
+  lockedUntil: timestamp("lockedUntil"),
+  
+  /** Whether currently locked */
+  isLocked: mysqlEnum("isLocked", ["true", "false"]).default("false").notNull(),
+  
+  /** Last attempt timestamp */
+  lastAttemptAt: timestamp("lastAttemptAt").defaultNow().notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type IpLockout = typeof ipLockouts.$inferSelect;
+export type InsertIpLockout = typeof ipLockouts.$inferInsert;
+
+// =====================================================
+// Admin Audit Log - Detailed action logging
+// =====================================================
+export const adminAuditLog = mysqlTable("admin_audit_log", {
+  id: int("id").primaryKey().autoincrement(),
+  
+  /** Admin user ID who performed the action */
+  userId: int("userId").notNull(),
+  
+  /** Admin username for quick reference */
+  username: varchar("username", { length: 255 }),
+  
+  /** Action type: create, update, delete, view, export, import, etc. */
+  action: varchar("action", { length: 50 }).notNull(),
+  
+  /** Resource type: product, news, user, setting, etc. */
+  resourceType: varchar("resourceType", { length: 100 }).notNull(),
+  
+  /** Resource ID */
+  resourceId: int("resourceId"),
+  
+  /** Resource name/title for reference */
+  resourceName: varchar("resourceName", { length: 255 }),
+  
+  /** Description of the action */
+  description: text("description"),
+  
+  /** Previous values (JSON) - for update/delete */
+  previousValues: text("previousValues"),
+  
+  /** New values (JSON) - for create/update */
+  newValues: text("newValues"),
+  
+  /** Changed fields list */
+  changedFields: text("changedFields"),
+  
+  /** IP address */
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  
+  /** User agent */
+  userAgent: text("userAgent"),
+  
+  /** Status: success, failed, partial */
+  status: mysqlEnum("status", ["success", "failed", "partial"]).default("success").notNull(),
+  
+  /** Error message if failed */
+  errorMessage: text("errorMessage"),
+  
+  /** Duration in milliseconds */
+  durationMs: int("durationMs"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AdminAuditLog = typeof adminAuditLog.$inferSelect;
+export type InsertAdminAuditLog = typeof adminAuditLog.$inferInsert;

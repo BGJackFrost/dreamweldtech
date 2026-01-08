@@ -176,6 +176,13 @@
       "when": 1767863486364,
       "tag": "0024_spotty_mentallo",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1767866367166,
+      "tag": "0025_glossy_smasher",
+      "breakpoints": true
     }
   ]
 }

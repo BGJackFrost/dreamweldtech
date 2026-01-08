@@ -594,3 +594,9 @@
   - [ ] API lấy lịch sử truy cập
   - [ ] UI xem lịch sử trong admin
   - [ ] Filter theo thời gian, loại hành động
+
+
+## PHASE 54: Advanced Security - IP Control, Rate Limiting & Audit Log
+- [x] IP Blacklist/Whitelist - Chặn hoặc cho phép đăng nhập từ các IP cụ thể
+- [x] Rate Limiting cho Login - Giới hạn số lần đăng nhập thất bại từ cùng IP
+- [x] Audit Log cho Admin Actions - Ghi log chi tiết các thao tác quản trị
