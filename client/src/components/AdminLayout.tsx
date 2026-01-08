@@ -124,6 +124,7 @@ const getMenuCategories = (t: any): MenuCategory[] => [
       { href: "/admin/security/audit-log", icon: FileText, label: t.menu?.auditLog || "Nhật Ký Hoạt Động" },
       { href: "/admin/security/geo-blocking", icon: Globe, label: t.menu?.geoBlocking || "Geo-Blocking" },
       { href: "/admin/security/dashboard", icon: BarChart3, label: t.menu?.securityDashboard || "Dashboard Bảo Mật" },
+      { href: "/admin/security/score", icon: Shield, label: t.menu?.securityScore || "Điểm Bảo Mật" },
       { href: "/admin/security/settings", icon: Shield, label: t.menu?.securitySettings || "Cài Đặt Bảo Mật" },
     ],
   },

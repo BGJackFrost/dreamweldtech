@@ -48,6 +48,7 @@ import TwoFactorSetup from "./pages/admin/TwoFactorSetup";
 import SessionManagement from "./pages/admin/SessionManagement";
 import SecuritySettings from "./pages/admin/SecuritySettings";
 import ChangePassword from "./pages/admin/ChangePassword";
+import SecurityScore from "./pages/admin/SecurityScore";
 import IpAccessControl from "./pages/admin/IpAccessControl";
 import AuditLog from "./pages/admin/AuditLog";
 import AccessHistory from "./pages/admin/AccessHistory";
@@ -152,6 +153,7 @@ function AdminRouter() {
           <Route path="/admin/security/audit-log" component={AuditLog} />
           <Route path="/admin/security/geo-blocking" component={GeoBlocking} />
           <Route path="/admin/security/dashboard" component={SecurityDashboard} />
+          <Route path="/admin/security/score" component={SecurityScore} />
           <Route component={NotFound} />
       </Switch>
       </AdminLayout>

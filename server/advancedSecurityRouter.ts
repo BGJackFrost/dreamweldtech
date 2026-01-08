@@ -41,6 +41,11 @@ import {
   getSecurityTrends,
   getSecurityAlerts,
 } from "./securityDashboard";
+import {
+  getUserSecurityScore,
+  getSystemSecurityScore,
+  getAllUsersSecurityScores,
+} from "./securityScore";
 
 // ============================================
 // IP ACCESS CONTROL ROUTER
@@ -427,6 +432,43 @@ const auditExportRouter = router({
 });
 
 // ============================================
+// SECURITY SCORE ROUTER
+// ============================================
+export const securityScoreRouter = router({
+  // Get current user's security score
+  myScore: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user?.id) return null;
+    return await getUserSecurityScore(ctx.user.id);
+  }),
+
+  // Get specific user's security score (admin only)
+  userScore: protectedProcedure
+    .input(z.object({ userId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user?.role || !["admin", "superadmin"].includes(ctx.user.role)) {
+        return null;
+      }
+      return await getUserSecurityScore(input.userId);
+    }),
+
+  // Get system security score (admin only)
+  systemScore: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user?.role || !["admin", "superadmin"].includes(ctx.user.role)) {
+      return null;
+    }
+    return await getSystemSecurityScore();
+  }),
+
+  // Get all users' security scores (admin only)
+  allUsersScores: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user?.role || !["admin", "superadmin"].includes(ctx.user.role)) {
+      return { users: [], averageScore: 0, distribution: [] };
+    }
+    return await getAllUsersSecurityScores();
+  }),
+});
+
+// ============================================
 // COMBINED ADVANCED SECURITY ROUTER
 // ============================================
 export const advancedSecurityRouter = router({
@@ -436,4 +478,5 @@ export const advancedSecurityRouter = router({
   geoBlocking: geoBlockingRouter,
   dashboard: securityDashboardRouter,
   export: auditExportRouter,
+  score: securityScoreRouter,
 });
