@@ -1307,3 +1307,150 @@ export const userSessions = mysqlTable("user_sessions", {
 
 export type UserSession = typeof userSessions.$inferSelect;
 export type InsertUserSession = typeof userSessions.$inferInsert;
+
+
+// =====================================================
+// User Access History - Lịch sử truy cập và thay đổi
+// =====================================================
+export const userAccessHistory = mysqlTable("user_access_history", {
+  id: int("id").primaryKey().autoincrement(),
+  
+  /** User ID */
+  userId: int("userId").notNull(),
+  
+  /** Action type: login, logout, password_change, 2fa_enable, 2fa_disable, profile_update, etc. */
+  actionType: varchar("actionType", { length: 100 }).notNull(),
+  
+  /** Action description */
+  description: text("description"),
+  
+  /** IP address */
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  
+  /** User agent */
+  userAgent: text("userAgent"),
+  
+  /** Device info */
+  deviceInfo: varchar("deviceInfo", { length: 255 }),
+  
+  /** Browser */
+  browser: varchar("browser", { length: 100 }),
+  
+  /** Operating system */
+  os: varchar("os", { length: 100 }),
+  
+  /** Location (city, country) */
+  location: varchar("location", { length: 255 }),
+  
+  /** Additional metadata (JSON) */
+  metadata: text("metadata"),
+  
+  /** Status: success, failed, blocked */
+  status: mysqlEnum("status", ["success", "failed", "blocked"]).default("success").notNull(),
+  
+  /** Risk level: low, medium, high */
+  riskLevel: mysqlEnum("riskLevel", ["low", "medium", "high"]).default("low").notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UserAccessHistory = typeof userAccessHistory.$inferSelect;
+export type InsertUserAccessHistory = typeof userAccessHistory.$inferInsert;
+
+// =====================================================
+// Known Devices - Thiết bị đã biết của user
+// =====================================================
+export const knownDevices = mysqlTable("known_devices", {
+  id: int("id").primaryKey().autoincrement(),
+  
+  /** User ID */
+  userId: int("userId").notNull(),
+  
+  /** Device fingerprint (hash of device info) */
+  deviceFingerprint: varchar("deviceFingerprint", { length: 64 }).notNull(),
+  
+  /** Device name */
+  deviceName: varchar("deviceName", { length: 255 }),
+  
+  /** Device type: desktop, mobile, tablet */
+  deviceType: varchar("deviceType", { length: 50 }),
+  
+  /** Browser */
+  browser: varchar("browser", { length: 100 }),
+  
+  /** Operating system */
+  os: varchar("os", { length: 100 }),
+  
+  /** Last IP address */
+  lastIpAddress: varchar("lastIpAddress", { length: 45 }),
+  
+  /** Last location */
+  lastLocation: varchar("lastLocation", { length: 255 }),
+  
+  /** Whether device is trusted */
+  isTrusted: mysqlEnum("isTrusted", ["true", "false"]).default("false").notNull(),
+  
+  /** First seen */
+  firstSeenAt: timestamp("firstSeenAt").defaultNow().notNull(),
+  
+  /** Last seen */
+  lastSeenAt: timestamp("lastSeenAt").defaultNow().notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type KnownDevice = typeof knownDevices.$inferSelect;
+export type InsertKnownDevice = typeof knownDevices.$inferInsert;
+
+// =====================================================
+// Security Settings - Cài đặt bảo mật
+// =====================================================
+export const securitySettings = mysqlTable("security_settings", {
+  id: int("id").primaryKey().autoincrement(),
+  
+  /** Setting key */
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  
+  /** Setting value */
+  value: text("value").notNull(),
+  
+  /** Setting description */
+  description: text("description"),
+  
+  /** Setting type: boolean, string, number, json */
+  type: varchar("type", { length: 50 }).default("string").notNull(),
+  
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SecuritySetting = typeof securitySettings.$inferSelect;
+export type InsertSecuritySetting = typeof securitySettings.$inferInsert;
+
+// =====================================================
+// User Security Preferences - Cài đặt bảo mật của user
+// =====================================================
+export const userSecurityPreferences = mysqlTable("user_security_preferences", {
+  id: int("id").primaryKey().autoincrement(),
+  
+  /** User ID */
+  userId: int("userId").notNull().unique(),
+  
+  /** Notify on new login */
+  notifyOnNewLogin: mysqlEnum("notifyOnNewLogin", ["true", "false"]).default("true").notNull(),
+  
+  /** Notify on password change */
+  notifyOnPasswordChange: mysqlEnum("notifyOnPasswordChange", ["true", "false"]).default("true").notNull(),
+  
+  /** Notify on 2FA change */
+  notifyOn2FAChange: mysqlEnum("notifyOn2FAChange", ["true", "false"]).default("true").notNull(),
+  
+  /** Require 2FA for sensitive actions */
+  require2FAForSensitiveActions: mysqlEnum("require2FAForSensitiveActions", ["true", "false"]).default("false").notNull(),
+  
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UserSecurityPreference = typeof userSecurityPreferences.$inferSelect;
+export type InsertUserSecurityPreference = typeof userSecurityPreferences.$inferInsert;

@@ -541,3 +541,56 @@
   - [x] API revoke all sessions
   - [x] UI quản lý sessions trong profile
   - [x] Hiển thị device info, IP, thời gian đăng nhập
+
+## PHASE 53: Enhanced Security Features
+- [x] 2FA bắt buộc cho admin
+  - [ ] Thêm setting require2FA trong site_settings
+  - [ ] Kiểm tra 2FA khi đăng nhập admin
+  - [ ] UI cảnh báo và redirect nếu chưa bật 2FA
+  - [ ] Admin có thể bật/tắt yêu cầu 2FA trong settings
+
+- [x] Email thông báo đăng nhập mới
+  - [ ] Phát hiện đăng nhập từ thiết bị/IP mới
+  - [ ] Gửi email cảnh báo qua SendGrid
+  - [ ] Lưu lịch sử thiết bị đã biết
+  - [ ] Setting bật/tắt thông báo trong profile
+
+- [x] Đổi mật khẩu trong profile
+  - [ ] API đổi mật khẩu (yêu cầu mật khẩu cũ)
+  - [ ] UI form đổi mật khẩu trong profile
+  - [ ] Validation mật khẩu mới
+  - [ ] Logout tất cả sessions sau khi đổi mật khẩu
+
+- [x] Bảng lịch sử truy cập và thay đổi
+  - [ ] Tạo bảng user_access_history trong database
+  - [ ] Ghi log mọi hành động quan trọng
+  - [ ] API lấy lịch sử truy cập
+  - [ ] UI xem lịch sử trong admin
+  - [ ] Filter theo thời gian, loại hành động
+
+
+## PHASE 53: Enhanced Security Features
+- [x] 2FA bắt buộc cho admin
+  - [ ] Thêm setting require2FA trong site_settings
+  - [ ] Kiểm tra 2FA khi đăng nhập admin
+  - [ ] UI cảnh báo và redirect nếu chưa bật 2FA
+  - [ ] Admin có thể bật/tắt yêu cầu 2FA trong settings
+
+- [x] Email thông báo đăng nhập mới
+  - [ ] Phát hiện đăng nhập từ thiết bị/IP mới
+  - [ ] Gửi email cảnh báo qua SendGrid
+  - [ ] Lưu lịch sử thiết bị đã biết
+  - [ ] Setting bật/tắt thông báo trong profile
+
+- [x] Đổi mật khẩu trong profile
+  - [ ] API đổi mật khẩu (yêu cầu mật khẩu cũ)
+  - [ ] UI form đổi mật khẩu trong profile
+  - [ ] Validation mật khẩu mới
+  - [ ] Logout tất cả sessions sau khi đổi mật khẩu
+
+- [x] Bảng lịch sử truy cập và thay đổi
+  - [ ] Tạo bảng user_access_history trong database
+  - [ ] Ghi log mọi hành động quan trọng
+  - [ ] API lấy lịch sử truy cập
+  - [ ] UI xem lịch sử trong admin
+  - [ ] Filter theo thời gian, loại hành động

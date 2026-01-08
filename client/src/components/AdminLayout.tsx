@@ -118,6 +118,9 @@ const getMenuCategories = (t: any): MenuCategory[] => [
     items: [
       { href: "/admin/security/2fa", icon: Smartphone, label: t.menu?.twoFactor || "Xác Thực 2 Yếu Tố" },
       { href: "/admin/security/sessions", icon: Key, label: t.menu?.sessions || "Phiên Đăng Nhập" },
+      { href: "/admin/security/change-password", icon: Key, label: t.menu?.changePassword || "Đổi Mật Khẩu" },
+      { href: "/admin/security/history", icon: Shield, label: t.menu?.accessHistory || "Lịch Sử Truy Cập" },
+      { href: "/admin/security/settings", icon: Shield, label: t.menu?.securitySettings || "Cài Đặt Bảo Mật" },
     ],
   },
 ];

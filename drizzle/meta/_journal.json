@@ -169,6 +169,13 @@
       "when": 1767862371732,
       "tag": "0023_sweet_redwing",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1767863486364,
+      "tag": "0024_spotty_mentallo",
+      "breakpoints": true
     }
   ]
 }

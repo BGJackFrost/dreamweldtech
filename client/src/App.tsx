@@ -46,6 +46,9 @@ import ForgotPassword from "./pages/admin/ForgotPassword";
 import ResetPassword from "./pages/admin/ResetPassword";
 import TwoFactorSetup from "./pages/admin/TwoFactorSetup";
 import SessionManagement from "./pages/admin/SessionManagement";
+import SecuritySettings from "./pages/admin/SecuritySettings";
+import ChangePassword from "./pages/admin/ChangePassword";
+import AccessHistory from "./pages/admin/AccessHistory";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -138,6 +141,9 @@ function AdminRouter() {
           <Route path="/admin/monitoring" component={ServerMonitoring} />
           <Route path="/admin/security/2fa" component={TwoFactorSetup} />
           <Route path="/admin/security/sessions" component={SessionManagement} />
+          <Route path="/admin/security/settings" component={SecuritySettings} />
+          <Route path="/admin/security/change-password" component={ChangePassword} />
+          <Route path="/admin/security/history" component={AccessHistory} />
           <Route component={NotFound} />
       </Switch>
       </AdminLayout>
