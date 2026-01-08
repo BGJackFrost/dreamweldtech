@@ -41,6 +41,7 @@ import NotificationCenter from "./pages/admin/NotificationCenter";
 import PermissionMatrix from "./pages/admin/PermissionMatrix";
 import TranslationManager from "./pages/admin/TranslationManager";
 import ServerMonitoring from "./pages/admin/ServerMonitoring";
+import AdminLogin from "./pages/admin/AdminLogin";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -141,6 +142,8 @@ function AdminRouter() {
 function Router() {
   return (
     <Switch>
+      {/* Admin login - standalone page without AdminLayout */}
+      <Route path="/admin/login" component={AdminLogin} />
       {/* Admin routes - exact match for /admin */}
       <Route path="/admin" component={AdminRouter} />
       {/* Admin routes - with sub-paths */}

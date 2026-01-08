@@ -53,6 +53,7 @@ import { customTranslationsRouter } from "./customTranslations";
 import { monitoringRouter } from "./monitoring";
 import { metricsHistoryRouter, startMetricsCollection } from "./metricsHistory";
 import { performHealthCheck, performSimpleHealthCheck, getServerMetrics } from "./healthCheck";
+import { adminAuthRouter } from "./adminAuth";
 import { alertThresholdsRouter, initializeDefaultThresholds } from "./alertThresholds";
 import { scheduledReportsRouter, startReportScheduler } from "./scheduledReports";
 import { uptimeHistoryRouter, startUptimeMonitoring } from "./uptimeHistory";
@@ -1966,6 +1967,7 @@ const healthRouter = router({
 // ============================================
 export const appRouter = router({
   system: systemRouter,
+  adminAuth: adminAuthRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

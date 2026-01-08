@@ -506,3 +506,14 @@
 - [x] Cập nhật sitemap.xml với đầy đủ URLs
 - [x] Cập nhật robots.txt
 - [x] Build và test
+
+
+## PHASE 51: Admin Login với Username/Password
+
+- [ ] Cập nhật schema users thêm trường password_hash
+- [ ] Tạo API đăng nhập admin (POST /api/auth/login)
+- [ ] Tạo API đăng ký admin (POST /api/auth/register) - chỉ cho phép khi chưa có admin
+- [ ] Tạo trang Login UI cho admin (/admin/login)
+- [x] Tạo script seed admin user mặc định
+- [ ] Cập nhật middleware auth để hỗ trợ cả OAuth và Password
+- [ ] Test và deploy
