@@ -65,6 +65,7 @@
     "express": "^4.21.2",
     "express-rate-limit": "^8.2.1",
     "framer-motion": "^12.23.22",
+    "geoip-country": "^5.0.202512052343",
     "input-otp": "^1.4.2",
     "isomorphic-dompurify": "^2.35.0",
     "jose": "6.1.0",

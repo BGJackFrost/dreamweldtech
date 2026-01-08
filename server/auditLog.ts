@@ -419,3 +419,232 @@ export async function cleanupOldAuditLogs(retentionDays: number = 90): Promise<n
     return 0;
   }
 }
+
+
+/**
+ * Export audit log to CSV format
+ */
+export async function exportAuditLogToCsv(options?: {
+  userId?: number;
+  action?: AuditAction;
+  resourceType?: ResourceType;
+  status?: "success" | "failed" | "partial";
+  startDate?: Date;
+  endDate?: Date;
+  search?: string;
+}): Promise<string> {
+  const { logs } = await getAuditLog({
+    ...options,
+    limit: 10000, // Max export limit
+    offset: 0,
+  });
+
+  // CSV header
+  const headers = [
+    "ID",
+    "Thời gian",
+    "Người dùng",
+    "User ID",
+    "Thao tác",
+    "Loại tài nguyên",
+    "ID tài nguyên",
+    "Tên tài nguyên",
+    "Mô tả",
+    "Trạng thái",
+    "IP",
+    "Các trường thay đổi",
+    "Lỗi",
+  ];
+
+  // Format date for CSV
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return "";
+    return new Date(date).toLocaleString("vi-VN");
+  };
+
+  // Escape CSV field
+  const escapeField = (value: any): string => {
+    if (value === null || value === undefined) return "";
+    const str = String(value);
+    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  // Build CSV rows
+  const rows = logs.map(log => [
+    log.id,
+    formatDate(log.createdAt),
+    log.username || "",
+    log.userId,
+    log.action,
+    log.resourceType,
+    log.resourceId || "",
+    log.resourceName || "",
+    log.description || "",
+    log.status || "success",
+    log.ipAddress || "",
+    Array.isArray(log.changedFields) ? log.changedFields.join("; ") : "",
+    log.errorMessage || "",
+  ].map(escapeField).join(","));
+
+  return [headers.join(","), ...rows].join("\n");
+}
+
+/**
+ * Export audit log to JSON format
+ */
+export async function exportAuditLogToJson(options?: {
+  userId?: number;
+  action?: AuditAction;
+  resourceType?: ResourceType;
+  status?: "success" | "failed" | "partial";
+  startDate?: Date;
+  endDate?: Date;
+  search?: string;
+}): Promise<string> {
+  const { logs, total } = await getAuditLog({
+    ...options,
+    limit: 10000, // Max export limit
+    offset: 0,
+  });
+
+  return JSON.stringify({
+    exportDate: new Date().toISOString(),
+    totalRecords: total,
+    filters: options || {},
+    logs: logs.map(log => ({
+      id: log.id,
+      timestamp: log.createdAt,
+      user: {
+        id: log.userId,
+        name: log.username,
+      },
+      action: log.action,
+      resource: {
+        type: log.resourceType,
+        id: log.resourceId,
+        name: log.resourceName,
+      },
+      description: log.description,
+      status: log.status,
+      changes: {
+        fields: log.changedFields,
+        previous: log.previousValues,
+        new: log.newValues,
+      },
+      metadata: {
+        ip: log.ipAddress,
+        userAgent: log.userAgent,
+        duration: log.durationMs,
+      },
+      error: log.errorMessage,
+    })),
+  }, null, 2);
+}
+
+/**
+ * Get audit log summary for export
+ */
+export async function getAuditLogSummary(options?: {
+  startDate?: Date;
+  endDate?: Date;
+}): Promise<{
+  totalActions: number;
+  byAction: Record<string, number>;
+  byResource: Record<string, number>;
+  byStatus: Record<string, number>;
+  byUser: { userId: number; username: string; count: number }[];
+  topResources: { resourceType: string; resourceId: number; resourceName: string; count: number }[];
+}> {
+  const db = await getDb();
+  if (!db) {
+    return {
+      totalActions: 0,
+      byAction: {},
+      byResource: {},
+      byStatus: {},
+      byUser: [],
+      topResources: [],
+    };
+  }
+
+  try {
+    const conditions = [];
+    if (options?.startDate) {
+      conditions.push(gte(adminAuditLog.createdAt, options.startDate));
+    }
+    if (options?.endDate) {
+      conditions.push(lte(adminAuditLog.createdAt, options.endDate));
+    }
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Get all logs for summary
+    const logs = await db.select()
+      .from(adminAuditLog)
+      .where(whereClause);
+
+    const byAction: Record<string, number> = {};
+    const byResource: Record<string, number> = {};
+    const byStatus: Record<string, number> = {};
+    const userCounts: Record<number, { username: string; count: number }> = {};
+    const resourceCounts: Record<string, { resourceType: string; resourceId: number; resourceName: string; count: number }> = {};
+
+    logs.forEach(log => {
+      // By action
+      byAction[log.action] = (byAction[log.action] || 0) + 1;
+      
+      // By resource
+      byResource[log.resourceType] = (byResource[log.resourceType] || 0) + 1;
+      
+      // By status
+      const status = log.status || "success";
+      byStatus[status] = (byStatus[status] || 0) + 1;
+      
+      // By user
+      if (!userCounts[log.userId]) {
+        userCounts[log.userId] = { username: log.username || `User ${log.userId}`, count: 0 };
+      }
+      userCounts[log.userId].count++;
+      
+      // By resource (specific)
+      if (log.resourceId) {
+        const key = `${log.resourceType}-${log.resourceId}`;
+        if (!resourceCounts[key]) {
+          resourceCounts[key] = {
+            resourceType: log.resourceType,
+            resourceId: log.resourceId,
+            resourceName: log.resourceName || "",
+            count: 0,
+          };
+        }
+        resourceCounts[key].count++;
+      }
+    });
+
+    return {
+      totalActions: logs.length,
+      byAction,
+      byResource,
+      byStatus,
+      byUser: Object.entries(userCounts)
+        .map(([userId, data]) => ({ userId: parseInt(userId), ...data }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10),
+      topResources: Object.values(resourceCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10),
+    };
+  } catch (error) {
+    console.error("[Audit Log] Error getting summary:", error);
+    return {
+      totalActions: 0,
+      byAction: {},
+      byResource: {},
+      byStatus: {},
+      byUser: [],
+      topResources: [],
+    };
+  }
+}

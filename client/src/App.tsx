@@ -51,6 +51,8 @@ import ChangePassword from "./pages/admin/ChangePassword";
 import IpAccessControl from "./pages/admin/IpAccessControl";
 import AuditLog from "./pages/admin/AuditLog";
 import AccessHistory from "./pages/admin/AccessHistory";
+import GeoBlocking from "./pages/admin/GeoBlocking";
+import SecurityDashboard from "./pages/admin/SecurityDashboard";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -148,6 +150,8 @@ function AdminRouter() {
           <Route path="/admin/security/history" component={AccessHistory} />
           <Route path="/admin/security/ip-control" component={IpAccessControl} />
           <Route path="/admin/security/audit-log" component={AuditLog} />
+          <Route path="/admin/security/geo-blocking" component={GeoBlocking} />
+          <Route path="/admin/security/dashboard" component={SecurityDashboard} />
           <Route component={NotFound} />
       </Switch>
       </AdminLayout>

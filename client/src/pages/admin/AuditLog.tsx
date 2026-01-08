@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { RefreshCw, Search, Eye, FileText, User, Calendar, Activity } from "lucide-react";
+import { RefreshCw, Search, Eye, FileText, User, Calendar, Activity, Download, FileJson, FileSpreadsheet } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const ACTION_LABELS: Record<string, string> = {
   create: "Tạo mới",
@@ -29,6 +30,49 @@ const ACTION_LABELS: Record<string, string> = {
   permission_change: "Thay đổi quyền",
   bulk_action: "Thao tác hàng loạt",
 };
+
+// Export Menu Item Component
+function ExportMenuItem({ format, filters }: { format: "csv" | "json"; filters: any }) {
+  const csvQuery = trpc.advancedSecurity.export.csv.useQuery({
+    action: filters.action !== "all" ? filters.action : undefined,
+    resourceType: filters.resourceType !== "all" ? filters.resourceType : undefined,
+    status: filters.status !== "all" ? filters.status : undefined,
+    search: filters.search || undefined,
+  }, { enabled: false });
+
+  const jsonQuery = trpc.advancedSecurity.export.json.useQuery({
+    action: filters.action !== "all" ? filters.action : undefined,
+    resourceType: filters.resourceType !== "all" ? filters.resourceType : undefined,
+    status: filters.status !== "all" ? filters.status : undefined,
+    search: filters.search || undefined,
+  }, { enabled: false });
+
+  const handleExport = async () => {
+    const query = format === "csv" ? csvQuery : jsonQuery;
+    const result = await query.refetch();
+    if (result.data) {
+      const blob = new Blob([result.data], { type: format === "csv" ? "text/csv" : "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `audit-log-${new Date().toISOString().split("T")[0]}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  return (
+    <DropdownMenuItem onClick={handleExport}>
+      {format === "csv" ? (
+        <><FileSpreadsheet className="h-4 w-4 mr-2" /> Xuất CSV</>
+      ) : (
+        <><FileJson className="h-4 w-4 mr-2" /> Xuất JSON</>
+      )}
+    </DropdownMenuItem>
+  );
+}
 
 const RESOURCE_LABELS: Record<string, string> = {
   product: "Sản phẩm",
@@ -116,10 +160,24 @@ export default function AuditLog() {
             Theo dõi tất cả các thao tác quản trị trong hệ thống
           </p>
         </div>
-        <Button variant="outline" onClick={() => auditLogQuery.refetch()}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Làm mới
-        </Button>
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Xuất dữ liệu
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <ExportMenuItem format="csv" filters={{ action: actionFilter, resourceType: resourceFilter, status: statusFilter, search }} />
+              <ExportMenuItem format="json" filters={{ action: actionFilter, resourceType: resourceFilter, status: statusFilter, search }} />
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="outline" onClick={() => auditLogQuery.refetch()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Làm mới
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">

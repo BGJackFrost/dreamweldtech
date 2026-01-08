@@ -600,3 +600,9 @@
 - [x] IP Blacklist/Whitelist - Chặn hoặc cho phép đăng nhập từ các IP cụ thể
 - [x] Rate Limiting cho Login - Giới hạn số lần đăng nhập thất bại từ cùng IP
 - [x] Audit Log cho Admin Actions - Ghi log chi tiết các thao tác quản trị
+
+
+## PHASE 55: Advanced Security Features III
+- [x] Geo-blocking - Chặn truy cập từ các quốc gia cụ thể dựa trên IP
+- [x] Security Dashboard - Tổng hợp các chỉ số bảo mật
+- [x] Export Audit Log - Xuất nhật ký hoạt động ra CSV/Excel
