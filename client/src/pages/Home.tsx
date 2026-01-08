@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Zap, Shield, Cpu, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import { BannerSlider } from "@/components/BannerSlider";
+import { HomePageSchema } from "@/components/SEOSchema";
 
 export default function Home() {
   // The userAuth hooks provides authentication state
@@ -11,6 +12,8 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {/* SEO Schema Markup */}
+      <HomePageSchema />
       {/* Hero Section with Banner Slider */}
       <BannerSlider
         autoPlayInterval={6000}

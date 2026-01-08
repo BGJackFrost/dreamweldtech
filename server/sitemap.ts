@@ -2,7 +2,7 @@ import { getDb } from "./db";
 import { products, news, jobs, partners, portfolioItems, caseStudies, faqs } from "../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 
-const BASE_URL = process.env.VITE_APP_URL || "https://dreamweldtech.com";
+const BASE_URL = process.env.VITE_APP_URL || "https://dreamweldtech.vn";
 
 interface SitemapUrl {
   loc: string;
@@ -156,18 +156,40 @@ ${urls.map(url => `  <url>
 }
 
 export async function generateRobotsTxt(): Promise<string> {
-  return `# Robots.txt for Dreamweldtech
+  return `# Robots.txt for DreamWeldTech
+# https://dreamweldtech.vn
+
 User-agent: *
 Allow: /
 
-# Disallow admin pages
+# Disallow admin and API pages
 Disallow: /admin/
 Disallow: /api/
+Disallow: /_core/
+Disallow: /auth/
 
-# Sitemap
+# Disallow search result pages
+Disallow: /*?search=
+Disallow: /*?page=
+
+# Allow important assets
+Allow: /images/
+Allow: /assets/
+
+# Sitemap location
 Sitemap: ${BASE_URL}/sitemap.xml
 
 # Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Google specific
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Bing specific
+User-agent: Bingbot
+Allow: /
 Crawl-delay: 1
 `;
 }
