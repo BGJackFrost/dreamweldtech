@@ -1182,3 +1182,128 @@ export const alertHistory = mysqlTable("alert_history", {
 
 export type AlertHistoryItem = typeof alertHistory.$inferSelect;
 export type InsertAlertHistoryItem = typeof alertHistory.$inferInsert;
+
+
+// ============================================
+// PASSWORD RESET TOKENS
+// ============================================
+export const passwordResetTokens = mysqlTable("password_reset_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** User ID */
+  userId: int("userId").notNull(),
+  
+  /** Reset token (hashed) */
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  
+  /** Expiration timestamp */
+  expiresAt: timestamp("expiresAt").notNull(),
+  
+  /** Whether token has been used */
+  isUsed: mysqlEnum("isUsed", ["true", "false"]).default("false").notNull(),
+  
+  /** IP address of requester */
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  
+  /** User agent of requester */
+  userAgent: text("userAgent"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
+// ============================================
+// TWO-FACTOR AUTHENTICATION SETTINGS
+// ============================================
+export const user2FASettings = mysqlTable("user_2fa_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** User ID */
+  userId: int("userId").notNull().unique(),
+  
+  /** Whether 2FA is enabled */
+  isEnabled: mysqlEnum("isEnabled", ["true", "false"]).default("false").notNull(),
+  
+  /** TOTP secret (encrypted) */
+  totpSecret: varchar("totpSecret", { length: 255 }),
+  
+  /** Backup codes (JSON array, hashed) */
+  backupCodes: text("backupCodes"),
+  
+  /** Number of backup codes used */
+  backupCodesUsed: int("backupCodesUsed").default(0),
+  
+  /** Last verified timestamp */
+  lastVerifiedAt: timestamp("lastVerifiedAt"),
+  
+  /** Failed attempts count (for rate limiting) */
+  failedAttempts: int("failedAttempts").default(0),
+  
+  /** Lockout until timestamp */
+  lockedUntil: timestamp("lockedUntil"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type User2FASetting = typeof user2FASettings.$inferSelect;
+export type InsertUser2FASetting = typeof user2FASettings.$inferInsert;
+
+// ============================================
+// USER SESSIONS
+// ============================================
+export const userSessions = mysqlTable("user_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  /** User ID */
+  userId: int("userId").notNull(),
+  
+  /** Session token (hashed) */
+  sessionToken: varchar("sessionToken", { length: 255 }).notNull().unique(),
+  
+  /** Device type: desktop, mobile, tablet */
+  deviceType: varchar("deviceType", { length: 50 }),
+  
+  /** Device name/model */
+  deviceName: varchar("deviceName", { length: 255 }),
+  
+  /** Browser name */
+  browser: varchar("browser", { length: 100 }),
+  
+  /** Operating system */
+  os: varchar("os", { length: 100 }),
+  
+  /** IP address */
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  
+  /** Location (city, country) */
+  location: varchar("location", { length: 255 }),
+  
+  /** User agent string */
+  userAgent: text("userAgent"),
+  
+  /** Whether this is the current session */
+  isCurrent: mysqlEnum("isCurrent", ["true", "false"]).default("false").notNull(),
+  
+  /** Last activity timestamp */
+  lastActivityAt: timestamp("lastActivityAt").defaultNow().notNull(),
+  
+  /** Expiration timestamp */
+  expiresAt: timestamp("expiresAt").notNull(),
+  
+  /** Whether session is revoked */
+  isRevoked: mysqlEnum("isRevoked", ["true", "false"]).default("false").notNull(),
+  
+  /** Revoked at timestamp */
+  revokedAt: timestamp("revokedAt"),
+  
+  /** Revoke reason */
+  revokeReason: varchar("revokeReason", { length: 255 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UserSession = typeof userSessions.$inferSelect;
+export type InsertUserSession = typeof userSessions.$inferInsert;

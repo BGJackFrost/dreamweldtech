@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Lock, User, Mail, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Link } from "wouter";
 
 // Token storage key
 const ADMIN_TOKEN_KEY = "dreamweldtech_admin_token";
@@ -240,6 +241,14 @@ export default function AdminLogin() {
                       "Đăng nhập"
                     )}
                   </Button>
+
+                  <div className="text-center mt-4">
+                    <Link href="/admin/forgot-password">
+                      <span className="text-sm text-slate-400 hover:text-primary cursor-pointer">
+                        Quên mật khẩu?
+                      </span>
+                    </Link>
+                  </div>
                 </form>
               </TabsContent>
 

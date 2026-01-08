@@ -34,7 +34,10 @@ import {
   Search,
   Plus,
   BarChart3,
-  ChevronRight
+  ChevronRight,
+  Shield,
+  Key,
+  Smartphone
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useMemo } from "react";
@@ -108,6 +111,13 @@ const getMenuCategories = (t: any): MenuCategory[] => [
       { href: "/admin/notification-center", icon: Send, label: t.menu?.notifications || "Notification Center" },
       { href: "/admin/permission-matrix", icon: Users, label: t.menu?.permissions || "Permission Matrix" },
       { href: "/admin/settings", icon: Settings, label: t.menu?.settings || "Cài Đặt" },
+    ],
+  },
+  {
+    label: t.menu?.security || "Bảo Mật",
+    items: [
+      { href: "/admin/security/2fa", icon: Smartphone, label: t.menu?.twoFactor || "Xác Thực 2 Yếu Tố" },
+      { href: "/admin/security/sessions", icon: Key, label: t.menu?.sessions || "Phiên Đăng Nhập" },
     ],
   },
 ];

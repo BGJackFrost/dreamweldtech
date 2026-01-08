@@ -517,3 +517,27 @@
 - [x] Tạo script seed admin user mặc định
 - [ ] Cập nhật middleware auth để hỗ trợ cả OAuth và Password
 - [ ] Test và deploy
+
+## PHASE 52: Advanced Security Features
+- [x] Quên mật khẩu (Forgot Password)
+  - [x] Tạo bảng password_reset_tokens trong database
+  - [x] API gửi email reset password qua SendGrid
+  - [x] API verify token và đổi mật khẩu
+  - [x] UI trang quên mật khẩu
+  - [x] UI trang đặt lại mật khẩu
+
+- [x] Two-Factor Authentication (2FA)
+  - [x] Tạo bảng user_2fa_settings trong database
+  - [x] API enable/disable 2FA
+  - [x] API generate QR code cho Google Authenticator
+  - [x] API verify TOTP code
+  - [x] UI cài đặt 2FA trong profile
+  - [x] UI nhập mã 2FA khi đăng nhập
+
+- [x] Session Management
+  - [x] Tạo bảng user_sessions trong database
+  - [x] API lấy danh sách sessions
+  - [x] API revoke session
+  - [x] API revoke all sessions
+  - [x] UI quản lý sessions trong profile
+  - [x] Hiển thị device info, IP, thời gian đăng nhập

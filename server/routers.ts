@@ -68,6 +68,7 @@ import { savePushSubscription, removePushSubscription, getUserSubscriptions, get
 import { notifyNewJobApplication, notifyNewContactForm } from "./email";
 import { exportData, importData, exportSensitiveData, getDatabaseStats, BackupData } from "./backup";
 import { triggerNewContact, triggerNewJobApplication, triggerNewNewsletterSubscription } from "./integrations";
+import { securityRouter } from "./securityRouter";
 
 // ============================================
 // PRODUCT CATEGORIES ROUTER
@@ -2013,6 +2014,7 @@ export const appRouter = router({
   rateLimiting: rateLimitingRouter,
   queryAnalytics: queryAnalyticsRouter,
   performanceAlerts: performanceAlertsRouter,
+  security: securityRouter,
 });
 
 // Start metrics collection on server start (every 5 minutes)

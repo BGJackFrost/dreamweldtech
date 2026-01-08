@@ -42,6 +42,10 @@ import PermissionMatrix from "./pages/admin/PermissionMatrix";
 import TranslationManager from "./pages/admin/TranslationManager";
 import ServerMonitoring from "./pages/admin/ServerMonitoring";
 import AdminLogin from "./pages/admin/AdminLogin";
+import ForgotPassword from "./pages/admin/ForgotPassword";
+import ResetPassword from "./pages/admin/ResetPassword";
+import TwoFactorSetup from "./pages/admin/TwoFactorSetup";
+import SessionManagement from "./pages/admin/SessionManagement";
 
 // Frontend Pages
 import Products from "./pages/Products";
@@ -132,6 +136,8 @@ function AdminRouter() {
           <Route path="/admin/permission-matrix" component={PermissionMatrix} />
           <Route path="/admin/translations" component={TranslationManager} />
           <Route path="/admin/monitoring" component={ServerMonitoring} />
+          <Route path="/admin/security/2fa" component={TwoFactorSetup} />
+          <Route path="/admin/security/sessions" component={SessionManagement} />
           <Route component={NotFound} />
       </Switch>
       </AdminLayout>
@@ -144,6 +150,8 @@ function Router() {
     <Switch>
       {/* Admin login - standalone page without AdminLayout */}
       <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/forgot-password" component={ForgotPassword} />
+      <Route path="/admin/reset-password" component={ResetPassword} />
       {/* Admin routes - exact match for /admin */}
       <Route path="/admin" component={AdminRouter} />
       {/* Admin routes - with sub-paths */}
