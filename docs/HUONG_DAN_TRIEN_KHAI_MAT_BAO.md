@@ -1,25 +1,34 @@
 # Hướng Dẫn Triển Khai DreamWeldTech Lên Cloud Hosting Mắt Bão
 
-**Phiên bản:** 2.0 (MySQL Edition)  
-**Ngày cập nhật:** 08/01/2026  
-**Tác giả:** Manus AI
+**Phiên bản:** 2.0 (MySQL Edition)**Ngày cập nhật:** 08/01/2026**Tác giả:** Manus AI
 
 ---
 
 ## Mục Lục
 
-1. [Giới Thiệu](#1-giới-thiệu)
-2. [Yêu Cầu Hệ Thống](#2-yêu-cầu-hệ-thống)
-3. [Lựa Chọn Gói Hosting](#3-lựa-chọn-gói-hosting)
-4. [Chuẩn Bị Trước Khi Triển Khai](#4-chuẩn-bị-trước-khi-triển-khai)
-5. [Triển Khai Trên Cloud Hosting Premium (cPanel)](#5-triển-khai-trên-cloud-hosting-premium-cpanel)
-6. [Triển Khai Trên Cloud Server/VPS](#6-triển-khai-trên-cloud-servervps)
-7. [Cấu Hình Database MySQL](#7-cấu-hình-database-mysql)
-8. [Cấu Hình Biến Môi Trường](#8-cấu-hình-biến-môi-trường)
-9. [Cấu Hình Domain và SSL](#9-cấu-hình-domain-và-ssl)
-10. [Kiểm Tra và Xử Lý Lỗi](#10-kiểm-tra-và-xử-lý-lỗi)
-11. [Bảo Trì và Cập Nhật](#11-bảo-trì-và-cập-nhật)
-12. [Liên Hệ Hỗ Trợ](#12-liên-hệ-hỗ-trợ)
+1. [Giới Thiệu](#1-gi%E1%BB%9Bi-thi%E1%BB%87u)
+
+1. [Yêu Cầu Hệ Thống](#2-y%C3%AAu-c%E1%BA%A7u-h%E1%BB%87-th%E1%BB%91ng)
+
+1. [Lựa Chọn Gói Hosting](#3-l%E1%BB%B1a-ch%E1%BB%8Dn-g%C3%B3i-hosting)
+
+1. [Chuẩn Bị Trước Khi Triển Khai](#4-chu%E1%BA%A9n-b%E1%BB%8B-tr%C6%B0%E1%BB%9Bc-khi-tri%E1%BB%83n-khai)
+
+1. [Triển Khai Trên Cloud Hosting Premium (cPanel)](#5-tri%E1%BB%83n-khai-tr%C3%AAn-cloud-hosting-premium-cpanel)
+
+1. [Triển Khai Trên Cloud Server/VPS](#6-tri%E1%BB%83n-khai-tr%C3%AAn-cloud-servervps)
+
+1. [Cấu Hình Database MySQL](#7-c%E1%BA%A5u-h%C3%ACnh-database-mysql)
+
+1. [Cấu Hình Biến Môi Trường](#8-c%E1%BA%A5u-h%C3%ACnh-bi%E1%BA%BFn-m%C3%B4i-tr%C6%B0%E1%BB%9Dng)
+
+1. [Cấu Hình Domain và SSL](#9-c%E1%BA%A5u-h%C3%ACnh-domain-v%C3%A0-ssl)
+
+1. [Kiểm Tra và Xử Lý Lỗi](#10-ki%E1%BB%83m-tra-v%C3%A0-x%E1%BB%AD-l%C3%BD-l%E1%BB%97i)
+
+1. [Bảo Trì và Cập Nhật](#11-b%E1%BA%A3o-tr%C3%AC-v%C3%A0-c%E1%BA%ADp-nh%E1%BA%ADt)
+
+1. [Liên Hệ Hỗ Trợ](#12-li%C3%AAn-h%E1%BB%87-h%E1%BB%97-tr%E1%BB%A3)
 
 ---
 
@@ -30,7 +39,7 @@ DreamWeldTech là một ứng dụng web được xây dựng trên nền tảng
 ### Kiến Trúc Ứng Dụng
 
 | Thành phần | Công nghệ | Mô tả |
-|------------|-----------|-------|
+| --- | --- | --- |
 | Frontend | React 19 + Vite | Single Page Application với Tailwind CSS |
 | Backend | Node.js + Express | REST API và tRPC endpoints |
 | **Database** | **MySQL 8.0+** | **Cơ sở dữ liệu quan hệ (tương thích Mắt Bão)** |
@@ -45,7 +54,7 @@ DreamWeldTech là một ứng dụng web được xây dựng trên nền tảng
 ### Yêu Cầu Tối Thiểu
 
 | Tài nguyên | Cloud Hosting Premium | Cloud Server/VPS |
-|------------|----------------------|------------------|
+| --- | --- | --- |
 | RAM | 2GB | 2GB |
 | CPU | 1 vCPU | 1 vCPU |
 | Storage | 10GB SSD | 20GB SSD |
@@ -55,7 +64,7 @@ DreamWeldTech là một ứng dụng web được xây dựng trên nền tảng
 ### Yêu Cầu Khuyến Nghị (Production)
 
 | Tài nguyên | Giá trị |
-|------------|---------|
+| --- | --- |
 | RAM | 4GB trở lên |
 | CPU | 2 vCPU trở lên |
 | Storage | 50GB SSD |
@@ -68,12 +77,19 @@ DreamWeldTech là một ứng dụng web được xây dựng trên nền tảng
 ### 3.1. Cloud Hosting Premium (Khuyến nghị)
 
 **Ưu điểm:**
+
 - ✅ Giao diện cPanel dễ sử dụng
+
 - ✅ Hỗ trợ Node.js tích hợp sẵn
+
 - ✅ **MySQL có sẵn** - không cần cài đặt thêm
+
 - ✅ Quản lý database qua phpMyAdmin
+
 - ✅ Backup tự động
+
 - ✅ Hỗ trợ kỹ thuật 24/7
+
 - ✅ SSL miễn phí (Let's Encrypt)
 
 **Gói khuyến nghị:** Premium Plus hoặc Business
@@ -81,12 +97,17 @@ DreamWeldTech là một ứng dụng web được xây dựng trên nền tảng
 ### 3.2. Cloud Server/VPS
 
 **Ưu điểm:**
+
 - Toàn quyền kiểm soát server
+
 - Cấu hình linh hoạt
+
 - Hiệu suất cao hơn
 
 **Nhược điểm:**
+
 - Yêu cầu kiến thức quản trị Linux
+
 - Tự cài đặt MySQL
 
 ---
@@ -111,7 +132,7 @@ pnpm build
 
 Tạo file `.env` với cấu hình MySQL:
 
-```env
+```
 # Server
 NODE_ENV=production
 PORT=3000
@@ -126,7 +147,7 @@ JWT_SECRET=your-super-secret-jwt-key-min-32-chars
 VITE_APP_TITLE=DreamWeldTech
 VITE_APP_ID=dreamweldtech
 
-# Email (SendGrid - tùy chọn)
+# Email (SendGrid - tùy chọn )
 SENDGRID_API_KEY=your-sendgrid-api-key
 ADMIN_ALERT_EMAIL=admin@dreamweldtech.com
 ```
@@ -145,37 +166,53 @@ zip -r dreamweldtech-deploy.zip dist/ drizzle/ package.json pnpm-lock.yaml .env
 ### 5.1. Đăng Nhập Quản Trị Hosting
 
 1. Truy cập [id.matbao.net](https://id.matbao.net) với tài khoản MBxxxx
-2. Vào mục **Cloud Hosting** → **Quản lý Cloud Hosting**
-3. Click vào gói hosting cần sử dụng
-4. Chọn **Control Panel** để đăng nhập cPanel
+
+1. Vào mục **Cloud Hosting** → **Quản lý Cloud Hosting**
+
+1. Click vào gói hosting cần sử dụng
+
+1. Chọn **Control Panel** để đăng nhập cPanel
 
 ### 5.2. Tạo Database MySQL
 
 **Bước 1:** Trong cPanel, tìm mục **MySQL Databases** (Cơ sở dữ liệu MySQL)
 
 **Bước 2:** Tạo Database mới
+
 - Trong mục **Create New Database**
+
 - Nhập tên database: `dreamweldtech`
+
 - Click **Create Database**
 
 **Bước 3:** Tạo User MySQL
+
 - Trong mục **Add New User**
+
 - Nhập username: `dreamweld`
+
 - Nhập password: (tạo password mạnh)
+
 - Click **Create User**
 
 **Bước 4:** Gán User vào Database
+
 - Trong mục **Add User To Database**
+
 - Chọn User: `dreamweld`
+
 - Chọn Database: `dreamweldtech`
+
 - Click **Add**
+
 - Chọn **All Privileges** (bỏ check **Drop** để an toàn)
+
 - Click **Make Changes**
 
 **Bước 5:** Ghi nhớ thông tin kết nối
 
 | Thông tin | Giá trị |
-|-----------|---------|
+| --- | --- |
 | Host | localhost |
 | Database | cpanelusername_dreamweldtech |
 | Username | cpanelusername_dreamweld |
@@ -187,9 +224,12 @@ zip -r dreamweldtech-deploy.zip dist/ drizzle/ package.json pnpm-lock.yaml .env
 ### 5.3. Upload Dữ Liệu
 
 1. Trong cPanel, tìm mục **File Manager** (Bộ quản lý tệp)
-2. Truy cập thư mục `public_html`
-3. Click **Upload** và chọn file `dreamweldtech-deploy.zip`
-4. Sau khi upload xong, click chuột phải vào file zip → **Extract**
+
+1. Truy cập thư mục `public_html`
+
+1. Click **Upload** và chọn file `dreamweldtech-deploy.zip`
+
+1. Sau khi upload xong, click chuột phải vào file zip → **Extract**
 
 ### 5.4. Tạo Môi Trường Node.js
 
@@ -200,7 +240,7 @@ zip -r dreamweldtech-deploy.zip dist/ drizzle/ package.json pnpm-lock.yaml .env
 **Bước 3:** Cấu hình như sau:
 
 | Trường | Giá trị |
-|--------|---------|
+| --- | --- |
 | Node.js Version | 20.x (hoặc mới nhất) |
 | Application Mode | Production |
 | Application Root | dreamweldtech |
@@ -216,7 +256,7 @@ zip -r dreamweldtech-deploy.zip dist/ drizzle/ package.json pnpm-lock.yaml .env
 **Bước 2:** Tìm mục **Environment variables** và thêm:
 
 | Variable | Value |
-|----------|-------|
+| --- | --- |
 | NODE_ENV | production |
 | DATABASE_URL | mysql://cpanelusername_dreamweld:password@localhost:3306/cpanelusername_dreamweldtech |
 | JWT_SECRET | your-super-secret-key-32-chars |
@@ -235,8 +275,8 @@ zip -r dreamweldtech-deploy.zip dist/ drizzle/ package.json pnpm-lock.yaml .env
 **Bước 4:** Chạy các lệnh:
 
 ```bash
-# Cài đặt dependencies
-npm install --production
+# Cài đặt dependencies (thêm --legacy-peer-deps để tránh lỗi dependency conflict)
+npm install --legacy-peer-deps 
 
 # Chạy database migration
 npm run db:push
@@ -245,8 +285,10 @@ npm run db:push
 ### 5.7. Khởi Động Ứng Dụng
 
 1. Quay lại **Setup Node.js App**
-2. Click **Restart** để khởi động ứng dụng
-3. Truy cập domain để kiểm tra
+
+1. Click **Restart** để khởi động ứng dụng
+
+1. Truy cập domain để kiểm tra
 
 ---
 
@@ -255,8 +297,10 @@ npm run db:push
 ### 6.1. Đăng Ký Cloud Server
 
 1. Truy cập [matbao.net/cloud-server](https://www.matbao.net/cloud-server.html)
-2. Chọn gói phù hợp (khuyến nghị: 2GB RAM trở lên)
-3. Chọn hệ điều hành: **Ubuntu 22.04 LTS**
+
+1. Chọn gói phù hợp (khuyến nghị: 2GB RAM trở lên)
+
+1. Chọn hệ điều hành: **Ubuntu 22.04 LTS**
 
 ### 6.2. Kết Nối SSH
 
@@ -335,7 +379,7 @@ nano .env
 
 Chỉnh sửa file `.env`:
 
-```env
+```
 NODE_ENV=production
 PORT=3000
 DATABASE_URL=mysql://dreamweld:your-secure-password@localhost:3306/dreamweldtech
@@ -396,7 +440,7 @@ sudo nano /etc/nginx/sites-available/dreamweldtech
 
 Nội dung file cấu hình:
 
-```nginx
+```
 server {
     listen 80;
     server_name dreamweldtech.com www.dreamweldtech.com;
@@ -461,11 +505,11 @@ sudo ufw enable
 
 ## 7. Cấu Hình Database MySQL
 
-### 7.1. Tối Ưu MySQL (VPS)
+### 7.1. Tối Ưu MySQL (VPS )
 
 Chỉnh sửa file `/etc/mysql/mysql.conf.d/mysqld.cnf`:
 
-```ini
+```
 [mysqld]
 # InnoDB settings
 innodb_buffer_pool_size = 512M
@@ -518,9 +562,12 @@ sudo crontab -e
 ### 7.3. Backup Trên cPanel
 
 1. Vào cPanel → **Backup** hoặc **Backup Wizard**
-2. Chọn **Download a MySQL Database Backup**
-3. Chọn database `dreamweldtech`
-4. Download file `.sql.gz`
+
+1. Chọn **Download a MySQL Database Backup**
+
+1. Chọn database `dreamweldtech`
+
+1. Download file `.sql.gz`
 
 ---
 
@@ -529,7 +576,7 @@ sudo crontab -e
 ### Danh Sách Biến Môi Trường
 
 | Biến | Mô tả | Bắt buộc |
-|------|-------|----------|
+| --- | --- | --- |
 | `NODE_ENV` | Môi trường (production) | ✅ |
 | `PORT` | Port chạy ứng dụng (3000) | ✅ |
 | `DATABASE_URL` | MySQL connection string | ✅ |
@@ -545,7 +592,9 @@ mysql://username:password@host:port/database
 ```
 
 **Ví dụ:**
+
 - Local: `mysql://dreamweld:password123@localhost:3306/dreamweldtech`
+
 - cPanel: `mysql://mbxxxx_dreamweld:password@localhost:3306/mbxxxx_dreamweldtech`
 
 ---
@@ -555,15 +604,17 @@ mysql://username:password@host:port/database
 ### 9.1. Trỏ Domain Về Server
 
 | Type | Name | Value | TTL |
-|------|------|-------|-----|
+| --- | --- | --- | --- |
 | A | @ | IP-Server | 3600 |
 | A | www | IP-Server | 3600 |
 
 ### 9.2. SSL Trên cPanel
 
 1. Vào cPanel → **SSL/TLS Status**
-2. Chọn domain
-3. Click **Run AutoSSL**
+
+1. Chọn domain
+
+1. Click **Run AutoSSL**
 
 ---
 
@@ -584,7 +635,7 @@ mysql -u dreamweld -p -e "SELECT 1"
 ### 10.2. Lỗi Thường Gặp
 
 | Lỗi | Nguyên nhân | Giải pháp |
-|-----|-------------|-----------|
+| --- | --- | --- |
 | `ECONNREFUSED :3306` | MySQL không chạy | `sudo systemctl start mysql` |
 | `Access denied` | Sai username/password | Kiểm tra lại DATABASE_URL |
 | `Unknown database` | Database chưa tạo | Tạo database trong MySQL |
@@ -647,17 +698,19 @@ echo "✅ Deployment completed!"
 ### Hỗ Trợ Kỹ Thuật Mắt Bão
 
 | Kênh | Thông tin |
-|------|-----------|
-| Hotline 24/7 | 1900 1830 (1.000đ/phút) |
+| --- | --- |
+| Hotline 24/7 | 1900 1830 (1.000đ/phút ) |
 | Miền Nam | (028) 3622 9999 |
 | Miền Bắc | (024) 35 123456 |
-| Email | support@matbao.net |
+| Email | [support@matbao.net](mailto:support@matbao.net) |
 | Wiki | [wiki.matbao.net](https://wiki.matbao.net) |
 
 ### Tài Liệu Tham Khảo
 
 - [Hướng dẫn sử dụng NodeJS trên Hosting](https://wiki.matbao.net/kb/huong-dan-su-dung-nodejs-va-xu-ly-cac-loi-co-ban/)
+
 - [Cài đặt NodeJS app trên cPanel](https://wiki.matbao.net/kb/cai-dat-nodejs-app-tren-cpanel/)
+
 - [Quản lý Database trên cPanel](https://wiki.matbao.net/kb/huong-dan-quan-ly-database-tren-cpanel-moi-nhat-2023/)
 
 ---
@@ -665,27 +718,44 @@ echo "✅ Deployment completed!"
 ## Checklist Triển Khai
 
 ### Trước Khi Triển Khai
+
 - [ ] Build ứng dụng thành công ở local
+
 - [ ] Chuẩn bị file .env với DATABASE_URL MySQL
+
 - [ ] Đóng gói ứng dụng
+
 - [ ] Đăng ký gói hosting Mắt Bão
 
 ### Trong Quá Trình Triển Khai
+
 - [ ] Tạo database MySQL trong cPanel
+
 - [ ] Tạo user MySQL và gán quyền
+
 - [ ] Upload code lên server
+
 - [ ] Tạo Node.js App trong cPanel
+
 - [ ] Cấu hình biến môi trường
+
 - [ ] Cài đặt dependencies
+
 - [ ] Chạy database migrations (`pnpm db:push`)
+
 - [ ] Khởi động ứng dụng
 
 ### Sau Khi Triển Khai
+
 - [ ] Kiểm tra health check endpoint
+
 - [ ] Test đăng nhập và các chức năng chính
+
 - [ ] Cấu hình SSL (AutoSSL)
+
 - [ ] Thiết lập backup tự động
 
 ---
 
 *Tài liệu này được tạo bởi Manus AI. Cập nhật lần cuối: 08/01/2026*
+
