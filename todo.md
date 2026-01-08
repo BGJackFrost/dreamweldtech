@@ -484,3 +484,14 @@
 - [ ] Real-time P95 Alerts
 - [ ] Alert notification system
 - [ ] Unit tests
+
+
+## PHASE 49: Chuyển đổi PostgreSQL sang MySQL
+
+- [ ] Cài đặt MySQL driver (mysql2)
+- [ ] Chuyển đổi schema sang MySQL-compatible types
+- [ ] Cập nhật drizzle.config.ts cho MySQL
+- [ ] Cập nhật server/db.ts cho MySQL connection
+- [x] Cập nhật hướng dẫn triển khai Mắt Bão
+- [ ] Test database migrations
+- [ ] Test các chức năng chính

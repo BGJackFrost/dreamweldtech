@@ -176,7 +176,7 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
       mysql2:
-        specifier: ^3.15.0
+        specifier: ^3.16.0
         version: 3.16.0
       nanoid:
         specifier: ^5.1.5
