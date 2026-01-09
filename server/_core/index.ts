@@ -1,4 +1,9 @@
 import "dotenv/config";
+
+// Initialize Sentry FIRST before any other imports
+import { initSentry, sentryErrorHandler, captureError } from "../sentry";
+initSentry();
+
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -9,12 +14,22 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { storagePut } from "../storage";
 import multer from "multer";
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { securityHeaders, apiRateLimit, sanitizeMiddleware, securityLogger, checkBlockedIP, strictRateLimit, validateFileUpload, honeypotMiddleware } from "../security";
 import { generateSitemap, generateRobotsTxt } from "../sitemap";
 import { setupWebSocket } from "../websocket";
 import { performHealthCheck, performSimpleHealthCheck, getServerMetrics } from "../healthCheck";
 import { endpointMetricsMiddleware } from "../endpointMetrics";
+import { 
+  loginRateLimit, 
+  passwordResetRateLimit, 
+  contactFormRateLimit, 
+  quoteRequestRateLimit,
+  uploadRateLimit,
+  searchRateLimit,
+  apiRateLimitAdvanced,
+  getRateLimitStats
+} from "../advancedRateLimiter";
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -57,8 +72,16 @@ async function startServer() {
   app.use(sanitizeMiddleware);
   app.use(securityLogger);
   
-  // Rate limiting for API routes
+  // Rate limiting for API routes (basic)
   app.use("/api", apiRateLimit);
+  
+  // Advanced rate limiting for specific endpoints
+  app.use("/api/trpc/security.requestPasswordReset", passwordResetRateLimit);
+  app.use("/api/trpc/security.resetPassword", passwordResetRateLimit);
+  app.use("/api/trpc/contact.submit", contactFormRateLimit);
+  app.use("/api/trpc/quote.submit", quoteRequestRateLimit);
+  app.use("/api/trpc/search", searchRateLimit);
+  app.use("/api/upload", uploadRateLimit);
   
   // Endpoint metrics tracking
   app.use("/api", endpointMetricsMiddleware);
@@ -92,6 +115,16 @@ async function startServer() {
     } catch (error) {
       console.error("Robots.txt generation error:", error);
       res.status(500).send("Error generating robots.txt");
+    }
+  });
+
+  // Rate limit stats endpoint (admin only)
+  app.get("/api/admin/rate-limit-stats", (req: Request, res: Response) => {
+    try {
+      const stats = getRateLimitStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get rate limit stats" });
     }
   });
 
@@ -193,9 +226,21 @@ async function startServer() {
   const wss = setupWebSocket(server);
   console.log('[WebSocket] Server initialized at /api/ws/notifications');
 
+  // Sentry error handler (must be after all routes)
+  app.use(sentryErrorHandler());
+  
+  // Global error handler
+  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    console.error("[Server Error]", err);
+    captureError(err);
+    res.status(500).json({ error: "Internal server error" });
+  });
+
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
     console.log(`WebSocket server ready for connections`);
+    console.log(`[Sentry] Error tracking enabled`);
+    console.log(`[Rate Limiting] Advanced rate limiters active`);
   });
 }
 
