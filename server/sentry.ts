@@ -280,10 +280,11 @@ export function trackAPICall(
 
 export function getSentryStatus() {
   return {
-    enabled: !!SENTRY_DSN && (ENVIRONMENT === "production" || !!process.env.SENTRY_ENABLED),
+    enabled: !!SENTRY_DSN,
     environment: ENVIRONMENT,
     release: `dreamweldtech@${RELEASE}`,
     dsn: SENTRY_DSN ? "configured" : "not configured",
+    note: ENVIRONMENT === "development" ? "Sentry is active in development mode" : undefined,
   };
 }
 
