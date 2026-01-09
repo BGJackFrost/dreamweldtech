@@ -164,50 +164,55 @@ async function startServer() {
   });
   // ============================================
   // SENTRY TEST ENDPOINTS (Development/Testing only)
+  // These endpoints are DISABLED in production
   // ============================================
   
-  // Test endpoint to trigger a captured error
-  app.get("/api/test/sentry-error", (_req: Request, res: Response) => {
-    try {
-      // Intentionally throw an error to test Sentry
-      throw new Error("[TEST] This is a test error to verify Sentry integration");
-    } catch (error) {
-      captureError(error as Error, {
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Dev] Sentry test endpoints enabled at /api/test/sentry-*");
+    
+    // Test endpoint to trigger a captured error
+    app.get("/api/test/sentry-error", (_req: Request, res: Response) => {
+      try {
+        // Intentionally throw an error to test Sentry
+        throw new Error("[TEST] This is a test error to verify Sentry integration");
+      } catch (error) {
+        captureError(error as Error, {
+          tags: { type: "test", source: "manual" },
+          extra: { endpoint: "/api/test/sentry-error", timestamp: new Date().toISOString() }
+        });
+        res.json({ 
+          success: true, 
+          message: "Test error sent to Sentry",
+          note: "Check your Sentry dashboard to verify the error was received"
+        });
+      }
+    });
+
+    // Test endpoint to trigger an unhandled error (caught by error handler)
+    app.get("/api/test/sentry-unhandled", (_req: Request, _res: Response) => {
+      // This will be caught by the global error handler and sent to Sentry
+      throw new Error("[TEST] Unhandled error to test Sentry error handler");
+    });
+
+    // Test endpoint to send a custom message to Sentry
+    app.get("/api/test/sentry-message", (_req: Request, res: Response) => {
+      captureMessage("[TEST] Custom message from DreamWeldTech", "info", {
         tags: { type: "test", source: "manual" },
-        extra: { endpoint: "/api/test/sentry-error", timestamp: new Date().toISOString() }
+        extra: { endpoint: "/api/test/sentry-message", timestamp: new Date().toISOString() }
       });
       res.json({ 
         success: true, 
-        message: "Test error sent to Sentry",
-        note: "Check your Sentry dashboard to verify the error was received"
+        message: "Test message sent to Sentry",
+        note: "Check your Sentry dashboard to verify the message was received"
       });
-    }
-  });
-
-  // Test endpoint to trigger an unhandled error (caught by error handler)
-  app.get("/api/test/sentry-unhandled", (_req: Request, _res: Response) => {
-    // This will be caught by the global error handler and sent to Sentry
-    throw new Error("[TEST] Unhandled error to test Sentry error handler");
-  });
-
-  // Test endpoint to send a custom message to Sentry
-  app.get("/api/test/sentry-message", (_req: Request, res: Response) => {
-    captureMessage("[TEST] Custom message from DreamWeldTech", "info", {
-      tags: { type: "test", source: "manual" },
-      extra: { endpoint: "/api/test/sentry-message", timestamp: new Date().toISOString() }
     });
-    res.json({ 
-      success: true, 
-      message: "Test message sent to Sentry",
-      note: "Check your Sentry dashboard to verify the message was received"
-    });
-  });
 
-  // Get Sentry status
-  app.get("/api/test/sentry-status", (_req: Request, res: Response) => {
-    const status = getSentryStatus();
-    res.json(status);
-  });
+    // Get Sentry status
+    app.get("/api/test/sentry-status", (_req: Request, res: Response) => {
+      const status = getSentryStatus();
+      res.json(status);
+    });
+  }
 
   // Public Health Check Endpoint (for UptimeRobot, Pingdom, etc.)
   app.get("/api/health", async (_req: Request, res: Response) => {

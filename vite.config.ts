@@ -3,9 +3,48 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
+// Check if Sentry source maps upload should be enabled
+const SENTRY_AUTH_TOKEN = process.env.SENTRY_AUTH_TOKEN;
+const SENTRY_ORG = process.env.SENTRY_ORG;
+const SENTRY_PROJECT = process.env.SENTRY_PROJECT || "dreamweldtech";
+const ENABLE_SENTRY_SOURCEMAPS = SENTRY_AUTH_TOKEN && SENTRY_ORG && process.env.NODE_ENV === "production";
 
 const plugins = [react(), tailwindcss(), vitePluginManusRuntime()];
+
+// Add Sentry plugin only in production with proper credentials
+if (ENABLE_SENTRY_SOURCEMAPS) {
+  plugins.push(
+    sentryVitePlugin({
+      org: SENTRY_ORG,
+      project: SENTRY_PROJECT,
+      authToken: SENTRY_AUTH_TOKEN,
+      
+      // Source maps configuration
+      sourcemaps: {
+        // Upload source maps to Sentry
+        filesToDeleteAfterUpload: ["./dist/public/**/*.map"],
+      },
+      
+      // Release configuration
+      release: {
+        name: `dreamweldtech@${process.env.npm_package_version || "1.0.0"}`,
+        // Automatically set commits
+        setCommits: {
+          auto: true,
+          ignoreMissing: true,
+        },
+      },
+      
+      // Telemetry
+      telemetry: false,
+    })
+  );
+  console.log("[Sentry] Source maps upload enabled");
+} else if (process.env.NODE_ENV === "production") {
+  console.log("[Sentry] Source maps upload disabled - missing SENTRY_AUTH_TOKEN or SENTRY_ORG");
+}
 
 export default defineConfig({
   plugins,
@@ -22,6 +61,8 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Enable source maps for Sentry
+    sourcemap: true,
     // Code splitting configuration
     rollupOptions: {
       output: {
