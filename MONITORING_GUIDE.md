@@ -506,3 +506,155 @@ manus rollback --project dreamweldtech --version abc123
 **Last Updated:** 2026-01-02  
 **Maintained By:** DevOps Team  
 **Review Frequency:** Quarterly
+
+
+---
+
+## Advanced Rate Limiting (Mới)
+
+DreamWeldTech đã tích hợp hệ thống rate limiting nâng cao với nhiều chiến lược.
+
+### Các Loại Rate Limiting
+
+| Loại | Mô tả | Use Case |
+|------|-------|----------|
+| **IP-based** | Giới hạn theo địa chỉ IP | Chống DDoS, brute force |
+| **User-based** | Giới hạn theo user ID | Công bằng giữa users |
+| **Combined** | Kết hợp IP + User | Bảo vệ toàn diện |
+| **Endpoint** | Giới hạn theo endpoint cụ thể | Bảo vệ API nhạy cảm |
+| **Sliding Window** | Cửa sổ trượt chính xác hơn | Phân phối đều requests |
+| **Tiered** | Giới hạn theo tier user | Phân biệt free/premium |
+
+### Cấu Hình Mặc Định
+
+| Endpoint | Window | Max Requests | Mô tả |
+|----------|--------|--------------|-------|
+| Login | 15 phút | 5 | Chống brute force |
+| Password Reset | 1 giờ | 3 | Chống spam |
+| Contact Form | 1 giờ | 5 | Chống spam |
+| Quote Request | 1 giờ | 10 | Giới hạn hợp lý |
+| File Upload | 1 giờ | 20 | Tiết kiệm bandwidth |
+| Search | 1 phút | 30 | Tránh quá tải |
+| API (IP) | 1 phút | 60 | Tiêu chuẩn |
+| API (User) | 1 phút | 200 | Cho authenticated users |
+
+### Tiered Rate Limits
+
+| Tier | Requests/phút | Mô tả |
+|------|---------------|-------|
+| Anonymous | 30 | Chưa đăng nhập |
+| Free | 60 | Tài khoản miễn phí |
+| Basic | 120 | Gói cơ bản |
+| Premium | 300 | Gói premium |
+| Enterprise | 1000 | Doanh nghiệp |
+| Admin | 5000 | Quản trị viên |
+
+### Sử Dụng Rate Limiters
+
+```typescript
+import { 
+  loginRateLimit,
+  contactFormRateLimit,
+  apiRateLimitAdvanced,
+  tieredRateLimit
+} from "./advancedRateLimiter";
+
+// Áp dụng cho login
+app.post("/api/login", loginRateLimit, loginHandler);
+
+// Áp dụng cho contact form
+app.post("/api/contact", contactFormRateLimit, contactHandler);
+
+// Áp dụng tiered rate limit
+app.use("/api", tieredRateLimit(defaultTiers, (req) => {
+  return req.user?.tier || "anonymous";
+}));
+```
+
+### Response Headers
+
+| Header | Mô tả |
+|--------|-------|
+| `X-RateLimit-Limit` | Số requests tối đa |
+| `X-RateLimit-Remaining` | Số requests còn lại |
+| `X-RateLimit-Reset` | Timestamp reset (Unix) |
+| `X-RateLimit-Tier` | Tier của user (nếu có) |
+
+---
+
+## Sentry Error Tracking (Mới)
+
+### Thiết Lập Sentry
+
+#### Bước 1: Tạo Tài Khoản
+
+1. Truy cập [sentry.io](https://sentry.io)
+2. Đăng ký tài khoản (có gói miễn phí)
+3. Tạo project mới cho Node.js và React
+
+#### Bước 2: Cấu Hình Environment Variables
+
+```env
+# Sentry Configuration
+SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
+VITE_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
+SENTRY_ENABLED=true
+```
+
+### Tính Năng Đã Tích Hợp
+
+| Tính năng | Server | Client | Mô tả |
+|-----------|--------|--------|-------|
+| Error Capture | ✅ | ✅ | Tự động bắt exceptions |
+| Performance | ✅ | ✅ | Tracking thời gian response |
+| Breadcrumbs | ✅ | ✅ | Lịch sử actions trước lỗi |
+| User Context | ✅ | ✅ | Gắn user vào lỗi |
+| Session Replay | ❌ | ✅ | Xem lại session user |
+| Sensitive Data Filter | ✅ | ✅ | Ẩn password, token |
+
+### Sử Dụng Trong Code
+
+#### Server-side
+
+```typescript
+import { captureError, captureMessage, addBreadcrumb } from "./sentry";
+
+// Bắt lỗi với context
+try {
+  await riskyOperation();
+} catch (error) {
+  captureError(error, {
+    user: { id: userId, email: userEmail },
+    tags: { feature: "checkout" },
+    extra: { orderId, amount }
+  });
+}
+
+// Ghi breadcrumb
+addBreadcrumb("User clicked checkout", "user.action", { cartItems: 3 });
+```
+
+#### Client-side
+
+```typescript
+import { captureError, setUser, showReportDialog } from "@/lib/sentry";
+
+// Set user khi login
+setUser({ id: user.id, email: user.email, name: user.name });
+
+// Hiển thị dialog báo cáo lỗi
+showReportDialog(eventId);
+```
+
+### Cấu Hình Alerts
+
+| Alert | Condition | Action |
+|-------|-----------|--------|
+| New Error | Khi có lỗi mới | Email + Slack |
+| Error Spike | > 10 lỗi/phút | Email + Slack |
+| Performance | Response > 3s | Email |
+| Crash Rate | > 1% sessions | Email + SMS |
+
+---
+
+**Cập nhật:** Tháng 1, 2026
