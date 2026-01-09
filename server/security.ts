@@ -129,26 +129,61 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
   // Referrer policy
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   
-  // Content Security Policy (basic)
+  // Content Security Policy (comprehensive)
+  const cspDirectives = [
+    "default-src 'self'",
+    // Scripts: self, inline (for React), eval (for dev), Google services
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://maps.googleapis.com https://analytics.google.com",
+    // Styles: self, inline (for styled-components/emotion), Google Fonts
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    // Fonts: self, Google Fonts
+    "font-src 'self' https://fonts.gstatic.com data:",
+    // Images: self, data URIs, HTTPS, blob (for canvas)
+    "img-src 'self' data: https: blob:",
+    // Connect: self, HTTPS APIs, WebSocket
+    "connect-src 'self' https: wss: ws:",
+    // Frames: self, Google (reCAPTCHA, Maps)
+    "frame-src 'self' https://www.google.com https://maps.google.com https://www.youtube.com",
+    // Media: self, HTTPS
+    "media-src 'self' https: blob:",
+    // Objects: none (no Flash/plugins)
+    "object-src 'none'",
+    // Base URI: self only
+    "base-uri 'self'",
+    // Form actions: self only
+    "form-action 'self'",
+    // Frame ancestors: self only (prevents embedding)
+    "frame-ancestors 'self'",
+    // Upgrade insecure requests in production
+    "upgrade-insecure-requests",
+    // Worker sources
+    "worker-src 'self' blob:"
+  ];
+  
+  res.setHeader("Content-Security-Policy", cspDirectives.join("; "));
+  
+  // Strict Transport Security (HSTS) - 1 year with preload
   res.setHeader(
-    "Content-Security-Policy",
-    "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://maps.googleapis.com; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-    "font-src 'self' https://fonts.gstatic.com; " +
-    "img-src 'self' data: https: blob:; " +
-    "connect-src 'self' https: wss:; " +
-    "frame-src 'self' https://www.google.com https://maps.google.com;"
+    "Strict-Transport-Security", 
+    "max-age=31536000; includeSubDomains; preload"
   );
   
-  // Strict Transport Security (HSTS)
-  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-  
-  // Permissions Policy
+  // Permissions Policy (Feature Policy replacement)
   res.setHeader(
     "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(self), payment=()"
+    "accelerometer=(), ambient-light-sensor=(), autoplay=(self), battery=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(self), execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(self), geolocation=(self), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(self), usb=(), web-share=(self), xr-spatial-tracking=()"
   );
+  
+  // Cross-Origin policies for additional security
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+  
+  // Cache control for security-sensitive pages
+  if (_req.path.startsWith("/admin") || _req.path.startsWith("/api")) {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+  }
   
   next();
 }
