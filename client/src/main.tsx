@@ -59,6 +59,27 @@ const trpcClient = trpc.createClient({
   ],
 });
 
+// Load analytics script dynamically if configured
+const loadAnalytics = () => {
+  const analyticsEndpoint = import.meta.env.VITE_ANALYTICS_ENDPOINT;
+  const websiteId = import.meta.env.VITE_ANALYTICS_WEBSITE_ID;
+  
+  if (analyticsEndpoint && websiteId) {
+    const script = document.createElement('script');
+    script.defer = true;
+    script.src = `${analyticsEndpoint}/umami`;
+    script.setAttribute('data-website-id', websiteId);
+    document.body.appendChild(script);
+  }
+};
+
+// Load analytics after page load
+if (document.readyState === 'complete') {
+  loadAnalytics();
+} else {
+  window.addEventListener('load', loadAnalytics);
+}
+
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
     <trpc.Provider client={trpcClient} queryClient={queryClient}>

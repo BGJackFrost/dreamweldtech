@@ -614,3 +614,7 @@
 - [x] Security recommendations engine
 - [x] Security Score UI component
 - [x] Integration with Security Dashboard
+
+## BUG FIX: Build Error
+- [x] Install missing react-helmet-async dependency
+- [x] Fix environment variables warning in index.html
