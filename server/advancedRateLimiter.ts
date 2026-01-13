@@ -453,35 +453,35 @@ function setRateLimitHeaders(
 // PREDEFINED RATE LIMITERS
 // ============================================
 
-// For login attempts - very strict
+// For login attempts - balanced security
 export const loginRateLimit = endpointRateLimit("login", {
   windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5,
-  message: "Too many login attempts. Please try again after 15 minutes.",
+  maxRequests: 10, // Increased to 10 attempts per 15 minutes
+  message: "Quá nhiều lần đăng nhập. Vui lòng thử lại sau 15 phút.",
   onLimitReached: (req, key) => {
     console.warn(`[Rate Limit] Login limit reached: ${key}, IP: ${getClientIP(req)}`);
   },
 });
 
-// For password reset - strict
+// For password reset - balanced security
 export const passwordResetRateLimit = endpointRateLimit("password-reset", {
   windowMs: 60 * 60 * 1000, // 1 hour
-  maxRequests: 3,
-  message: "Too many password reset requests. Please try again after 1 hour.",
+  maxRequests: 5, // Increased to 5 attempts per hour
+  message: "Quá nhiều yêu cầu đặt lại mật khẩu. Vui lòng thử lại sau 1 giờ.",
 });
 
 // For contact form - moderate
 export const contactFormRateLimit = endpointRateLimit("contact", {
   windowMs: 60 * 60 * 1000, // 1 hour
-  maxRequests: 5,
-  message: "Too many contact form submissions. Please try again later.",
+  maxRequests: 10, // Increased to 10 submissions per hour
+  message: "Quá nhiều lần gửi form liên hệ. Vui lòng thử lại sau.",
 });
 
 // For quote requests - moderate
 export const quoteRequestRateLimit = endpointRateLimit("quote", {
   windowMs: 60 * 60 * 1000, // 1 hour
-  maxRequests: 10,
-  message: "Too many quote requests. Please try again later.",
+  maxRequests: 15, // Increased to 15 requests per hour
+  message: "Quá nhiều yêu cầu báo giá. Vui lòng thử lại sau.",
 });
 
 // For API endpoints - standard (increased for SPA)
@@ -496,16 +496,16 @@ export const apiRateLimitAdvanced = combinedRateLimit({
   },
 });
 
-// For file uploads - strict
+// For file uploads - moderate
 export const uploadRateLimit = endpointRateLimit("upload", {
   windowMs: 60 * 60 * 1000, // 1 hour
-  maxRequests: 20,
-  message: "Too many file uploads. Please try again later.",
+  maxRequests: 30, // Increased to 30 uploads per hour
+  message: "Quá nhiều lần upload file. Vui lòng thử lại sau.",
 });
 
-// For search - moderate
+// For search - relaxed for better UX
 export const searchRateLimit = endpointRateLimit("search", {
   windowMs: 60 * 1000, // 1 minute
-  maxRequests: 30,
-  message: "Too many search requests. Please slow down.",
+  maxRequests: 60, // Increased to 60 searches per minute
+  message: "Quá nhiều yêu cầu tìm kiếm. Vui lòng chờ một lát.",
 });

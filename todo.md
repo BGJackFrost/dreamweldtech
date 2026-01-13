@@ -674,3 +674,10 @@
 - [x] Viết unit tests cho 2FA (27 tests passed)
 - [x] Viết unit tests cho login với 2FA
 - [x] Tổng cộng 588 tests passed
+
+
+## Cấu hình Rate Limiting (Phase 7)
+- [x] Phân tích cấu hình rate limiting hiện tại
+- [x] Thiết kế cấu hình rate limiting theo loại endpoint
+- [x] Cập nhật code và bật lại rate limiting
+- [x] Kiểm tra hoạt động bình thường (588 tests passed)

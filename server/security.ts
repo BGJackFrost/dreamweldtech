@@ -74,18 +74,18 @@ export function rateLimit(options: {
   };
 }
 
-// Stricter rate limit for sensitive endpoints
+// Stricter rate limit for sensitive endpoints (OAuth, etc.)
 export const strictRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 requests per 15 minutes
-  message: "Too many attempts, please try again after 15 minutes.",
+  max: 30, // 30 requests per 15 minutes (increased for OAuth flow)
+  message: "Quá nhiều yêu cầu. Vui lòng thử lại sau 15 phút.",
 });
 
-// API rate limit - increased for SPA with multiple API calls
+// API rate limit - optimized for SPA with multiple API calls
 export const apiRateLimit = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 500, // 500 requests per minute (increased for SPA with many components)
-  message: "Too many requests. Please try again later.",
+  max: 300, // 300 requests per minute (balanced for SPA)
+  message: "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
 });
 
 // ============================================

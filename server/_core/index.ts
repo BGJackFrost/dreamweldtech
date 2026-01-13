@@ -72,22 +72,23 @@ async function startServer() {
   app.use(sanitizeMiddleware);
   app.use(securityLogger);
   
-  // Rate limiting for API routes (basic) - DISABLED temporarily
-  // app.use("/api", apiRateLimit);
+  // Rate limiting for API routes (basic) - 300 req/min for SPA
+  app.use("/api", apiRateLimit);
   
-  // Advanced rate limiting for specific endpoints - DISABLED temporarily
-  // app.use("/api/trpc/security.requestPasswordReset", passwordResetRateLimit);
-  // app.use("/api/trpc/security.resetPassword", passwordResetRateLimit);
-  // app.use("/api/trpc/contact.submit", contactFormRateLimit);
-  // app.use("/api/trpc/quote.submit", quoteRequestRateLimit);
-  // app.use("/api/trpc/search", searchRateLimit);
-  // app.use("/api/upload", uploadRateLimit);
+  // Advanced rate limiting for specific sensitive endpoints
+  app.use("/api/trpc/adminAuth.login", loginRateLimit);
+  app.use("/api/trpc/security.passwordReset.request", passwordResetRateLimit);
+  app.use("/api/trpc/security.passwordReset.reset", passwordResetRateLimit);
+  app.use("/api/trpc/contacts.submit", contactFormRateLimit);
+  app.use("/api/trpc/quote.submit", quoteRequestRateLimit);
+  app.use("/api/trpc/search", searchRateLimit);
+  app.use("/api/upload", uploadRateLimit);
   
   // Endpoint metrics tracking
   app.use("/api", endpointMetricsMiddleware);
   
-  // Stricter rate limit for sensitive endpoints - DISABLED temporarily
-  // app.use("/api/oauth", strictRateLimit);
+  // Stricter rate limit for OAuth endpoints - 30 req/15min
+  app.use("/api/oauth", strictRateLimit);
   
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
