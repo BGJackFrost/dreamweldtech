@@ -1,0 +1,98 @@
+{
+  "query": "DESCRIBE rate_limit_config;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute DESCRIBE rate_limit_config;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "endpointPattern",
+      "Type": "varchar(255)",
+      "Null": "NO",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "maxRequests",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "100",
+      "Extra": ""
+    },
+    {
+      "Field": "windowSeconds",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "60",
+      "Extra": ""
+    },
+    {
+      "Field": "isEnabled",
+      "Type": "enum('true','false')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "true",
+      "Extra": ""
+    },
+    {
+      "Field": "blockDurationSeconds",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "60",
+      "Extra": ""
+    },
+    {
+      "Field": "errorMessage",
+      "Type": "varchar(500)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "priority",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "100",
+      "Extra": ""
+    },
+    {
+      "Field": "description",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nendpointPattern\tvarchar(255)\tNO\tUNI\tNULL\t\nmaxRequests\tint(11)\tNO\t\t100\t\nwindowSeconds\tint(11)\tNO\t\t60\t\nisEnabled\tenum('true','false')\tNO\t\ttrue\t\nblockDurationSeconds\tint(11)\tYES\t\t60\t\nerrorMessage\tvarchar(500)\tYES\t\tNULL\t\npriority\tint(11)\tYES\t\t100\t\ndescription\ttext\tYES\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\n",
+  "stderr": "",
+  "execution_time_ms": 1544
+}

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Lock, User, Mail, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, Lock, User, Mail, AlertCircle, CheckCircle2, Shield, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 
 // Token storage key
@@ -26,15 +26,30 @@ export function removeAdminToken(): void {
   localStorage.removeItem(ADMIN_TOKEN_KEY);
 }
 
+// Login step type
+type LoginStep = "credentials" | "2fa";
+
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Login step state
+  const [loginStep, setLoginStep] = useState<LoginStep>("credentials");
+  const [tempToken, setTempToken] = useState<string | null>(null);
+  const [pendingUser, setPendingUser] = useState<{
+    id: number;
+    username: string | null;
+    name: string | null;
+    email: string | null;
+    role: string;
+  } | null>(null);
+
   // Login form state
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
 
   // Register form state
   const [registerUsername, setRegisterUsername] = useState("");
@@ -67,15 +82,41 @@ export default function AdminLogin() {
     }
   }, [adminCheck]);
 
-  // Login mutation
+  // Login mutation - Step 1
   const loginMutation = trpc.adminAuth.login.useMutation({
     onSuccess: (data) => {
-      setAdminToken(data.token);
-      setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
-      setTimeout(() => {
-        setLocation("/admin");
-        window.location.reload();
-      }, 1000);
+      if (data.requires2FA && data.tempToken) {
+        // Need 2FA verification
+        setTempToken(data.tempToken);
+        setPendingUser(data.user);
+        setLoginStep("2fa");
+        setError(null);
+      } else if (data.token) {
+        // No 2FA required, complete login
+        setAdminToken(data.token);
+        setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
+        setTimeout(() => {
+          setLocation("/admin");
+          window.location.reload();
+        }, 1000);
+      }
+    },
+    onError: (err) => {
+      setError(err.message);
+    },
+  });
+
+  // 2FA verification mutation - Step 2
+  const verify2FAMutation = trpc.adminAuth.verify2FA.useMutation({
+    onSuccess: (data) => {
+      if (data.token) {
+        setAdminToken(data.token);
+        setSuccess(data.message || "Đăng nhập thành công! Đang chuyển hướng...");
+        setTimeout(() => {
+          setLocation("/admin");
+          window.location.reload();
+        }, 1000);
+      }
     },
     onError: (err) => {
       setError(err.message);
@@ -111,6 +152,37 @@ export default function AdminLogin() {
       username: loginUsername,
       password: loginPassword,
     });
+  };
+
+  const handle2FAVerify = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!twoFactorCode || twoFactorCode.length < 6) {
+      setError("Vui lòng nhập mã xác thực 6 chữ số");
+      return;
+    }
+
+    if (!tempToken) {
+      setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+      resetLoginState();
+      return;
+    }
+
+    verify2FAMutation.mutate({
+      tempToken,
+      code: twoFactorCode,
+    });
+  };
+
+  const resetLoginState = () => {
+    setLoginStep("credentials");
+    setTempToken(null);
+    setPendingUser(null);
+    setTwoFactorCode("");
+    setError(null);
+    setSuccess(null);
   };
 
   const handleRegister = (e: React.FormEvent) => {
@@ -159,190 +231,158 @@ export default function AdminLogin() {
         </div>
 
         <Card className="border-slate-700 bg-slate-800/50 backdrop-blur">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
-            <CardHeader>
-              <TabsList className="grid w-full grid-cols-2 bg-slate-700/50">
-                <TabsTrigger value="login" className="data-[state=active]:bg-primary">
-                  Đăng nhập
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="register" 
-                  className="data-[state=active]:bg-primary"
-                  disabled={adminCheck?.exists}
-                >
-                  Đăng ký Admin
-                </TabsTrigger>
-              </TabsList>
-            </CardHeader>
-
-            <CardContent>
-              {/* Error/Success Messages */}
-              {error && (
-                <Alert variant="destructive" className="mb-4">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              {success && (
-                <Alert className="mb-4 border-green-500 bg-green-500/10 text-green-500">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <AlertDescription>{success}</AlertDescription>
-                </Alert>
-              )}
-
-              {/* Login Tab */}
-              <TabsContent value="login" className="mt-0">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-username" className="text-slate-200">
-                      Tên đăng nhập
-                    </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="login-username"
-                        type="text"
-                        placeholder="Nhập tên đăng nhập"
-                        value={loginUsername}
-                        onChange={(e) => setLoginUsername(e.target.value)}
-                        className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
-                      />
-                    </div>
+          {/* 2FA Verification Step */}
+          {loginStep === "2fa" ? (
+            <>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Shield className="h-6 w-6 text-primary" />
+                  <div>
+                    <CardTitle className="text-white">Xác thực 2 yếu tố</CardTitle>
+                    <CardDescription className="text-slate-400">
+                      Nhập mã từ ứng dụng xác thực hoặc mã backup
+                    </CardDescription>
                   </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Error/Success Messages */}
+                {error && (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                {success && (
+                  <Alert className="mb-4 border-green-500 bg-green-500/10 text-green-500">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <AlertDescription>{success}</AlertDescription>
+                  </Alert>
+                )}
 
+                {pendingUser && (
+                  <div className="mb-4 p-3 bg-slate-700/50 rounded-lg">
+                    <p className="text-sm text-slate-400">Đang đăng nhập với tài khoản:</p>
+                    <p className="text-white font-medium">{pendingUser.name}</p>
+                    <p className="text-sm text-slate-400">{pendingUser.email}</p>
+                  </div>
+                )}
+
+                <form onSubmit={handle2FAVerify} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-password" className="text-slate-200">
-                      Mật khẩu
+                    <Label htmlFor="2fa-code" className="text-slate-200">
+                      Mã xác thực
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                      <Shield className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                       <Input
-                        id="login-password"
-                        type="password"
-                        placeholder="Nhập mật khẩu"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                        id="2fa-code"
+                        type="text"
+                        placeholder="Nhập mã 6 chữ số"
+                        value={twoFactorCode}
+                        onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                        className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 text-center text-lg tracking-widest"
+                        maxLength={8}
+                        autoFocus
                       />
                     </div>
+                    <p className="text-xs text-slate-400">
+                      Nhập mã 6 chữ số từ ứng dụng xác thực (Google Authenticator, Authy...) hoặc mã backup 8 ký tự
+                    </p>
                   </div>
 
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={loginMutation.isPending}
+                    disabled={verify2FAMutation.isPending || twoFactorCode.length < 6}
                   >
-                    {loginMutation.isPending ? (
+                    {verify2FAMutation.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Đang đăng nhập...
+                        Đang xác thực...
                       </>
                     ) : (
-                      "Đăng nhập"
+                      "Xác thực"
                     )}
                   </Button>
 
-                  <div className="text-center mt-4">
-                    <Link href="/admin/forgot-password">
-                      <span className="text-sm text-slate-400 hover:text-primary cursor-pointer">
-                        Quên mật khẩu?
-                      </span>
-                    </Link>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full text-slate-400 hover:text-white"
+                    onClick={resetLoginState}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Quay lại đăng nhập
+                  </Button>
                 </form>
-              </TabsContent>
+              </CardContent>
+            </>
+          ) : (
+            /* Normal Login/Register Tabs */
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
+              <CardHeader>
+                <TabsList className="grid w-full grid-cols-2 bg-slate-700/50">
+                  <TabsTrigger value="login" className="data-[state=active]:bg-primary">
+                    Đăng nhập
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="register" 
+                    className="data-[state=active]:bg-primary"
+                    disabled={adminCheck?.exists}
+                  >
+                    Đăng ký Admin
+                  </TabsTrigger>
+                </TabsList>
+              </CardHeader>
 
-              {/* Register Tab */}
-              <TabsContent value="register" className="mt-0">
-                {adminCheck?.exists ? (
-                  <div className="text-center py-4">
-                    <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                    <p className="text-slate-300">
-                      Đã có admin trong hệ thống. Vui lòng liên hệ admin hiện tại để được cấp quyền.
-                    </p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleRegister} className="space-y-4">
+              <CardContent>
+                {/* Error/Success Messages */}
+                {error && (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                {success && (
+                  <Alert className="mb-4 border-green-500 bg-green-500/10 text-green-500">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <AlertDescription>{success}</AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Login Tab */}
+                <TabsContent value="login" className="mt-0">
+                  <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="register-username" className="text-slate-200">
+                      <Label htmlFor="login-username" className="text-slate-200">
                         Tên đăng nhập
                       </Label>
                       <div className="relative">
                         <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                         <Input
-                          id="register-username"
+                          id="login-username"
                           type="text"
                           placeholder="Nhập tên đăng nhập"
-                          value={registerUsername}
-                          onChange={(e) => setRegisterUsername(e.target.value)}
+                          value={loginUsername}
+                          onChange={(e) => setLoginUsername(e.target.value)}
                           className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="register-name" className="text-slate-200">
-                        Họ và tên
-                      </Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                        <Input
-                          id="register-name"
-                          type="text"
-                          placeholder="Nhập họ và tên"
-                          value={registerName}
-                          onChange={(e) => setRegisterName(e.target.value)}
-                          className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email" className="text-slate-200">
-                        Email
-                      </Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                        <Input
-                          id="register-email"
-                          type="email"
-                          placeholder="Nhập email"
-                          value={registerEmail}
-                          onChange={(e) => setRegisterEmail(e.target.value)}
-                          className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password" className="text-slate-200">
+                      <Label htmlFor="login-password" className="text-slate-200">
                         Mật khẩu
                       </Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                         <Input
-                          id="register-password"
+                          id="login-password"
                           type="password"
-                          placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
-                          value={registerPassword}
-                          onChange={(e) => setRegisterPassword(e.target.value)}
-                          className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="register-confirm-password" className="text-slate-200">
-                        Xác nhận mật khẩu
-                      </Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                        <Input
-                          id="register-confirm-password"
-                          type="password"
-                          placeholder="Nhập lại mật khẩu"
-                          value={registerConfirmPassword}
-                          onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                          placeholder="Nhập mật khẩu"
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
                           className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
                         />
                       </div>
@@ -351,27 +391,154 @@ export default function AdminLogin() {
                     <Button
                       type="submit"
                       className="w-full"
-                      disabled={registerMutation.isPending}
+                      disabled={loginMutation.isPending}
                     >
-                      {registerMutation.isPending ? (
+                      {loginMutation.isPending ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Đang tạo tài khoản...
+                          Đang đăng nhập...
                         </>
                       ) : (
-                        "Tạo tài khoản Admin"
+                        "Đăng nhập"
                       )}
                     </Button>
-                  </form>
-                )}
-              </TabsContent>
-            </CardContent>
 
-            <CardFooter className="flex flex-col space-y-2 text-center text-sm text-slate-400">
-              <p>© 2024 DreamWeldTech. All rights reserved.</p>
-            </CardFooter>
-          </Tabs>
+                    <div className="text-center mt-4">
+                      <Link href="/admin/forgot-password">
+                        <span className="text-sm text-slate-400 hover:text-primary cursor-pointer">
+                          Quên mật khẩu?
+                        </span>
+                      </Link>
+                    </div>
+                  </form>
+                </TabsContent>
+
+                {/* Register Tab */}
+                <TabsContent value="register" className="mt-0">
+                  {adminCheck?.exists ? (
+                    <div className="text-center py-4">
+                      <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+                      <p className="text-slate-300">
+                        Đã có admin trong hệ thống. Vui lòng liên hệ admin hiện tại để được cấp quyền.
+                      </p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleRegister} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="register-username" className="text-slate-200">
+                          Tên đăng nhập
+                        </Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                          <Input
+                            id="register-username"
+                            type="text"
+                            placeholder="Nhập tên đăng nhập"
+                            value={registerUsername}
+                            onChange={(e) => setRegisterUsername(e.target.value)}
+                            className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="register-name" className="text-slate-200">
+                          Họ và tên
+                        </Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                          <Input
+                            id="register-name"
+                            type="text"
+                            placeholder="Nhập họ và tên"
+                            value={registerName}
+                            onChange={(e) => setRegisterName(e.target.value)}
+                            className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="register-email" className="text-slate-200">
+                          Email
+                        </Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                          <Input
+                            id="register-email"
+                            type="email"
+                            placeholder="Nhập email"
+                            value={registerEmail}
+                            onChange={(e) => setRegisterEmail(e.target.value)}
+                            className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="register-password" className="text-slate-200">
+                          Mật khẩu
+                        </Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                          <Input
+                            id="register-password"
+                            type="password"
+                            placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
+                            value={registerPassword}
+                            onChange={(e) => setRegisterPassword(e.target.value)}
+                            className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="register-confirm-password" className="text-slate-200">
+                          Xác nhận mật khẩu
+                        </Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                          <Input
+                            id="register-confirm-password"
+                            type="password"
+                            placeholder="Nhập lại mật khẩu"
+                            value={registerConfirmPassword}
+                            onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                            className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={registerMutation.isPending}
+                      >
+                        {registerMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Đang tạo tài khoản...
+                          </>
+                        ) : (
+                          "Tạo tài khoản Admin"
+                        )}
+                      </Button>
+                    </form>
+                  )}
+                </TabsContent>
+              </CardContent>
+            </Tabs>
+          )}
         </Card>
+
+        {/* Footer */}
+        <div className="text-center mt-6">
+          <Link href="/">
+            <span className="text-sm text-slate-400 hover:text-primary cursor-pointer">
+              ← Quay lại trang chủ
+            </span>
+          </Link>
+        </div>
       </div>
     </div>
   );

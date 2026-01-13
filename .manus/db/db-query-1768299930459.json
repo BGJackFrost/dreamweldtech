@@ -1,0 +1,62 @@
+{
+  "query": "SELECT * FROM rate_limit_config;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute SELECT * FROM rate_limit_config;",
+  "rows": [
+    {
+      "id": "1",
+      "endpointPattern": "/api/trpc/*",
+      "maxRequests": "500",
+      "windowSeconds": "60",
+      "isEnabled": "true",
+      "blockDurationSeconds": "30",
+      "errorMessage": "NULL",
+      "priority": "100",
+      "description": "Default rate limit for all tRPC endpoints",
+      "createdAt": "2026-01-05 04:52:24",
+      "updatedAt": "2026-01-13 10:25:24"
+    },
+    {
+      "id": "2",
+      "endpointPattern": "/api/upload",
+      "maxRequests": "10",
+      "windowSeconds": "60",
+      "isEnabled": "true",
+      "blockDurationSeconds": "120",
+      "errorMessage": "NULL",
+      "priority": "50",
+      "description": "Stricter limit for file uploads",
+      "createdAt": "2026-01-05 04:52:25",
+      "updatedAt": "2026-01-05 04:52:25"
+    },
+    {
+      "id": "3",
+      "endpointPattern": "/api/oauth/*",
+      "maxRequests": "20",
+      "windowSeconds": "60",
+      "isEnabled": "true",
+      "blockDurationSeconds": "300",
+      "errorMessage": "NULL",
+      "priority": "30",
+      "description": "Authentication endpoints",
+      "createdAt": "2026-01-05 04:52:25",
+      "updatedAt": "2026-01-05 04:52:25"
+    },
+    {
+      "id": "4",
+      "endpointPattern": "/api/health*",
+      "maxRequests": "1000",
+      "windowSeconds": "60",
+      "isEnabled": "true",
+      "blockDurationSeconds": "0",
+      "errorMessage": "NULL",
+      "priority": "10",
+      "description": "Health check endpoints (high limit)",
+      "createdAt": "2026-01-05 04:52:26",
+      "updatedAt": "2026-01-05 04:52:26"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tendpointPattern\tmaxRequests\twindowSeconds\tisEnabled\tblockDurationSeconds\terrorMessage\tpriority\tdescription\tcreatedAt\tupdatedAt\n1\t/api/trpc/*\t500\t60\ttrue\t30\tNULL\t100\tDefault rate limit for all tRPC endpoints\t2026-01-05 04:52:24\t2026-01-13 10:25:24\n2\t/api/upload\t10\t60\ttrue\t120\tNULL\t50\tStricter limit for file uploads\t2026-01-05 04:52:25\t2026-01-05 04:52:25\n3\t/api/oauth/*\t20\t60\ttrue\t300\tNULL\t30\tAuthentication endpoints\t2026-01-05 04:52:25\t2026-01-05 04:52:25\n4\t/api/health*\t1000\t60\ttrue\t0\tNULL\t10\tHealth check endpoints (high limit)\t2026-01-05 04:52:26\t2026-01-05 04:52:26\n",
+  "stderr": "",
+  "execution_time_ms": 1536
+}

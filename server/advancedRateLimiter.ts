@@ -484,15 +484,15 @@ export const quoteRequestRateLimit = endpointRateLimit("quote", {
   message: "Too many quote requests. Please try again later.",
 });
 
-// For API endpoints - standard
+// For API endpoints - standard (increased for SPA)
 export const apiRateLimitAdvanced = combinedRateLimit({
   ipConfig: {
     windowMs: 60 * 1000,
-    maxRequests: 60,
+    maxRequests: 300, // Increased for SPA with many components
   },
   userConfig: {
     windowMs: 60 * 1000,
-    maxRequests: 200,
+    maxRequests: 500, // Increased for authenticated users
   },
 });
 

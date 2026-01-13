@@ -20,6 +20,20 @@ setInterval(() => {
   });
 }, 5 * 60 * 1000);
 
+// Get client IP from request, considering proxies
+function getClientIP(req: Request): string {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (forwardedFor) {
+    const ips = (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor).split(",");
+    return ips[0].trim();
+  }
+  const realIP = req.headers["x-real-ip"];
+  if (realIP) {
+    return Array.isArray(realIP) ? realIP[0] : realIP;
+  }
+  return req.ip || req.socket.remoteAddress || "unknown";
+}
+
 export function rateLimit(options: {
   windowMs?: number;
   max?: number;
@@ -30,7 +44,7 @@ export function rateLimit(options: {
     windowMs = 60 * 1000, // 1 minute default
     max = 100, // 100 requests per window default
     message = "Too many requests, please try again later.",
-    keyGenerator = (req) => req.ip || req.socket.remoteAddress || "unknown",
+    keyGenerator = (req) => getClientIP(req),
   } = options;
 
   return (req: Request, res: Response, next: NextFunction) => {
@@ -67,11 +81,11 @@ export const strictRateLimit = rateLimit({
   message: "Too many attempts, please try again after 15 minutes.",
 });
 
-// API rate limit
+// API rate limit - increased for SPA with multiple API calls
 export const apiRateLimit = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 60, // 60 requests per minute
-  message: "API rate limit exceeded. Please slow down.",
+  max: 500, // 500 requests per minute (increased for SPA with many components)
+  message: "Too many requests. Please try again later.",
 });
 
 // ============================================

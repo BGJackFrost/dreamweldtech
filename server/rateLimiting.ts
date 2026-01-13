@@ -34,10 +34,10 @@ interface RateLimitConfigItem {
 const DEFAULT_CONFIGS: Omit<InsertRateLimitConfig, "id" | "createdAt" | "updatedAt">[] = [
   {
     endpointPattern: "/api/trpc/*",
-    maxRequests: 100,
+    maxRequests: 500,
     windowSeconds: 60,
     isEnabled: "true",
-    blockDurationSeconds: 60,
+    blockDurationSeconds: 30,
     priority: 100,
     description: "Default rate limit for all tRPC endpoints",
   },

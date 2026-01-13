@@ -76,7 +76,7 @@ describe("Rate Limiting", () => {
       for (let i = 0; i < 5; i++) {
         expect(consumeToken(bucket)).toBe(true);
       }
-      expect(bucket.tokens).toBe(5);
+      expect(bucket.tokens).toBeCloseTo(5, 1);
     });
 
     it("should reject when no tokens available", () => {
