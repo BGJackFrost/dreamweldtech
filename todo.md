@@ -647,3 +647,10 @@
 - [x] Disable test endpoints in production
 - [x] Create Sentry Alerts guide
 - [x] Integrate Source Maps upload
+
+## BUG FIX: Downgrade React
+- [x] Downgrade react to 18.3.1
+- [x] Downgrade react-dom to 18.3.1
+- [x] Update @types/react and @types/react-dom
+- [x] Fix compatibility issues
+- [x] Test build
