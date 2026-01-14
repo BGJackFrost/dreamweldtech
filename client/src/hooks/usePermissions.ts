@@ -94,6 +94,7 @@ export const MENU_PERMISSIONS: Record<string, Permission[]> = {
   "/admin/jobs": ["jobs.view"],
   "/admin/applications": ["applications.view"],
   "/admin/users": ["users.view"],
+  "/admin/admin-users": ["users.view", "users.create"],
   "/admin/roles": ["roles.view"],
   "/admin/reports": ["reports.view"],
   "/admin/backup": ["system.backup"],

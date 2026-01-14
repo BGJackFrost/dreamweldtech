@@ -783,3 +783,22 @@
 - [x] Kiểm tra SecuritySettings.tsx - OK
 - [x] Tạo bảng geo_blocking_rules trong database
 - [x] Sửa các query SQL để sử dụng đúng tên cột camelCase (640 tests passed)
+
+
+## PHASE 47: Trang quản lý Admin Users
+- [ ] Phân tích cấu trúc users và admin_roles hiện tại
+- [ ] Tạo API backend cho quản lý Admin Users (CRUD)
+- [ ] Tạo trang UI AdminUsers.tsx với danh sách users
+- [ ] Thêm form tạo/sửa admin user với chọn vai trò
+- [ ] Thêm chức năng xóa admin user
+- [ ] Tích hợp permission check (chỉ Super Admin mới có quyền)
+- [ ] Viết unit tests cho các tính năng mới
+
+
+## PHASE 47: Trang quản lý Admin Users
+- [x] Phân tích cấu trúc users và admin_roles hiện tại
+- [x] Tạo API backend cho quản lý Admin Users (adminUsersRouter.ts)
+- [x] Tạo trang UI AdminUsers.tsx với đầy đủ chức năng CRUD
+- [x] Thêm route /admin/admin-users và menu item "Quản Lý Admin"
+- [x] Tích hợp permission check (users.view, users.create)
+- [x] 640 tests passed

@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE activity_logs MODIFY COLUMN action ENUM('create', 'update', 'delete', 'view', 'export', 'import', 'login', 'logout', 'assign_role', 'remove_role', 'reset_password') NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute ALTER TABLE activity_logs MODIFY COLUMN action ENUM('create', 'update', 'delete', 'view', 'export', 'import', 'login', 'logout', 'assign_role', 'remove_role', 'reset_password') NOT NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1655
+}

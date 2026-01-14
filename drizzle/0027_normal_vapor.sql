@@ -1,0 +1,1 @@
+ALTER TABLE `activity_logs` MODIFY COLUMN `action` enum('create','update','delete','view','export','import','login','logout','assign_role','remove_role','reset_password') NOT NULL;

@@ -37,7 +37,8 @@ import {
   ChevronRight,
   Shield,
   Key,
-  Smartphone
+  Smartphone,
+  UserCog
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useMemo } from "react";
@@ -96,6 +97,7 @@ const getMenuCategories = (t: any): MenuCategory[] => [
       { href: "/admin/jobs", icon: Briefcase, label: t.menu?.careers || "Tuyển Dụng" },
       { href: "/admin/applications", icon: FileText, label: t.menu?.applications || "Đơn Ứng Tuyển" },
       { href: "/admin/users", icon: Users, label: t.menu?.users || "Người Dùng" },
+      { href: "/admin/admin-users", icon: UserCog, label: t.menu?.adminUsers || "Quản Lý Admin" },
       { href: "/admin/roles", icon: Shield, label: t.menu?.roles || "Vai Trò & Quyền" },
     ],
   },

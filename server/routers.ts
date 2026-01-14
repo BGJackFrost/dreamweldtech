@@ -71,6 +71,7 @@ import { triggerNewContact, triggerNewJobApplication, triggerNewNewsletterSubscr
 import { securityRouter } from "./securityRouter";
 import { advancedSecurityRouter } from "./advancedSecurityRouter";
 import { permissionsRouter } from "./permissions";
+import { adminUsersRouter } from "./adminUsersRouter";
 import { checkPermissionOrThrow } from "./permissionMiddleware";
 
 // ============================================
@@ -2068,6 +2069,7 @@ export const appRouter = router({
   security: securityRouter,
   advancedSecurity: advancedSecurityRouter,
   permissions: permissionsRouter,
+  adminUsers: adminUsersRouter,
 });
 
 // Start metrics collection on server start (every 5 minutes)

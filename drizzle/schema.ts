@@ -378,7 +378,7 @@ export type InsertBanner = typeof banners.$inferInsert;
 export const activityLogs = mysqlTable("activity_logs", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
-  action: mysqlEnum("action", ["create", "update", "delete", "view", "export", "import", "login", "logout"]).notNull(),
+  action: mysqlEnum("action", ["create", "update", "delete", "view", "export", "import", "login", "logout", "assign_role", "remove_role", "reset_password"]).notNull(),
   entityType: varchar("entityType", { length: 100 }).notNull(), // "product", "news", "user", "settings", etc.
   entityId: int("entityId"),
   entityName: varchar("entityName", { length: 255 }), // Name of the entity (e.g., product name)
