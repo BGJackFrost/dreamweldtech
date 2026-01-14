@@ -747,3 +747,12 @@
 - [x] Tạo ProtectedRoute component
 - [x] Thêm server-side permission check vào API (Products, News, Contacts, Settings)
 - [x] Viết unit tests cho permission middleware (640 tests passed)
+
+
+## PHASE 45: Server-side Permission Check cho các API còn lại
+- [x] Thêm permission check cho Jobs API (create, update, delete, listAll)
+- [x] Thêm permission check cho Applications API (list, updateStatus, delete, stats)
+- [x] Thêm permission check cho CaseStudies API (create, update, delete, listAll)
+- [x] Thêm permission check cho Newsletter API (list, delete, stats)
+- [x] Thêm permission check cho Users API (list, getById, update, updateRole, delete, getStats)
+- [x] Chạy tests để đảm bảo không có lỗi (640 tests passed)

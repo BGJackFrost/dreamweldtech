@@ -610,7 +610,9 @@ const newsletterRouter = router({
   // Admin operations
   list: protectedProcedure.input(z.object({
     status: z.enum(["active", "unsubscribed"]).optional(),
-  }).optional()).query(async ({ input }) => {
+  }).optional()).query(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "newsletter.view");
     const db = await getDb();
     if (!db) return [];
     
@@ -621,14 +623,18 @@ const newsletterRouter = router({
     return db.select().from(newsletterSubscribers).orderBy(desc(newsletterSubscribers.subscribedAt));
   }),
 
-  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "newsletter.delete");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(newsletterSubscribers).where(eq(newsletterSubscribers.id, input.id));
     return { success: true };
   }),
 
-  stats: protectedProcedure.query(async () => {
+  stats: protectedProcedure.query(async ({ ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "newsletter.view");
     const db = await getDb();
     if (!db) return { total: 0, active: 0, unsubscribed: 0 };
     
@@ -799,7 +805,9 @@ const caseStudiesRouter = router({
   }),
 
   // Admin operations
-  listAll: protectedProcedure.query(async () => {
+  listAll: protectedProcedure.query(async ({ ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "casestudies.view");
     const db = await getDb();
     if (!db) return [];
     return db.select().from(caseStudies).orderBy(desc(caseStudies.createdAt));
@@ -829,7 +837,9 @@ const caseStudiesRouter = router({
     metrics: z.string().optional(),
     sortOrder: z.number().optional(),
     isFeatured: z.enum(["true", "false"]).optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "casestudies.create");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.insert(caseStudies).values({
@@ -865,7 +875,9 @@ const caseStudiesRouter = router({
     sortOrder: z.number().optional(),
     isFeatured: z.enum(["true", "false"]).optional(),
     isActive: z.enum(["true", "false"]).optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "casestudies.edit");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
@@ -873,7 +885,9 @@ const caseStudiesRouter = router({
     return { success: true };
   }),
 
-  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "casestudies.delete");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(caseStudies).where(eq(caseStudies.id, input.id));
@@ -886,10 +900,8 @@ const caseStudiesRouter = router({
 // ============================================
 const usersRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
-    // Only admin can list users
-    if (ctx.user?.role !== "admin") {
-      throw new Error("Unauthorized: Admin access required");
-    }
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "users.view");
     const db = await getDb();
     if (!db) return [];
     return db.select().from(users).orderBy(desc(users.createdAt));
@@ -899,10 +911,8 @@ const usersRouter = router({
     userId: z.number(),
     role: z.enum(["user", "editor", "admin"]),
   })).mutation(async ({ ctx, input }) => {
-    // Only admin can update roles
-    if (ctx.user?.role !== "admin") {
-      throw new Error("Unauthorized: Admin access required");
-    }
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "users.roles");
     // Prevent self-role change
     if (ctx.user?.id === input.userId) {
       throw new Error("Cannot change your own role");
@@ -914,9 +924,8 @@ const usersRouter = router({
   }),
 
   getStats: protectedProcedure.query(async ({ ctx }) => {
-    if (ctx.user?.role !== "admin") {
-      throw new Error("Unauthorized: Admin access required");
-    }
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "users.view");
     const db = await getDb();
     if (!db) return { total: 0, admin: 0, editor: 0, user: 0 };
     const allUsers = await db.select().from(users);
@@ -930,9 +939,8 @@ const usersRouter = router({
 
   // Get single user by ID
   getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
-    if (ctx.user?.role !== "admin") {
-      throw new Error("Unauthorized: Admin access required");
-    }
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "users.view");
     const db = await getDb();
     if (!db) return null;
     const result = await db.select().from(users).where(eq(users.id, input.id)).limit(1);
@@ -941,9 +949,8 @@ const usersRouter = router({
 
   // Delete user (soft delete or hard delete)
   delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
-    if (ctx.user?.role !== "admin") {
-      throw new Error("Unauthorized: Admin access required");
-    }
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "users.delete");
     // Prevent self-deletion
     if (ctx.user?.id === input.id) {
       throw new Error("Cannot delete your own account");
@@ -972,9 +979,8 @@ const usersRouter = router({
     name: z.string().optional(),
     email: z.string().email().optional(),
   })).mutation(async ({ ctx, input }) => {
-    if (ctx.user?.role !== "admin") {
-      throw new Error("Unauthorized: Admin access required");
-    }
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "users.edit");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     
@@ -1060,7 +1066,9 @@ const jobsRouter = router({
   }),
 
   // Admin
-  listAll: protectedProcedure.query(async () => {
+  listAll: protectedProcedure.query(async ({ ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "jobs.view");
     const db = await getDb();
     if (!db) return [];
     return db.select().from(jobs).orderBy(desc(jobs.createdAt));
@@ -1078,7 +1086,9 @@ const jobsRouter = router({
     requirements: z.string().optional(),
     benefits: z.string().optional(),
     deadline: z.date().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "jobs.create");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.insert(jobs).values(input as InsertJob);
@@ -1099,7 +1109,9 @@ const jobsRouter = router({
     benefits: z.string().optional(),
     deadline: z.date().optional(),
     isActive: z.enum(["true", "false"]).optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "jobs.edit");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
@@ -1107,7 +1119,9 @@ const jobsRouter = router({
     return { success: true };
   }),
 
-  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "jobs.delete");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(jobs).where(eq(jobs.id, input.id));
@@ -1169,7 +1183,9 @@ const jobApplicationsRouter = router({
   list: protectedProcedure.input(z.object({
     jobId: z.number().optional(),
     status: z.enum(["pending", "reviewing", "interviewed", "accepted", "rejected"]).optional(),
-  }).optional()).query(async ({ input }) => {
+  }).optional()).query(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "applications.view");
     const db = await getDb();
     if (!db) return [];
     
@@ -1189,7 +1205,9 @@ const jobApplicationsRouter = router({
     id: z.number(),
     status: z.enum(["pending", "reviewing", "interviewed", "accepted", "rejected"]),
     notes: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "applications.manage");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
@@ -1197,14 +1215,18 @@ const jobApplicationsRouter = router({
     return { success: true };
   }),
 
-  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "applications.delete");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(jobApplications).where(eq(jobApplications.id, input.id));
     return { success: true };
   }),
 
-  stats: protectedProcedure.query(async () => {
+  stats: protectedProcedure.query(async ({ ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "applications.view");
     const db = await getDb();
     if (!db) return { total: 0, pending: 0, reviewing: 0, interviewed: 0, accepted: 0, rejected: 0 };
     const all = await db.select().from(jobApplications);
