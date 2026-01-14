@@ -711,3 +711,13 @@
 - [x] Viết lại permissions.ts với RBAC hoàn chỉnh
 - [x] Thêm route /admin/roles và menu item "Vai Trò & Quyền"
 - [x] All 631 tests passed
+
+
+## PHASE 43: Tích hợp Permission Check vào Admin
+- [x] Tạo usePermissions hook để kiểm tra quyền (45+ permissions, MENU_PERMISSIONS mapping)
+- [x] Tích hợp permission check vào AdminLayout (ẩn/hiện menu theo quyền)
+- [x] Tích hợp permission check vào trang Products (ẩn nút Create/Edit/Delete)
+- [x] Tích hợp permission check vào trang News (ẩn nút Create/Edit/Delete)
+- [x] Tích hợp permission check vào trang Users (ẩn nút Create/Roles/Delete)
+- [x] Tích hợp permission check vào trang Contacts (ẩn nút Delete)
+- [x] Viết unit tests cho usePermissions hook (631 tests passed)

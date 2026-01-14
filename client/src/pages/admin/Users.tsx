@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { PermissionGate, usePermissions } from "@/hooks/usePermissions";
 
 const ROLES = [
   { value: "user", label: "Người dùng", icon: Users, color: "bg-gray-100 text-gray-800", description: "Chỉ xem nội dung công khai" },
@@ -63,6 +64,7 @@ const ROLES = [
 
 export default function AdminUsers() {
   const { user: currentUser } = useAuth();
+  const { hasPermission } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   
@@ -198,10 +200,12 @@ export default function AdminUsers() {
             Quản lý tài khoản và phân quyền cho người dùng hệ thống
           </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Thêm người dùng
-        </Button>
+        <PermissionGate permission="users.create">
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Thêm người dùng
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Stats Cards */}
@@ -399,27 +403,31 @@ export default function AdminUsers() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setNewRole(user.role);
-                        }}
-                        disabled={user.id === currentUser?.id}
-                      >
-                        <UserCog className="h-4 w-4 mr-1" />
-                        Phân quyền
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => setUserToDelete({ id: user.id, name: user.name })}
-                        disabled={user.id === currentUser?.id || user.role === "admin"}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {hasPermission("users.roles") && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setNewRole(user.role);
+                          }}
+                          disabled={user.id === currentUser?.id}
+                        >
+                          <UserCog className="h-4 w-4 mr-1" />
+                          Phân quyền
+                        </Button>
+                      )}
+                      {hasPermission("users.delete") && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => setUserToDelete({ id: user.id, name: user.name })}
+                          disabled={user.id === currentUser?.id || user.role === "admin"}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

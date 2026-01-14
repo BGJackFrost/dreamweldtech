@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
+import { PermissionGate, usePermissions } from "@/hooks/usePermissions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +23,7 @@ export default function AdminProducts() {
   const utils = trpc.useUtils();
   const { data: products, isLoading } = trpc.products.listAll.useQuery();
   const { data: categories } = trpc.categories.listAll.useQuery();
+  const { hasPermission } = usePermissions();
   
   const deleteMutation = trpc.products.delete.useMutation({
     onSuccess: () => {
@@ -49,12 +51,14 @@ export default function AdminProducts() {
           <h1 className="text-3xl font-heading font-bold text-primary uppercase">Quản Lý Sản Phẩm</h1>
           <p className="text-muted-foreground mt-1">Thêm, sửa, xóa các sản phẩm của bạn</p>
         </div>
-        <Link href="/admin/products/new">
-          <Button className="bg-chart-1 hover:bg-chart-1/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Thêm Sản Phẩm
-          </Button>
-        </Link>
+        <PermissionGate permission="products.create">
+          <Link href="/admin/products/new">
+            <Button className="bg-chart-1 hover:bg-chart-1/90">
+              <Plus className="h-4 w-4 mr-2" />
+              Thêm Sản Phẩm
+            </Button>
+          </Link>
+        </PermissionGate>
       </div>
 
       <Card>
@@ -109,35 +113,39 @@ export default function AdminProducts() {
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
-                        <Link href={`/admin/products/${product.id}`}>
-                          <Button variant="ghost" size="icon" title="Sửa">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-destructive" title="Xóa">
-                              <Trash2 className="h-4 w-4" />
+                        {hasPermission("products.edit") && (
+                          <Link href={`/admin/products/${product.id}`}>
+                            <Button variant="ghost" size="icon" title="Sửa">
+                              <Pencil className="h-4 w-4" />
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Bạn có chắc chắn muốn xóa sản phẩm "{product.name}"? Hành động này không thể hoàn tác.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Hủy</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteMutation.mutate({ id: product.id })}
-                                className="bg-destructive text-destructive-foreground"
-                              >
-                                Xóa
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          </Link>
+                        )}
+                        {hasPermission("products.delete") && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive" title="Xóa">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Bạn có chắc chắn muốn xóa sản phẩm "{product.name}"? Hành động này không thể hoàn tác.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteMutation.mutate({ id: product.id })}
+                                  className="bg-destructive text-destructive-foreground"
+                                >
+                                  Xóa
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

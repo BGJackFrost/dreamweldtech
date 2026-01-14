@@ -31,8 +31,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function AdminContacts() {
+  const { hasPermission } = usePermissions();
   const utils = trpc.useUtils();
   const { data: contacts, isLoading } = trpc.contacts.list.useQuery({});
   
@@ -222,6 +224,7 @@ export default function AdminContacts() {
                           </DialogContent>
                         </Dialog>
                         
+                        {hasPermission("contacts.delete") && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="icon" className="text-destructive" title="Xóa">
@@ -246,6 +249,7 @@ export default function AdminContacts() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

@@ -46,6 +46,7 @@ import { NotificationSettings } from "@/components/admin/NotificationSettings";
 import { useAdminTheme } from "@/components/AdminThemeProvider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useAdminTranslation } from "@/hooks/useAdminTranslation";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -169,9 +170,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { adminT } = useAdminTranslation();
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState("");
+  const { canAccessMenu, loading: permissionsLoading } = usePermissions();
 
-  // Generate menu categories with translations
-  const menuCategories = useMemo(() => getMenuCategories(adminT), [adminT]);
+  // Generate menu categories with translations and filter by permissions
+  const menuCategories = useMemo(() => {
+    const allCategories = getMenuCategories(adminT);
+    // Filter menu items based on user permissions
+    return allCategories
+      .map(category => ({
+        ...category,
+        items: category.items.filter(item => canAccessMenu(item.href))
+      }))
+      .filter(category => category.items.length > 0);
+  }, [adminT, canAccessMenu]);
   const quickActions = useMemo(() => getQuickActions(adminT), [adminT]);
 
   // Initialize expanded categories based on current location
@@ -221,7 +232,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const breadcrumbs = getBreadcrumb(location, menuCategories);
 
-  if (loading) {
+  if (loading || permissionsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">

@@ -7,6 +7,7 @@ import { Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { useAdminTranslation } from "@/hooks/useAdminTranslation";
+import { PermissionGate, usePermissions } from "@/hooks/usePermissions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +24,7 @@ export default function AdminNews() {
   const { adminT, language } = useAdminTranslation();
   const utils = trpc.useUtils();
   const { data: news, isLoading } = trpc.news.listAll.useQuery();
+  const { hasPermission } = usePermissions();
   
   // Get translations with fallbacks
   const t = {
@@ -79,12 +81,14 @@ export default function AdminNews() {
           <h1 className="text-3xl font-heading font-bold text-primary uppercase">{t.title}</h1>
           <p className="text-muted-foreground mt-1">{t.subtitle}</p>
         </div>
-        <Link href="/admin/news/new">
-          <Button className="bg-chart-1 hover:bg-chart-1/90">
-            <Plus className="h-4 w-4 mr-2" />
-            {t.addNews}
-          </Button>
-        </Link>
+        <PermissionGate permission="news.create">
+          <Link href="/admin/news/new">
+            <Button className="bg-chart-1 hover:bg-chart-1/90">
+              <Plus className="h-4 w-4 mr-2" />
+              {t.addNews}
+            </Button>
+          </Link>
+        </PermissionGate>
       </div>
 
       <Card>
@@ -137,11 +141,14 @@ export default function AdminNews() {
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
-                        <Link href={`/admin/news/${article.id}`}>
-                          <Button variant="ghost" size="icon" title={t.edit}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        </Link>
+                        {hasPermission("news.edit") && (
+                          <Link href={`/admin/news/${article.id}`}>
+                            <Button variant="ghost" size="icon" title={t.edit}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                        )}
+                        {hasPermission("news.delete") && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="icon" className="text-destructive" title={t.delete}>
@@ -166,6 +173,7 @@ export default function AdminNews() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
