@@ -691,3 +691,23 @@
 - [x] Tạo 4 vai trò mặc định: Super Admin, Admin, Editor, Viewer
 - [x] Tạo script khởi tạo roles và gán quyền cho admin
 - [x] Viết unit tests cho hệ thống mới (631 tests passed)
+
+
+## Nâng cấp Bảo mật & Phân quyền Admin (Phase 9)
+- [ ] Sửa lỗi các trang bảo mật trong Admin Panel
+- [ ] Tạo UI quản lý vai trò (Role Management)
+- [ ] Tạo Permission Matrix UI
+- [ ] Tích hợp permission check vào các trang admin
+- [ ] Ẩn/hiện menu dựa trên quyền user
+- [ ] Thêm audit log cho thay đổi quyền
+- [ ] Viết unit tests cho các tính năng mới
+
+
+## PHASE 42: Nâng cấp Bảo mật & Phân quyền
+- [x] Sửa lỗi các trang bảo mật trong Admin Panel (TypeScript errors)
+- [x] Tạo UI quản lý vai trò (RoleManagement.tsx) với permission matrix
+- [x] Tích hợp permission check vào các trang admin (route + menu)
+- [x] Thêm audit log cho thay đổi quyền (activityLogs)
+- [x] Viết lại permissions.ts với RBAC hoàn chỉnh
+- [x] Thêm route /admin/roles và menu item "Vai Trò & Quyền"
+- [x] All 631 tests passed

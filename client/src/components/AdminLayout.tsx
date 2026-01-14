@@ -95,6 +95,7 @@ const getMenuCategories = (t: any): MenuCategory[] => [
       { href: "/admin/jobs", icon: Briefcase, label: t.menu?.careers || "Tuyển Dụng" },
       { href: "/admin/applications", icon: FileText, label: t.menu?.applications || "Đơn Ứng Tuyển" },
       { href: "/admin/users", icon: Users, label: t.menu?.users || "Người Dùng" },
+      { href: "/admin/roles", icon: Shield, label: t.menu?.roles || "Vai Trò & Quyền" },
     ],
   },
   {
