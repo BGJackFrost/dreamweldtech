@@ -681,3 +681,13 @@
 - [x] Thiết kế cấu hình rate limiting theo loại endpoint
 - [x] Cập nhật code và bật lại rate limiting
 - [x] Kiểm tra hoạt động bình thường (588 tests passed)
+
+
+## Nâng cấp Đăng nhập Admin & Phân quyền (Phase 8)
+- [x] Phân tích hệ thống đăng nhập và phân quyền hiện tại
+- [x] Nâng cấp trang đăng nhập admin hỗ trợ OAuth + Username/Password
+- [x] Thiết kế hệ thống phân quyền theo chức năng (RBAC) - 45+ permissions
+- [x] Tạo bảng admin_roles và user_admin_roles trong database
+- [x] Tạo 4 vai trò mặc định: Super Admin, Admin, Editor, Viewer
+- [x] Tạo script khởi tạo roles và gán quyền cho admin
+- [x] Viết unit tests cho hệ thống mới (631 tests passed)

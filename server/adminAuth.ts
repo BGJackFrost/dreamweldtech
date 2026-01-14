@@ -533,6 +533,90 @@ export const adminAuthRouter = router({
   logout: publicProcedure.mutation(async () => {
     return { success: true, message: "Đăng xuất thành công" };
   }),
+
+  // Get OAuth URL for admin login
+  getOAuthUrl: publicProcedure.query(async () => {
+    const portalUrl = process.env.VITE_OAUTH_PORTAL_URL;
+    const appId = process.env.VITE_APP_ID;
+    
+    if (!portalUrl || !appId) {
+      return { url: null, error: "OAuth chưa được cấu hình" };
+    }
+
+    // Build OAuth URL with admin callback
+    const callbackUrl = `${process.env.VITE_OAUTH_PORTAL_URL?.replace('/portal', '')}/api/oauth/admin-callback`;
+    const oauthUrl = `${portalUrl}?app_id=${appId}&redirect_uri=${encodeURIComponent(callbackUrl)}`;
+    
+    return { url: oauthUrl };
+  }),
+
+  // OAuth login for admin (called after OAuth callback)
+  loginWithOAuth: publicProcedure
+    .input(z.object({ openId: z.string() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database không khả dụng");
+      }
+
+      // Find user by openId
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.openId, input.openId))
+        .limit(1);
+
+      if (!user) {
+        throw new Error("Tài khoản chưa được đăng ký trong hệ thống. Vui lòng liên hệ admin.");
+      }
+
+      // Check if user has admin or editor role
+      if (user.role !== "admin" && user.role !== "editor") {
+        throw new Error("Bạn không có quyền truy cập trang quản trị");
+      }
+
+      // Check if 2FA is enabled
+      const has2FA = await check2FAEnabled(user.id);
+
+      if (has2FA) {
+        // Generate temporary token for 2FA verification
+        const tempToken = generateTempToken(user.id, user.role);
+        
+        return {
+          success: true,
+          requires2FA: true,
+          tempToken,
+          user: {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
+        };
+      }
+
+      // No 2FA - complete login
+      await db
+        .update(users)
+        .set({ lastSignedIn: new Date() })
+        .where(eq(users.id, user.id));
+
+      const token = generateToken(user.id, user.role);
+
+      return {
+        success: true,
+        requires2FA: false,
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      };
+    }),
 });
 
 export type AdminAuthRouter = typeof adminAuthRouter;

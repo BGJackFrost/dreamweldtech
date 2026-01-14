@@ -70,6 +70,7 @@ import { exportData, importData, exportSensitiveData, getDatabaseStats, BackupDa
 import { triggerNewContact, triggerNewJobApplication, triggerNewNewsletterSubscription } from "./integrations";
 import { securityRouter } from "./securityRouter";
 import { advancedSecurityRouter } from "./advancedSecurityRouter";
+import { permissionsRouter } from "./permissions";
 
 // ============================================
 // PRODUCT CATEGORIES ROUTER
@@ -2017,6 +2018,7 @@ export const appRouter = router({
   performanceAlerts: performanceAlertsRouter,
   security: securityRouter,
   advancedSecurity: advancedSecurityRouter,
+  permissions: permissionsRouter,
 });
 
 // Start metrics collection on server start (every 5 minutes)

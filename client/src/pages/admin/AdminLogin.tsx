@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Lock, User, Mail, AlertCircle, CheckCircle2, Shield, ArrowLeft } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, Lock, User, Mail, AlertCircle, CheckCircle2, Shield, ArrowLeft, LogIn } from "lucide-react";
 import { Link } from "wouter";
 
 // Token storage key
@@ -28,12 +29,14 @@ export function removeAdminToken(): void {
 
 // Login step type
 type LoginStep = "credentials" | "2fa";
+type LoginMethod = "password" | "oauth";
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>("password");
 
   // Login step state
   const [loginStep, setLoginStep] = useState<LoginStep>("credentials");
@@ -68,6 +71,11 @@ export default function AdminLogin() {
     { enabled: !!existingToken }
   );
 
+  // Get OAuth URL
+  const { data: oauthData } = trpc.adminAuth.getOAuthUrl.useQuery(undefined, {
+    enabled: loginMethod === "oauth",
+  });
+
   // Redirect if already logged in
   useEffect(() => {
     if (currentUser?.user) {
@@ -81,6 +89,27 @@ export default function AdminLogin() {
       setActiveTab("register");
     }
   }, [adminCheck]);
+
+  // Check for OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauthToken = urlParams.get("admin_token");
+    const oauthError = urlParams.get("error");
+    
+    if (oauthToken) {
+      setAdminToken(oauthToken);
+      setSuccess("Đăng nhập OAuth thành công! Đang chuyển hướng...");
+      // Clear URL params
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setTimeout(() => {
+        setLocation("/admin");
+        window.location.reload();
+      }, 1000);
+    } else if (oauthError) {
+      setError(decodeURIComponent(oauthError));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [setLocation]);
 
   // Login mutation - Step 1
   const loginMutation = trpc.adminAuth.login.useMutation({
@@ -152,6 +181,16 @@ export default function AdminLogin() {
       username: loginUsername,
       password: loginPassword,
     });
+  };
+
+  const handleOAuthLogin = () => {
+    if (oauthData?.url) {
+      // Store return URL for admin
+      sessionStorage.setItem("admin_oauth_return", "/admin");
+      window.location.href = oauthData.url;
+    } else {
+      setError("Không thể khởi tạo đăng nhập OAuth. Vui lòng thử lại.");
+    }
   };
 
   const handle2FAVerify = (e: React.FormEvent) => {
@@ -352,7 +391,30 @@ export default function AdminLogin() {
                 )}
 
                 {/* Login Tab */}
-                <TabsContent value="login" className="mt-0">
+                <TabsContent value="login" className="mt-0 space-y-4">
+                  {/* OAuth Login Button */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600 hover:text-white"
+                    onClick={handleOAuthLogin}
+                  >
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Đăng nhập với Manus OAuth
+                  </Button>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <Separator className="w-full bg-slate-600" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-slate-800 px-2 text-slate-400">
+                        Hoặc đăng nhập với tài khoản
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Username/Password Form */}
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="login-username" className="text-slate-200">
