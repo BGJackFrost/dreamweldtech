@@ -66,6 +66,7 @@ const AccessHistory = lazy(() => import("./pages/admin/AccessHistory"));
 const GeoBlocking = lazy(() => import("./pages/admin/GeoBlocking"));
 const SecurityDashboard = lazy(() => import("./pages/admin/SecurityDashboard"));
 const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
+const AccessDenied = lazy(() => import("./pages/admin/AccessDenied"));
 
 // Frontend Pages (keep some critical pages non-lazy for better initial load)
 import Products from "./pages/Products";
@@ -190,6 +191,7 @@ function Router() {
         <Route path="/admin/login" component={AdminLogin} />
         <Route path="/admin/forgot-password" component={ForgotPassword} />
         <Route path="/admin/reset-password" component={ResetPassword} />
+        <Route path="/admin/access-denied" component={AccessDenied} />
         {/* Admin routes - exact match for /admin */}
         <Route path="/admin" component={AdminRouter} />
         {/* Admin routes - with sub-paths */}

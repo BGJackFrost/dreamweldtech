@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/table";
 import { Plus, Pencil, Trash2, Star, Building2, Quote } from "lucide-react";
 import { toast } from "sonner";
+import { PermissionGate, usePermissions } from "@/hooks/usePermissions";
 
 const INDUSTRIES = [
   { value: "automotive", label: "Ô tô" },
@@ -88,6 +89,7 @@ const defaultForm: CaseStudyForm = {
 };
 
 export default function AdminCaseStudies() {
+  const { hasPermission } = usePermissions();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<CaseStudyForm>(defaultForm);
@@ -201,13 +203,14 @@ export default function AdminCaseStudies() {
             Quản lý các dự án tiêu biểu và testimonial từ khách hàng
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => resetForm()}>
-              <Plus className="h-4 w-4 mr-2" />
-              Thêm Case Study
-            </Button>
-          </DialogTrigger>
+        <PermissionGate permission="casestudies.create">
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => resetForm()}>
+                <Plus className="h-4 w-4 mr-2" />
+                Thêm Case Study
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -384,6 +387,7 @@ export default function AdminCaseStudies() {
             </div>
           </DialogContent>
         </Dialog>
+        </PermissionGate>
       </div>
 
       <Card>
@@ -459,20 +463,24 @@ export default function AdminCaseStudies() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(cs)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(cs.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      {hasPermission("casestudies.edit") && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(cs)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {hasPermission("casestudies.delete") && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(cs.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

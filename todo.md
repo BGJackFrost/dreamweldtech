@@ -721,3 +721,29 @@
 - [x] Tích hợp permission check vào trang Users (ẩn nút Create/Roles/Delete)
 - [x] Tích hợp permission check vào trang Contacts (ẩn nút Delete)
 - [x] Viết unit tests cho usePermissions hook (631 tests passed)
+
+
+## PHASE 44: Hoàn thiện Permission System
+- [ ] Thêm permission check cho trang Jobs
+- [ ] Thêm permission check cho trang Applications
+- [ ] Thêm permission check cho trang CaseStudies
+- [ ] Thêm permission check cho trang Settings
+- [ ] Thêm permission check cho trang Reports
+- [ ] Thêm permission check cho các trang khác (Newsletter, FAQ, Portfolio...)
+- [ ] Tạo trang AccessDenied.tsx
+- [ ] Tích hợp Access Denied vào routing với ProtectedRoute component
+- [ ] Tạo server-side permission middleware
+- [ ] Thêm permission check vào các API routers
+- [ ] Viết unit tests cho server-side permission check
+
+
+## PHASE 44: Hoàn thiện Permission Check
+- [x] Thêm permission check cho Jobs.tsx
+- [x] Thêm permission check cho Applications.tsx
+- [x] Thêm permission check cho CaseStudies.tsx
+- [x] Thêm permission check cho Settings.tsx
+- [x] Thêm permission check cho Reports.tsx
+- [x] Tạo trang AccessDenied.tsx
+- [x] Tạo ProtectedRoute component
+- [x] Thêm server-side permission check vào API (Products, News, Contacts, Settings)
+- [x] Viết unit tests cho permission middleware (640 tests passed)

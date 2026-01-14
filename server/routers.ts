@@ -71,6 +71,7 @@ import { triggerNewContact, triggerNewJobApplication, triggerNewNewsletterSubscr
 import { securityRouter } from "./securityRouter";
 import { advancedSecurityRouter } from "./advancedSecurityRouter";
 import { permissionsRouter } from "./permissions";
+import { checkPermissionOrThrow } from "./permissionMiddleware";
 
 // ============================================
 // PRODUCT CATEGORIES ROUTER
@@ -205,7 +206,9 @@ const productsRouter = router({
     videoUrl: z.string().optional(),
     sortOrder: z.number().optional(),
     isFeatured: z.enum(["true", "false"]).optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "products.create");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.insert(products).values(input as InsertProduct);
@@ -229,7 +232,9 @@ const productsRouter = router({
     sortOrder: z.number().optional(),
     isFeatured: z.enum(["true", "false"]).optional(),
     isActive: z.enum(["true", "false"]).optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "products.edit");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
@@ -237,14 +242,18 @@ const productsRouter = router({
     return { success: true };
   }),
 
-  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "products.delete");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(products).where(eq(products.id, input.id));
     return { success: true };
   }),
 
-  listAll: protectedProcedure.query(async () => {
+  listAll: protectedProcedure.query(async ({ ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "products.view");
     const db = await getDb();
     if (!db) return [];
     return db.select().from(products).orderBy(asc(products.sortOrder));
@@ -310,6 +319,8 @@ const newsRouter = router({
     isPublished: z.enum(["true", "false"]).optional(),
     publishedAt: z.date().optional(),
   })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "news.create");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const data: InsertNews = {
@@ -332,7 +343,9 @@ const newsRouter = router({
     tags: z.string().optional(),
     isPublished: z.enum(["true", "false"]).optional(),
     publishedAt: z.date().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "news.edit");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
@@ -346,14 +359,18 @@ const newsRouter = router({
     return { success: true };
   }),
 
-  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "news.delete");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(news).where(eq(news.id, input.id));
     return { success: true };
   }),
 
-  listAll: protectedProcedure.query(async () => {
+  listAll: protectedProcedure.query(async ({ ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "news.view");
     const db = await getDb();
     if (!db) return [];
     return db.select().from(news).orderBy(desc(news.createdAt));
@@ -415,7 +432,9 @@ const contactsRouter = router({
   list: protectedProcedure.input(z.object({
     status: z.enum(["new", "read", "replied", "closed"]).optional(),
     requestType: z.enum(["contact", "quote", "support"]).optional(),
-  }).optional()).query(async ({ input }) => {
+  }).optional()).query(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "contacts.view");
     const db = await getDb();
     if (!db) return [];
     
@@ -434,14 +453,18 @@ const contactsRouter = router({
   updateStatus: protectedProcedure.input(z.object({
     id: z.number(),
     status: z.enum(["new", "read", "replied", "closed"]),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "contacts.reply");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.update(contactRequests).set({ status: input.status }).where(eq(contactRequests.id, input.id));
     return { success: true };
   }),
 
-  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "contacts.delete");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(contactRequests).where(eq(contactRequests.id, input.id));
@@ -479,7 +502,9 @@ const settingsRouter = router({
     value: z.string(),
     type: z.enum(["text", "html", "json", "image"]).optional(),
     description: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "settings.edit");
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     
@@ -503,7 +528,9 @@ const settingsRouter = router({
     return { success: true };
   }),
 
-  listAll: protectedProcedure.query(async () => {
+  listAll: protectedProcedure.query(async ({ ctx }) => {
+    // Server-side permission check
+    await checkPermissionOrThrow(ctx.user?.id || 0, "settings.view");
     const db = await getDb();
     if (!db) return [];
     return db.select().from(siteSettings).orderBy(asc(siteSettings.settingKey));

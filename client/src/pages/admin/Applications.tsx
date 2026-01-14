@@ -38,10 +38,12 @@ import {
   FileText
 } from "lucide-react";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type ApplicationStatus = "pending" | "reviewing" | "interviewed" | "accepted" | "rejected";
 
 export default function AdminApplications() {
+  const { hasPermission } = usePermissions();
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -217,13 +219,15 @@ export default function AdminApplications() {
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(app.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      {hasPermission("applications.delete") && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(app.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

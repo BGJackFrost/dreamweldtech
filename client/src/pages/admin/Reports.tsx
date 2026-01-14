@@ -32,6 +32,7 @@ import {
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type ReportType = "contacts" | "subscribers" | "products" | "overview";
 type ExportFormat = "excel" | "pdf";
@@ -42,6 +43,7 @@ interface DateRange {
 }
 
 export default function AdminReports() {
+  const { hasPermission } = usePermissions();
   const [reportType, setReportType] = useState<ReportType>("overview");
   const [exportFormat, setExportFormat] = useState<ExportFormat>("excel");
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -454,7 +456,7 @@ export default function AdminReports() {
                 <Button 
                   onClick={handleExport} 
                   className="w-full"
-                  disabled={isExporting}
+                  disabled={isExporting || !hasPermission("reports.export")}
                 >
                   {isExporting ? (
                     <>

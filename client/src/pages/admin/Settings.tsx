@@ -7,8 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Save, Globe, Phone, Mail, MapPin, Facebook, Linkedin, Youtube } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
+import { PermissionGate, usePermissions } from "@/hooks/usePermissions";
 
 export default function AdminSettings() {
+  const { hasPermission } = usePermissions();
   const { data: settings, isLoading } = trpc.settings.listAll.useQuery();
   
   const [formData, setFormData] = useState<Record<string, string>>({
@@ -70,10 +72,12 @@ export default function AdminSettings() {
           <h1 className="text-3xl font-heading font-bold text-primary uppercase">Cài Đặt Website</h1>
           <p className="text-muted-foreground mt-1">Quản lý thông tin chung của website</p>
         </div>
-        <Button onClick={handleSaveAll} disabled={setMutation.isPending}>
-          <Save className="h-4 w-4 mr-2" />
-          Lưu Tất Cả
-        </Button>
+        {hasPermission("settings.edit") && (
+          <Button onClick={handleSaveAll} disabled={setMutation.isPending}>
+            <Save className="h-4 w-4 mr-2" />
+            Lưu Tất Cả
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

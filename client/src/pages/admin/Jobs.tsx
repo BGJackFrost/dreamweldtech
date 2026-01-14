@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminTranslation } from "@/hooks/useAdminTranslation";
+import { PermissionGate, usePermissions } from "@/hooks/usePermissions";
 
 type JobType = "full-time" | "part-time" | "contract" | "internship";
 
@@ -72,6 +73,7 @@ const initialForm: JobForm = {
 
 export default function AdminJobs() {
   const { adminT, language } = useAdminTranslation();
+  const { hasPermission } = usePermissions();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<JobForm>(initialForm);
@@ -226,13 +228,14 @@ export default function AdminJobs() {
           <h1 className="text-3xl font-bold">{t.title}</h1>
           <p className="text-muted-foreground">{t.subtitle}</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { setEditingId(null); setFormData(initialForm); }}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t.addPosition}
-            </Button>
-          </DialogTrigger>
+        <PermissionGate permission="jobs.create">
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => { setEditingId(null); setFormData(initialForm); }}>
+                <Plus className="h-4 w-4 mr-2" />
+                {t.addPosition}
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -361,6 +364,7 @@ export default function AdminJobs() {
             </form>
           </DialogContent>
         </Dialog>
+        </PermissionGate>
       </div>
 
       {/* Stats */}
@@ -464,20 +468,24 @@ export default function AdminJobs() {
                           <Eye className="h-4 w-4" />
                         )}
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(job)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(job.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      {hasPermission("jobs.edit") && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(job)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {hasPermission("jobs.delete") && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(job.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
