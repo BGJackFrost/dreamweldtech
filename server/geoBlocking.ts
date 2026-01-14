@@ -132,25 +132,25 @@ export async function checkGeoBlocking(ipAddress: string): Promise<{
     // Check for allow rules first (whitelist takes priority)
     const allowRules = await db.select()
       .from(sql`geo_blocking_rules`)
-      .where(sql`country_code = ${country.code} AND rule_type = 'allow' AND is_active = true`)
+      .where(sql`countryCode = ${country.code} AND ruleType = 'allow' AND isActive = 'true'`)
       .limit(1);
 
     if (allowRules.length > 0) {
       // Update hit count
-      await db.execute(sql`UPDATE geo_blocking_rules SET hit_count = hit_count + 1 WHERE id = ${(allowRules[0] as any).id}`);
+      await db.execute(sql`UPDATE geo_blocking_rules SET hitCount = hitCount + 1 WHERE id = ${(allowRules[0] as any).id}`);
       return { allowed: true, country, reason: "Whitelist country" };
     }
 
     // Check for block rules
     const blockRules = await db.select()
       .from(sql`geo_blocking_rules`)
-      .where(sql`country_code = ${country.code} AND rule_type = 'block' AND is_active = true`)
+      .where(sql`countryCode = ${country.code} AND ruleType = 'block' AND isActive = 'true'`)
       .limit(1);
 
     if (blockRules.length > 0) {
       const rule = blockRules[0] as any;
       // Update hit count
-      await db.execute(sql`UPDATE geo_blocking_rules SET hit_count = hit_count + 1 WHERE id = ${rule.id}`);
+      await db.execute(sql`UPDATE geo_blocking_rules SET hitCount = hitCount + 1 WHERE id = ${rule.id}`);
       return {
         allowed: false,
         country,
@@ -182,12 +182,12 @@ export async function addGeoBlockingRule(
     // Check if rule already exists
     const existing = await db.select()
       .from(sql`geo_blocking_rules`)
-      .where(sql`country_code = ${countryCode} AND rule_type = ${ruleType}`)
+      .where(sql`countryCode = ${countryCode} AND ruleType = ${ruleType}`)
       .limit(1);
 
     if (existing.length > 0) {
       // Update existing rule
-      await db.execute(sql`UPDATE geo_blocking_rules SET is_active = true, reason = ${reason || null}, updated_at = NOW() WHERE id = ${(existing[0] as any).id}`);
+      await db.execute(sql`UPDATE geo_blocking_rules SET isActive = 'true', reason = ${reason || null}, updatedAt = NOW() WHERE id = ${(existing[0] as any).id}`);
       return {
         success: true,
         message: `Rule for ${countryName} updated`,
@@ -197,7 +197,7 @@ export async function addGeoBlockingRule(
 
     // Insert new rule
     const result = await db.execute(sql`
-      INSERT INTO geo_blocking_rules (country_code, country_name, rule_type, reason, created_by)
+      INSERT INTO geo_blocking_rules (countryCode, countryName, ruleType, reason, createdBy)
       VALUES (${countryCode}, ${countryName}, ${ruleType}, ${reason || null}, ${createdBy || null})
     `);
 
@@ -236,7 +236,7 @@ export async function toggleGeoBlockingRule(ruleId: number, isActive: boolean): 
   }
 
   try {
-    await db.execute(sql`UPDATE geo_blocking_rules SET is_active = ${isActive}, updated_at = NOW() WHERE id = ${ruleId}`);
+    await db.execute(sql`UPDATE geo_blocking_rules SET isActive = ${isActive ? 'true' : 'false'}, updatedAt = NOW() WHERE id = ${ruleId}`);
     return { success: true, message: `Rule ${isActive ? "activated" : "deactivated"}` };
   } catch (error) {
     console.error("[GeoBlocking] Error toggling rule:", error);
@@ -260,10 +260,10 @@ export async function listGeoBlockingRules(options: {
     // Build where conditions
     let whereConditions = sql`1=1`;
     if (options.ruleType) {
-      whereConditions = sql`${whereConditions} AND rule_type = ${options.ruleType}`;
+      whereConditions = sql`${whereConditions} AND ruleType = ${options.ruleType}`;
     }
     if (options.activeOnly) {
-      whereConditions = sql`${whereConditions} AND is_active = true`;
+      whereConditions = sql`${whereConditions} AND isActive = 'true'`;
     }
 
     // Get total count
@@ -278,22 +278,22 @@ export async function listGeoBlockingRules(options: {
     const rules = await db.select()
       .from(sql`geo_blocking_rules`)
       .where(whereConditions)
-      .orderBy(sql`created_at DESC`)
+      .orderBy(sql`createdAt DESC`)
       .limit(limit)
       .offset(offset);
 
     return {
       rules: rules.map((r: any) => ({
         id: r.id,
-        countryCode: r.country_code,
-        countryName: r.country_name,
-        ruleType: r.rule_type,
+        countryCode: r.countryCode,
+        countryName: r.countryName,
+        ruleType: r.ruleType,
         reason: r.reason,
-        isActive: Boolean(r.is_active),
-        hitCount: r.hit_count,
-        createdBy: r.created_by,
-        createdAt: r.created_at,
-        updatedAt: r.updated_at,
+        isActive: Boolean(r.isActive),
+        hitCount: r.hitCount,
+        createdBy: r.createdBy,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
       })),
       total,
     };
@@ -318,20 +318,20 @@ export async function getGeoBlockingStats(): Promise<{
   try {
     const blockedCount = await db.select({ count: sql<number>`count(*)` })
       .from(sql`geo_blocking_rules`)
-      .where(sql`rule_type = 'block' AND is_active = true`);
+      .where(sql`ruleType = 'block' AND isActive = 'true'`);
     
     const allowedCount = await db.select({ count: sql<number>`count(*)` })
       .from(sql`geo_blocking_rules`)
-      .where(sql`rule_type = 'allow' AND is_active = true`);
+      .where(sql`ruleType = 'allow' AND isActive = 'true'`);
     
-    const hitsResult = await db.select({ total: sql<number>`COALESCE(SUM(hit_count), 0)` })
+    const hitsResult = await db.select({ total: sql<number>`COALESCE(SUM(hitCount), 0)` })
       .from(sql`geo_blocking_rules`)
-      .where(sql`rule_type = 'block'`);
+      .where(sql`ruleType = 'block'`);
     
     const topBlocked = await db.select()
       .from(sql`geo_blocking_rules`)
-      .where(sql`rule_type = 'block' AND is_active = true`)
-      .orderBy(sql`hit_count DESC`)
+      .where(sql`ruleType = 'block' AND isActive = 'true'`)
+      .orderBy(sql`hitCount DESC`)
       .limit(10);
 
     return {
@@ -339,9 +339,9 @@ export async function getGeoBlockingStats(): Promise<{
       totalAllowed: allowedCount[0]?.count || 0,
       totalHits: hitsResult[0]?.total || 0,
       topBlockedCountries: topBlocked.map((r: any) => ({
-        countryCode: r.country_code,
-        countryName: r.country_name,
-        hitCount: r.hit_count,
+        countryCode: r.countryCode,
+        countryName: r.countryName,
+        hitCount: r.hitCount,
       })),
     };
   } catch (error) {

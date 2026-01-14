@@ -52,11 +52,11 @@ export async function getSecurityStats(): Promise<SecurityStats> {
 
     const loginStats = await db.select({
       total: sql<number>`count(*)`,
-      successful: sql<number>`SUM(CASE WHEN is_success = 'true' THEN 1 ELSE 0 END)`,
-      failed: sql<number>`SUM(CASE WHEN is_success = 'false' THEN 1 ELSE 0 END)`,
+      successful: sql<number>`SUM(CASE WHEN isSuccess = 'true' THEN 1 ELSE 0 END)`,
+      failed: sql<number>`SUM(CASE WHEN isSuccess = 'false' THEN 1 ELSE 0 END)`,
     })
       .from(sql`login_attempts`)
-      .where(sql`attempted_at >= ${thirtyDaysAgo}`);
+      .where(sql`attemptedAt >= ${thirtyDaysAgo}`);
 
     const totalLogins = loginStats[0]?.total || 0;
     const successfulLogins = loginStats[0]?.successful || 0;
@@ -66,60 +66,60 @@ export async function getSecurityStats(): Promise<SecurityStats> {
     // IP statistics
     const blockedIps = await db.select({ count: sql<number>`count(*)` })
       .from(sql`ip_access_control`)
-      .where(sql`type = 'blacklist' AND is_active = true`);
+      .where(sql`type = 'blacklist' AND isActive = 'true'`);
 
     const whitelistedIps = await db.select({ count: sql<number>`count(*)` })
       .from(sql`ip_access_control`)
-      .where(sql`type = 'whitelist' AND is_active = true`);
+      .where(sql`type = 'whitelist' AND isActive = 'true'`);
 
     const lockedIps = await db.select({ count: sql<number>`count(*)` })
       .from(sql`ip_lockouts`)
-      .where(sql`is_locked = 'true' AND locked_until > NOW()`);
+      .where(sql`isLocked = 'true' AND lockedUntil > NOW()`);
 
     const geoBlockedCountries = await db.select({ count: sql<number>`count(*)` })
       .from(sql`geo_blocking_rules`)
-      .where(sql`rule_type = 'block' AND is_active = true`);
+      .where(sql`ruleType = 'block' AND isActive = 'true'`);
 
     // Security events
     const passwordResets = await db.select({ count: sql<number>`count(*)` })
       .from(sql`password_reset_tokens`)
-      .where(sql`created_at >= ${thirtyDaysAgo}`);
+      .where(sql`createdAt >= ${thirtyDaysAgo}`);
 
     const twoFactorEnabled = await db.select({ count: sql<number>`count(*)` })
-      .from(sql`two_factor_auth`)
-      .where(sql`is_enabled = true`);
+      .from(sql`user_2fa_settings`)
+      .where(sql`isEnabled = 'true'`);
 
     // Suspicious activities (failed logins > 3 from same IP)
     const suspiciousIps = await db.select({ count: sql<number>`count(DISTINCT ip_address)` })
       .from(sql`login_attempts`)
-      .where(sql`is_success = 'false' AND attempted_at >= ${thirtyDaysAgo}`)
-      .groupBy(sql`ip_address`)
+      .where(sql`isSuccess = 'false' AND attemptedAt >= ${thirtyDaysAgo}`)
+      .groupBy(sql`ipAddress`)
       .having(sql`count(*) > 3`);
 
     // Recent failed logins
     const recentFailedLogins = await db.select({
-      ipAddress: sql<string>`ip_address`,
+      ipAddress: sql<string>`ipAddress`,
       attempts: sql<number>`count(*)`,
-      lastAttempt: sql<Date>`MAX(attempted_at)`,
+      lastAttempt: sql<Date>`MAX(attemptedAt)`,
     })
       .from(sql`login_attempts`)
-      .where(sql`is_success = 'false' AND attempted_at >= ${thirtyDaysAgo}`)
-      .groupBy(sql`ip_address`)
+      .where(sql`isSuccess = 'false' AND attemptedAt >= ${thirtyDaysAgo}`)
+      .groupBy(sql`ipAddress`)
       .orderBy(sql`count(*) DESC`)
       .limit(10);
 
     // Recent blocked IPs
     const recentBlockedIps = await db.select()
       .from(sql`ip_access_control`)
-      .where(sql`type = 'blacklist' AND is_active = true`)
-      .orderBy(sql`created_at DESC`)
+      .where(sql`type = 'blacklist' AND isActive = 'true'`)
+      .orderBy(sql`createdAt DESC`)
       .limit(10);
 
     // Top blocked countries
     const topBlockedCountries = await db.select()
       .from(sql`geo_blocking_rules`)
-      .where(sql`rule_type = 'block' AND is_active = true`)
-      .orderBy(sql`hit_count DESC`)
+      .where(sql`ruleType = 'block' AND isActive = 'true'`)
+      .orderBy(sql`hitCount DESC`)
       .limit(10);
 
     return {
@@ -169,23 +169,23 @@ export async function getSecurityTrends(days: number = 30): Promise<SecurityTren
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     const trends = await db.select({
-      date: sql<string>`DATE(attempted_at)`,
-      successfulLogins: sql<number>`SUM(CASE WHEN is_success = 'true' THEN 1 ELSE 0 END)`,
-      failedLogins: sql<number>`SUM(CASE WHEN is_success = 'false' THEN 1 ELSE 0 END)`,
+      date: sql<string>`DATE(attemptedAt)`,
+      successfulLogins: sql<number>`SUM(CASE WHEN isSuccess = 'true' THEN 1 ELSE 0 END)`,
+      failedLogins: sql<number>`SUM(CASE WHEN isSuccess = 'false' THEN 1 ELSE 0 END)`,
     })
       .from(sql`login_attempts`)
-      .where(sql`attempted_at >= ${startDate}`)
-      .groupBy(sql`DATE(attempted_at)`)
-      .orderBy(sql`DATE(attempted_at) ASC`);
+      .where(sql`attemptedAt >= ${startDate}`)
+      .groupBy(sql`DATE(attemptedAt)`)
+      .orderBy(sql`DATE(attemptedAt) ASC`);
 
     // Get blocked requests from IP access control hits
     const blockedTrends = await db.select({
-      date: sql<string>`DATE(last_hit_at)`,
-      blockedRequests: sql<number>`SUM(hit_count)`,
+      date: sql<string>`DATE(lastHitAt)`,
+      blockedRequests: sql<number>`SUM(hitCount)`,
     })
       .from(sql`ip_access_control`)
-      .where(sql`type = 'blacklist' AND last_hit_at >= ${startDate}`)
-      .groupBy(sql`DATE(last_hit_at)`);
+      .where(sql`type = 'blacklist' AND lastHitAt >= ${startDate}`)
+      .groupBy(sql`DATE(lastHitAt)`);
 
     // Merge trends
     const trendMap = new Map<string, SecurityTrend>();
@@ -241,7 +241,7 @@ export async function getSecurityAlerts(): Promise<{
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const recentFailures = await db.select({ count: sql<number>`count(*)` })
       .from(sql`login_attempts`)
-      .where(sql`is_success = 'false' AND attempted_at >= ${oneHourAgo}`);
+      .where(sql`isSuccess = 'false' AND attemptedAt >= ${oneHourAgo}`);
 
     if ((recentFailures[0]?.count || 0) > 50) {
       alerts.push({
@@ -260,7 +260,7 @@ export async function getSecurityAlerts(): Promise<{
     // Check for locked IPs
     const lockedIps = await db.select({ count: sql<number>`count(*)` })
       .from(sql`ip_lockouts`)
-      .where(sql`is_locked = 'true' AND locked_until > NOW()`);
+      .where(sql`isLocked = 'true' AND lockedUntil > NOW()`);
 
     if ((lockedIps[0]?.count || 0) > 0) {
       alerts.push({
@@ -272,12 +272,12 @@ export async function getSecurityAlerts(): Promise<{
 
     // Check for suspicious IPs (many failed attempts)
     const suspiciousIps = await db.select({
-      ipAddress: sql<string>`ip_address`,
+      ipAddress: sql<string>`ipAddress`,
       count: sql<number>`count(*)`,
     })
       .from(sql`login_attempts`)
-      .where(sql`is_success = 'false' AND attempted_at >= ${oneHourAgo}`)
-      .groupBy(sql`ip_address`)
+      .where(sql`isSuccess = 'false' AND attemptedAt >= ${oneHourAgo}`)
+      .groupBy(sql`ipAddress`)
       .having(sql`count(*) >= 5`);
 
     if (suspiciousIps.length > 0) {
@@ -289,9 +289,9 @@ export async function getSecurityAlerts(): Promise<{
     }
 
     // Check for geo-blocked attempts
-    const geoBlockedHits = await db.select({ total: sql<number>`COALESCE(SUM(hit_count), 0)` })
+    const geoBlockedHits = await db.select({ total: sql<number>`COALESCE(SUM(hitCount), 0)` })
       .from(sql`geo_blocking_rules`)
-      .where(sql`rule_type = 'block'`);
+      .where(sql`ruleType = 'block'`);
 
     if ((geoBlockedHits[0]?.total || 0) > 0) {
       alerts.push({

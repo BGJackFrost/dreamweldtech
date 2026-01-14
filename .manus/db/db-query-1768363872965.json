@@ -1,0 +1,9 @@
+{
+  "query": "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('login_attempts', 'ip_access_control', 'ip_lockouts', 'geo_blocking_rules', 'two_factor_auth', 'password_reset_tokens');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('login_attempts', 'ip_access_control', 'ip_lockouts', 'geo_blocking_rules', 'two_factor_auth', 'password_reset_tokens');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1598
+}

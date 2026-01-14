@@ -1,0 +1,43 @@
+{
+  "query": "SHOW TABLES LIKE '%login%'; SHOW TABLES LIKE '%ip%'; SHOW TABLES LIKE '%geo%'; SHOW TABLES LIKE '%two%'; SHOW TABLES LIKE '%password%'; SHOW TABLES LIKE '%audit%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute SHOW TABLES LIKE '%login%'; SHOW TABLES LIKE '%ip%'; SHOW TABLES LIKE '%geo%'; SHOW TABLES LIKE '%two%'; SHOW TABLES LIKE '%password%'; SHOW TABLES LIKE '%audit%';",
+  "rows": [
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "login_attempts"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%ip%)"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "ip_access_control"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "ip_lockouts"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "push_subscriptions"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%geo%)"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "geo_blocking_rules"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%password%)"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "password_reset_tokens"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%audit%)"
+    },
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "admin_audit_log"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)\nlogin_attempts\nTables_in_6Vkqr5hgrEsXcKpL6zSEYs (%ip%)\nip_access_control\nip_lockouts\npush_subscriptions\nTables_in_6Vkqr5hgrEsXcKpL6zSEYs (%geo%)\ngeo_blocking_rules\nTables_in_6Vkqr5hgrEsXcKpL6zSEYs (%password%)\npassword_reset_tokens\nTables_in_6Vkqr5hgrEsXcKpL6zSEYs (%audit%)\nadmin_audit_log\n",
+  "stderr": "",
+  "execution_time_ms": 2639
+}

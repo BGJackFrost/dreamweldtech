@@ -1606,3 +1606,41 @@ export const adminAuditLog = mysqlTable("admin_audit_log", {
 
 export type AdminAuditLog = typeof adminAuditLog.$inferSelect;
 export type InsertAdminAuditLog = typeof adminAuditLog.$inferInsert;
+
+
+// =====================================================
+// Geo-Blocking Rules - Block/Allow by country
+// =====================================================
+export const geoBlockingRules = mysqlTable("geo_blocking_rules", {
+  id: int("id").primaryKey().autoincrement(),
+  
+  /** Country code (ISO 3166-1 alpha-2) */
+  countryCode: varchar("countryCode", { length: 2 }).notNull(),
+  
+  /** Country name */
+  countryName: varchar("countryName", { length: 100 }).notNull(),
+  
+  /** Rule type: block or allow */
+  ruleType: mysqlEnum("ruleType", ["block", "allow"]).notNull(),
+  
+  /** Reason for the rule */
+  reason: text("reason"),
+  
+  /** Whether the rule is active */
+  isActive: mysqlEnum("isActive", ["true", "false"]).default("true").notNull(),
+  
+  /** Hit count - number of times this rule was triggered */
+  hitCount: int("hitCount").default(0).notNull(),
+  
+  /** Last hit timestamp */
+  lastHitAt: timestamp("lastHitAt"),
+  
+  /** Admin user who created this rule */
+  createdBy: int("createdBy"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GeoBlockingRule = typeof geoBlockingRules.$inferSelect;
+export type InsertGeoBlockingRule = typeof geoBlockingRules.$inferInsert;

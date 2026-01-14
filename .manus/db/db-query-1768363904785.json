@@ -1,0 +1,169 @@
+{
+  "query": "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() ORDER BY table_name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() ORDER BY table_name;",
+  "rows": [
+    {
+      "table_name": "__drizzle_migrations"
+    },
+    {
+      "table_name": "activity_logs"
+    },
+    {
+      "table_name": "admin_audit_log"
+    },
+    {
+      "table_name": "admin_roles"
+    },
+    {
+      "table_name": "alert_history"
+    },
+    {
+      "table_name": "alert_thresholds"
+    },
+    {
+      "table_name": "banners"
+    },
+    {
+      "table_name": "case_studies"
+    },
+    {
+      "table_name": "contact_requests"
+    },
+    {
+      "table_name": "custom_translations"
+    },
+    {
+      "table_name": "dnd_schedule"
+    },
+    {
+      "table_name": "email_digest_log"
+    },
+    {
+      "table_name": "email_digest_settings"
+    },
+    {
+      "table_name": "endpoint_daily_stats"
+    },
+    {
+      "table_name": "endpoint_metrics"
+    },
+    {
+      "table_name": "faqs"
+    },
+    {
+      "table_name": "geo_blocking_rules"
+    },
+    {
+      "table_name": "home_page_sections"
+    },
+    {
+      "table_name": "ip_access_control"
+    },
+    {
+      "table_name": "ip_lockouts"
+    },
+    {
+      "table_name": "job_applications"
+    },
+    {
+      "table_name": "jobs"
+    },
+    {
+      "table_name": "known_devices"
+    },
+    {
+      "table_name": "login_attempts"
+    },
+    {
+      "table_name": "metrics_history"
+    },
+    {
+      "table_name": "news"
+    },
+    {
+      "table_name": "newsletter_subscribers"
+    },
+    {
+      "table_name": "notification_center"
+    },
+    {
+      "table_name": "notification_preferences"
+    },
+    {
+      "table_name": "notifications"
+    },
+    {
+      "table_name": "partners"
+    },
+    {
+      "table_name": "password_reset_tokens"
+    },
+    {
+      "table_name": "performance_alerts"
+    },
+    {
+      "table_name": "portfolio_items"
+    },
+    {
+      "table_name": "product_categories"
+    },
+    {
+      "table_name": "products"
+    },
+    {
+      "table_name": "push_subscriptions"
+    },
+    {
+      "table_name": "query_daily_stats"
+    },
+    {
+      "table_name": "query_metrics"
+    },
+    {
+      "table_name": "rate_limit_config"
+    },
+    {
+      "table_name": "rate_limit_usage"
+    },
+    {
+      "table_name": "scheduled_reports"
+    },
+    {
+      "table_name": "security_settings"
+    },
+    {
+      "table_name": "site_settings"
+    },
+    {
+      "table_name": "uptime_history"
+    },
+    {
+      "table_name": "uptime_monthly_stats"
+    },
+    {
+      "table_name": "user_2fa_settings"
+    },
+    {
+      "table_name": "user_access_history"
+    },
+    {
+      "table_name": "user_admin_roles"
+    },
+    {
+      "table_name": "user_preferences"
+    },
+    {
+      "table_name": "user_security_preferences"
+    },
+    {
+      "table_name": "user_sessions"
+    },
+    {
+      "table_name": "users"
+    }
+  ],
+  "messages": [],
+  "stdout": "table_name\n__drizzle_migrations\nactivity_logs\nadmin_audit_log\nadmin_roles\nalert_history\nalert_thresholds\nbanners\ncase_studies\ncontact_requests\ncustom_translations\ndnd_schedule\nemail_digest_log\nemail_digest_settings\nendpoint_daily_stats\nendpoint_metrics\nfaqs\ngeo_blocking_rules\nhome_page_sections\nip_access_control\nip_lockouts\njob_applications\njobs\nknown_devices\nlogin_attempts\nmetrics_history\nnews\nnewsletter_subscribers\nnotification_center\nnotification_preferences\nnotifications\npartners\npassword_reset_tokens\nperformance_alerts\nportfolio_items\nproduct_categories\nproducts\npush_subscriptions\nquery_daily_stats\nquery_metrics\nrate_limit_config\nrate_limit_usage\nscheduled_reports\nsecurity_settings\nsite_settings\nuptime_history\nuptime_monthly_stats\nuser_2fa_settings\nuser_access_history\nuser_admin_roles\nuser_preferences\nuser_security_preferences\nuser_sessions\nusers\n",
+  "stderr": "",
+  "execution_time_ms": 1530
+}

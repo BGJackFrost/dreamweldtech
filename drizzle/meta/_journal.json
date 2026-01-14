@@ -183,6 +183,13 @@
       "when": 1767866367166,
       "tag": "0025_glossy_smasher",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1768364098157,
+      "tag": "0026_aberrant_living_lightning",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `geo_blocking_rules` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `countryCode` varchar(2) NOT NULL,\n  `countryName` varchar(100) NOT NULL,\n  `ruleType` enum('block','allow') NOT NULL,\n  `reason` text,\n  `isActive` enum('true','false') NOT NULL DEFAULT 'true',\n  `hitCount` int NOT NULL DEFAULT 0,\n  `lastHitAt` timestamp,\n  `createdBy` int,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `geo_blocking_rules_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute CREATE TABLE IF NOT EXISTS `geo_blocking_rules` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `countryCode` varchar(2) NOT NULL,\n  `countryName` varchar(100) NOT NULL,\n  `ruleType` enum('block','allow') NOT NULL,\n  `reason` text,\n  `isActive` enum('true','false') NOT NULL DEFAULT 'true',\n  `hitCount` int NOT NULL DEFAULT 0,\n  `lastHitAt` timestamp,\n  `createdBy` int,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `geo_blocking_rules_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1520
+}

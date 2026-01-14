@@ -756,3 +756,30 @@
 - [x] Thêm permission check cho Newsletter API (list, delete, stats)
 - [x] Thêm permission check cho Users API (list, getById, update, updateRole, delete, getStats)
 - [x] Chạy tests để đảm bảo không có lỗi (640 tests passed)
+
+
+## PHASE 46: Rà soát và sửa lỗi Admin Panel - Category Bảo mật
+- [ ] Liệt kê tất cả các trang trong category Bảo mật
+- [ ] Kiểm tra SecurityDashboard.tsx
+- [ ] Kiểm tra TwoFactorSetup.tsx
+- [ ] Kiểm tra RoleManagement.tsx
+- [ ] Kiểm tra ActivityLog.tsx
+- [ ] Kiểm tra NotificationCenter.tsx
+- [ ] Kiểm tra PermissionMatrix.tsx
+- [ ] Sửa các lỗi phát hiện được
+- [ ] Chạy tests để đảm bảo không có lỗi
+
+
+## PHASE 46: Rà soát và sửa lỗi các trang Bảo mật
+- [x] Kiểm tra TwoFactorSetup.tsx - OK
+- [x] Kiểm tra SessionManagement.tsx - OK
+- [x] Kiểm tra ChangePassword.tsx - OK
+- [x] Kiểm tra AccessHistory.tsx - OK
+- [x] Kiểm tra IpAccessControl.tsx - OK
+- [x] Kiểm tra AuditLog.tsx - OK
+- [x] Kiểm tra GeoBlocking.tsx - Sửa lỗi tên cột
+- [x] Kiểm tra SecurityDashboard.tsx - Sửa lỗi tên cột
+- [x] Kiểm tra SecurityScore.tsx - OK
+- [x] Kiểm tra SecuritySettings.tsx - OK
+- [x] Tạo bảng geo_blocking_rules trong database
+- [x] Sửa các query SQL để sử dụng đúng tên cột camelCase (640 tests passed)

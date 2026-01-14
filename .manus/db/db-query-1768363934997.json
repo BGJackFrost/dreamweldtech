@@ -1,0 +1,13 @@
+{
+  "query": "SHOW TABLES LIKE '%login%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2bBfAdpTc8yvngq.5459c156ea06 --database 6Vkqr5hgrEsXcKpL6zSEYs --execute SHOW TABLES LIKE '%login%';",
+  "rows": [
+    {
+      "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)": "login_attempts"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_6Vkqr5hgrEsXcKpL6zSEYs (%login%)\nlogin_attempts\n",
+  "stderr": "",
+  "execution_time_ms": 1540
+}
